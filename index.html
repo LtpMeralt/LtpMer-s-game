@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ltp's Maze Game</title>
+  <style>
+    :root {
+      --bg: #0f1220;
+      --panel: #171b2f;
+      --panel2: #1d2340;
+      --text: #e9edff;
+      --muted: #aab3da;
+      --accent: #7c8cff;
+      --good: #5fd38b;
+      --warn: #ffd166;
+      --bad: #ff6b6b;
+      --line: rgba(255,255,255,.09);
+      --shadow: 0 20px 50px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1000px 700px at 20% 10%, #1a2142 0%, var(--bg) 60%);
+      color: var(--text);
+      overflow: hidden;
+    }
+    button, input, select, textarea {
+      font: inherit;
+      color: inherit;
+    }
+    .app {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(8,10,20,.55);
+      backdrop-filter: blur(10px);
+    }
+    .brand {
+      font-weight: 800;
+      letter-spacing: .2px;
+      font-size: 18px;
+    }
+    .pill {
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .spacer { flex: 1; }
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+      max-width: 40vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      min-height: 0;
+    }
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: rgba(10,13,26,.75);
+      padding: 14px;
+      overflow: auto;
+    }
+    .main {
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .tabs, .subtabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.02);
+    }
+    .subtabs { border-bottom: 0; padding-top: 0; }
+    .tab, .btn {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: .15s transform, .15s opacity, .15s background;
+      user-select: none;
+    }
+    .tab:hover, .btn:hover { transform: translateY(-1px); }
+    .tab.active { border-color: rgba(124,140,255,.7); box-shadow: inset 0 0 0 1px rgba(124,140,255,.22); }
+    .btn.primary { background: linear-gradient(180deg, rgba(124,140,255,.9), rgba(95,115,255,.86)); border-color: rgba(124,140,255,.7); }
+    .btn.good { background: linear-gradient(180deg, rgba(95,211,139,.9), rgba(55,170,104,.86)); border-color: rgba(95,211,139,.7); }
+    .btn.warn { background: linear-gradient(180deg, rgba(255,209,102,.95), rgba(227,174,54,.86)); border-color: rgba(255,209,102,.7); color: #241a00; }
+    .btn.bad { background: linear-gradient(180deg, rgba(255,107,107,.92), rgba(219,67,67,.86)); border-color: rgba(255,107,107,.65); }
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .panel h2, .panel h3 { margin: 0 0 10px; }
+    .panel h2 { font-size: 16px; }
+    .panel h3 { font-size: 14px; color: var(--muted); }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .col { display: flex; flex-direction: column; gap: 10px; }
+    .field {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(5,7,14,.65);
+      outline: none;
+    }
+    .field:focus { border-color: rgba(124,140,255,.7); }
+    .small { font-size: 12px; color: var(--muted); line-height: 1.35; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .content {
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      padding: 16px;
+    }
+    .cardgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .card .title { font-weight: 700; margin-bottom: 6px; }
+    .card .meta { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+    .viewer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 14px;
+      height: calc(100vh - 120px);
+      min-height: 0;
+    }
+    .canvasWrap {
+      position: relative;
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-height: 0;
+    }
+    canvas { display: block; width: 100%; height: 100%; background: #101425; }
+    .overlayHint {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.45);
+      border: 1px solid rgba(255,255,255,.1);
+      color: white;
+      font-size: 12px;
+    }
+    .editorLayout {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr) 320px;
+      gap: 14px;
+      height: calc(100vh - 120px);
+      min-height: 0;
+    }
+    .toolBtn {
+      width: 100%;
+      text-align: left;
+      margin-bottom: 8px;
+    }
+    .toolBtn.active { border-color: rgba(124,140,255,.75); }
+    .toolRow { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .miniNote { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 230px;
+      overflow: auto;
+    }
+    .listItem {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      cursor: pointer;
+    }
+    .listItem:hover { border-color: rgba(124,140,255,.4); }
+    .listItem small { color: var(--muted); display: block; margin-top: 4px; }
+    .hidden { display: none !important; }
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      background: rgba(14,18,36,.95);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      max-width: 360px;
+      z-index: 40;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .hr { height: 1px; background: var(--line); margin: 12px 0; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .rightcol { overflow: auto; min-height: 0; }
+    .legend { display: grid; gap: 6px; }
+    .legend span { color: var(--muted); font-size: 12px; }
+    .kv { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+    .value { color: white; font-weight: 700; }
+    textarea.field { min-height: 130px; resize: vertical; }
+    @media (max-width: 1180px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
+      .viewer, .editorLayout { grid-template-columns: 1fr; height: auto; }
+      .content { overflow: visible; }
+      body { overflow: auto; }
+    }
+  </style>
+
+  <!-- Firebase compat SDKs for simple single-file use -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">Ltp's Maze Game</div>
+    <div class="pill">Firebase-backed</div>
+    <div class="pill">Anonymous auth + username profile</div>
+    <div class="spacer"></div>
+    <div id="authState" class="status">Connecting…</div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="panel">
+        <h2>Account</h2>
+        <div class="col">
+          <input id="usernameInput" class="field" placeholder="Username" maxlength="20" />
+          <input id="passwordInput" class="field" placeholder="Password" type="password" maxlength="72" />
+          <div class="row">
+            <button class="btn primary" id="registerBtn">Create / Link</button>
+            <button class="btn" id="loginBtn">Login</button>
+          </div>
+          <div class="row">
+            <button class="btn" id="changePwBtn">Change Password</button>
+            <button class="btn bad" id="logoutBtn">Sign Out</button>
+          </div>
+          <div class="small">
+            This keeps Firebase Anonymous Auth signed in locally so the same account can stay logged in when the page is reopened on the same browser.
+            For a production build, add Firestore security rules and server-side checks.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Navigation</h2>
+        <div class="col">
+          <button class="tab active" data-tab="homeTab">Home</button>
+          <button class="tab" data-tab="playTab">Play</button>
+          <button class="tab" data-tab="editorTab">Level Editor</button>
+          <button class="tab" data-tab="leaderTab">Leaderboards</button>
+          <button class="tab" data-tab="profileTab">Profile</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Level Search</h2>
+        <div class="col">
+          <input id="searchLevelId" class="field" placeholder="Search level id (1...)" />
+          <button class="btn good" id="searchLevelBtn">Load Level</button>
+          <div class="small">Levels can be Official, Daily, Weekly, private, unlisted, or public.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Current User</h2>
+        <div class="legend">
+          <div class="kv"><span>Username</span><span class="value" id="currentUsername">—</span></div>
+          <div class="kv"><span>User ID</span><span class="value" id="currentUid">—</span></div>
+          <div class="kv"><span>Admin</span><span class="value" id="currentAdmin">No</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div id="homeTab" class="content">
+        <div class="cardgrid">
+          <div class="card">
+            <div class="title">Play</div>
+            <div class="meta">Discover levels by id and official sections.</div>
+            <button class="btn primary" onclick="showTab('playTab')">Open Play</button>
+          </div>
+          <div class="card">
+            <div class="title">Editor</div>
+            <div class="meta">Build maze levels on a square grid, test them, and publish them.</div>
+            <button class="btn primary" onclick="showTab('editorTab')">Open Editor</button>
+          </div>
+          <div class="card">
+            <div class="title">Leaderboards</div>
+            <div class="meta">Separate tabs for Bricks and Creator Points.</div>
+            <button class="btn primary" onclick="showTab('leaderTab')">Open Leaderboards</button>
+          </div>
+          <div class="card">
+            <div class="title">Admin tools</div>
+            <div class="meta">LtpMer can rate levels, set difficulty, remove users, and delete levels.</div>
+            <div class="chip">Admin only</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="playTab" class="content hidden">
+        <div class="viewer">
+          <div class="canvasWrap">
+            <canvas id="gameCanvas" width="960" height="720"></canvas>
+            <div class="overlayHint" id="playHint">Use WASD to move. Click a level card or search by id.</div>
+          </div>
+          <div class="rightcol">
+            <div class="panel">
+              <h2>Official Levels</h2>
+              <div id="officialLevels" class="list"></div>
+            </div>
+            <div class="panel">
+              <h2>Daily Level</h2>
+              <div id="dailyLevelBox" class="list"></div>
+            </div>
+            <div class="panel">
+              <h2>Weekly Level</h2>
+              <div id="weeklyLevelBox" class="list"></div>
+            </div>
+            <div class="panel">
+              <h2>Search Result</h2>
+              <div id="searchResultBox" class="list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="editorTab" class="content hidden">
+        <div class="editorLayout">
+          <div class="panel">
+            <h2>Tools</h2>
+            <button class="btn toolBtn active" data-tool="wall">Wall block</button>
+            <button class="btn toolBtn" data-tool="erase">Erase</button>
+            <button class="btn toolBtn" data-tool="select">Select</button>
+            <button class="btn toolBtn" data-tool="player">Player start</button>
+            <button class="btn toolBtn" data-tool="trigger">Trigger block</button>
+            <button class="btn toolBtn" data-tool="layer">Layers</button>
+            <div class="hr"></div>
+            <h2>Level settings</h2>
+            <input id="gridSizeInput" class="field" type="number" min="8" max="64" step="1" value="64" />
+            <div class="miniNote">Max viewable pixels / squares is editable here. This starter defaults to a 64×64 square map.</div>
+            <div class="hr"></div>
+            <h2>Publish</h2>
+            <input id="levelTitleInput" class="field" placeholder="Title" />
+            <input id="levelIdInput" class="field" placeholder="Level id" />
+            <select id="visibilityInput" class="field">
+              <option value="private">Private</option>
+              <option value="unlisted">Unlisted</option>
+              <option value="public">Public</option>
+            </select>
+            <select id="difficultyInput" class="field">
+              <option>Easy</option><option>Medium</option><option>Hard</option><option>Difficult</option><option>Insane</option><option>Really Hard</option><option>The Hardest</option>
+            </select>
+            <div class="row">
+              <button class="btn good" id="playtestBtn">Playtest</button>
+              <button class="btn primary" id="saveLevelBtn">Save Level</button>
+            </div>
+            <div class="row">
+              <button class="btn" id="newLevelBtn">New Level</button>
+              <button class="btn bad" id="deleteOwnLevelBtn">Delete My Level</button>
+            </div>
+            <div class="miniNote">Trigger blocks store a small visual-script string. This starter lets you edit the text and save it.</div>
+          </div>
+
+          <div class="canvasWrap">
+            <canvas id="editorCanvas" width="960" height="720"></canvas>
+            <div class="overlayHint">Drag to paint. Hold erase to clear. Select tool can move the selected block.</div>
+          </div>
+
+          <div class="panel rightcol">
+            <h2>Properties</h2>
+            <div class="col">
+              <div class="kv"><span>Tool</span><span class="value" id="toolLabel">wall</span></div>
+              <div class="kv"><span>Layer</span><span class="value" id="layerLabel">base</span></div>
+              <input id="blockColor" class="field" type="color" value="#8a8f9c" />
+              <input id="blockTransparency" class="field" type="range" min="0" max="1" step="0.05" value="0" />
+              <input id="blockAnchored" type="checkbox" checked /> <label for="blockAnchored">Anchored</label>
+              <textarea id="triggerScript" class="field" placeholder="Trigger visual code / script"></textarea>
+              <div class="row">
+                <button class="btn" id="addLayerBtn">Add Layer</button>
+                <button class="btn" id="prevLayerBtn">Prev Layer</button>
+                <button class="btn" id="nextLayerBtn">Next Layer</button>
+              </div>
+              <div class="panel" style="margin:0; padding:12px;">
+                <h3>Players</h3>
+                <div id="playerList" class="list"></div>
+                <div class="small">Add multiple player starts. All use the same WASD controls for this starter.</div>
+              </div>
+              <div class="panel" style="margin:0; padding:12px;">
+                <h3>Selected block</h3>
+                <div id="selectedInfo" class="small">Nothing selected.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="leaderTab" class="content hidden">
+        <div class="panel">
+          <div class="tabs" style="border-bottom:0; padding:0 0 12px 0;">
+            <button class="tab active" data-leader="bricksLeader">Bricks</button>
+            <button class="tab" data-leader="creatorLeader">Creator Points</button>
+          </div>
+          <div id="bricksLeader" class="leaderView"></div>
+          <div id="creatorLeader" class="leaderView hidden"></div>
+        </div>
+      </div>
+
+      <div id="profileTab" class="content hidden">
+        <div class="cardgrid">
+          <div class="card">
+            <div class="title">Profile</div>
+            <div class="meta">Your stats and saved levels.</div>
+            <div id="profileStats" class="small">Not loaded.</div>
+          </div>
+          <div class="card">
+            <div class="title">Admin panel</div>
+            <div class="meta">Visible only for LtpMer.</div>
+            <div id="adminPanel" class="small">Not an admin.</div>
+          </div>
+          <div class="card">
+            <div class="title">Rules reminder</div>
+            <div class="meta">Use Firestore rules to protect usernames, stats, and level ownership.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+// -----------------------------
+// Firebase bootstrap
+// -----------------------------
+const firebaseConfig = {
+  apiKey: "AIzaSyCo1rtBmJa8ea1PGAx3BTAgFVP9luFtdKI",
+  authDomain: "somethingwicked-87e77.firebaseapp.com",
+  projectId: "somethingwicked-87e77",
+  storageBucket: "somethingwicked-87e77.firebasestorage.app",
+  messagingSenderId: "1011430455701",
+  appId: "1:1011430455701:web:bef8293371d71c143ade9c",
+  measurementId: "G-8LNLNCTDY7"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const APP = {
+  user: null,
+  profile: null,
+  isAdmin: false,
+  tab: 'homeTab',
+  leaderTab: 'bricksLeader',
+  tool: 'wall',
+  layerIndex: 0,
+  gridSize: 64,
+  currentLevel: null,
+  selected: null,
+  mode: 'play',
+  dragging: false,
+  mouse: { x: 0, y: 0, down: false, button: 0 },
+  editor: null,
+  game: null,
+};
+
+// Keep auth persistent on this browser.
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
+
+const $ = (id) => document.getElementById(id);
+const toast = (msg) => {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => t.classList.add('hidden'), 2600);
+};
+
+function showTab(id) {
+  APP.tab = id;
+  for (const el of document.querySelectorAll('.content')) el.classList.add('hidden');
+  $(id).classList.remove('hidden');
+  for (const b of document.querySelectorAll('.sidebar .tab[data-tab]')) b.classList.toggle('active', b.dataset.tab === id);
+  if (id === 'leaderTab') renderLeaderboards();
+  if (id === 'profileTab') renderProfile();
+}
+window.showTab = showTab;
+
+document.querySelectorAll('.sidebar .tab[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => showTab(btn.dataset.tab));
+});
+document.querySelectorAll('.tabs .tab[data-leader]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    APP.leaderTab = btn.dataset.leader;
+    document.querySelectorAll('.tabs .tab[data-leader]').forEach(b => b.classList.toggle('active', b === btn));
+    $('bricksLeader').classList.toggle('hidden', APP.leaderTab !== 'bricksLeader');
+    $('creatorLeader').classList.toggle('hidden', APP.leaderTab !== 'creatorLeader');
+  });
+});
+
+// -----------------------------
+// Hash helpers for password storage
+// -----------------------------
+async function sha256(text) {
+  const bytes = new TextEncoder().encode(text);
+  const buffer = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(buffer)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function normName(name) {
+  return (name || '').trim();
+}
+function normNameLower(name) {
+  return normName(name).toLowerCase();
+}
+
+async function ensureAnonUser() {
+  if (auth.currentUser) return auth.currentUser;
+  const result = await auth.signInAnonymously();
+  return result.user;
+}
+
+async function loadProfile(uid) {
+  const snap = await db.collection('users').doc(uid).get();
+  if (!snap.exists) return null;
+  return snap.data();
+}
+
+async function saveProfile(uid, data) {
+  await db.collection('users').doc(uid).set(data, { merge: true });
+}
+
+async function registerOrLink() {
+  const username = normName($('usernameInput').value);
+  const password = $('passwordInput').value;
+  if (!username || !password) return toast('Enter a username and password.');
+  if (username.length < 3) return toast('Username is too short.');
+
+  await ensureAnonUser();
+  const uid = auth.currentUser.uid;
+  const unameLower = normNameLower(username);
+
+  const existing = await db.collection('users').where('usernameLower', '==', unameLower).limit(1).get();
+  if (!existing.empty && existing.docs[0].id !== uid) {
+    return toast('That username is already taken.');
+  }
+
+  const passwordHash = await sha256(password);
+  const profile = {
+    uid,
+    username,
+    usernameLower: unameLower,
+    passwordHash,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    bricks: 0,
+    creatorPoints: 0,
+    admin: unameLower === 'ltpmer',
+  };
+
+  await saveProfile(uid, profile);
+  await db.collection('usernameIndex').doc(unameLower).set({ uid, username, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  toast('Account created / linked.');
+  await refreshSession();
+}
+
+async function loginUsernamePassword() {
+  const username = normName($('usernameInput').value);
+  const password = $('passwordInput').value;
+  if (!username || !password) return toast('Enter a username and password.');
+  await ensureAnonUser();
+  const unameLower = normNameLower(username);
+  const snap = await db.collection('users').where('usernameLower', '==', unameLower).limit(1).get();
+  if (snap.empty) return toast('Username not found.');
+  const doc = snap.docs[0];
+  const data = doc.data();
+  const hash = await sha256(password);
+  if (data.passwordHash !== hash) return toast('Wrong password.');
+  // Anonymous auth stays logged in locally; this links the local session to that profile.
+  await auth.currentUser.updateProfile({ displayName: data.username }).catch(() => {});
+  toast('Logged in.');
+  await refreshSession();
+}
+
+async function changePassword() {
+  if (!APP.profile) return toast('Login first.');
+  const oldPass = prompt('Current password');
+  if (oldPass == null) return;
+  const newPass = prompt('New password');
+  if (newPass == null || !newPass.trim()) return;
+  const check = await sha256(oldPass);
+  if (check !== APP.profile.passwordHash) return toast('Current password is wrong.');
+  await saveProfile(auth.currentUser.uid, { passwordHash: await sha256(newPass), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+  toast('Password changed.');
+  await refreshSession();
+}
+
+async function logout() {
+  await auth.signOut();
+  APP.profile = null;
+  APP.user = null;
+  APP.isAdmin = false;
+  $('authState').textContent = 'Signed out.';
+  refreshHeader();
+}
+
+$('registerBtn').addEventListener('click', registerOrLink);
+$('loginBtn').addEventListener('click', loginUsernamePassword);
+$('changePwBtn').addEventListener('click', changePassword);
+$('logoutBtn').addEventListener('click', logout);
+
+// -----------------------------
+// Session refresh
+// -----------------------------
+async function refreshSession() {
+  APP.user = auth.currentUser;
+  if (!APP.user) {
+    $('authState').textContent = 'Signed out.';
+    $('currentUsername').textContent = '—';
+    $('currentUid').textContent = '—';
+    $('currentAdmin').textContent = 'No';
+    APP.profile = null;
+    APP.isAdmin = false;
+    refreshHeader();
+    return;
+  }
+  const uid = APP.user.uid;
+  $('currentUid').textContent = uid;
+  let profile = await loadProfile(uid);
+  if (!profile) {
+    profile = { uid, username: 'Guest', usernameLower: 'guest', admin: false, bricks: 0, creatorPoints: 0 };
+    await saveProfile(uid, profile);
+  }
+  APP.profile = profile;
+  APP.isAdmin = !!profile.admin || profile.usernameLower === 'ltpmer';
+  $('currentUsername').textContent = profile.username || 'Guest';
+  $('currentAdmin').textContent = APP.isAdmin ? 'Yes' : 'No';
+  $('authState').textContent = `Signed in as ${profile.username || 'Guest'} (${uid.slice(0,8)}…)`;
+  refreshHeader();
+  await loadLeaders();
+}
+
+function refreshHeader() {
+  $('toolLabel').textContent = APP.tool;
+  $('layerLabel').textContent = `Layer ${APP.layerIndex + 1}`;
+}
+
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    await ensureAnonUser();
+    return;
+  }
+  await refreshSession();
+});
+
+// -----------------------------
+// Game data model
+// -----------------------------
+function emptyLevel(size = 64) {
+  return {
+    id: '',
+    title: 'Untitled',
+    size,
+    visibility: 'private',
+    difficulty: 'Easy',
+    type: 'custom',
+    ownerUid: auth.currentUser ? auth.currentUser.uid : '',
+    ownerName: APP.profile?.username || 'Guest',
+    official: false,
+    daily: false,
+    weekly: false,
+    rated: false,
+    layers: [ { name: 'base', blocks: [] } ],
+    players: [ { x: 1, y: 1, color: '#8bd3ff' } ],
+    triggers: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+}
+
+function makeOfficialLevels() {
+  return [
+    { id: '1', title: 'Starter Steps', difficulty: 'Easy', type: 'official', official: true, bricks: 1, creatorPoints: 1 },
+    { id: '2', title: 'Left Turn Lab', difficulty: 'Medium', type: 'official', official: true, bricks: 2, creatorPoints: 2 },
+    { id: '3', title: 'Spike Hall', difficulty: 'Hard', type: 'official', official: true, bricks: 3, creatorPoints: 3 },
+  ].map(x => ({ ...emptyLevel(64), ...x, visibility: 'public' }));
+}
+
+let CACHE = {
+  official: makeOfficialLevels(),
+  daily: null,
+  weekly: null,
+  search: null,
+};
+
+function levelToSimpleText(level) {
+  return `${level.title || 'Untitled'} • ${level.difficulty || 'Easy'} • ${level.visibility || 'private'}`;
+}
+
+// -----------------------------
+// Editor state
+// -----------------------------
+APP.editor = emptyLevel(parseInt($('gridSizeInput').value, 10));
+APP.currentLevel = APP.editor;
+
+function syncEditorUI() {
+  $('toolLabel').textContent = APP.tool;
+  $('layerLabel').textContent = APP.editor.layers[APP.layerIndex]?.name || `Layer ${APP.layerIndex + 1}`;
+  $('selectedInfo').textContent = APP.selected ? JSON.stringify(APP.selected, null, 2) : 'Nothing selected.';
+  $('triggerScript').value = APP.selected?.type === 'trigger' ? (APP.selected.script || '') : $('triggerScript').value;
+  renderPlayerList();
+}
+
+function addLayer() {
+  APP.editor.layers.push({ name: `layer ${APP.editor.layers.length + 1}`, blocks: [] });
+  APP.layerIndex = APP.editor.layers.length - 1;
+  syncEditorUI();
+  renderEditor();
+}
+
+$('addLayerBtn').addEventListener('click', addLayer);
+$('prevLayerBtn').addEventListener('click', () => { APP.layerIndex = Math.max(0, APP.layerIndex - 1); syncEditorUI(); renderEditor(); });
+$('nextLayerBtn').addEventListener('click', () => { APP.layerIndex = Math.min(APP.editor.layers.length - 1, APP.layerIndex + 1); syncEditorUI(); renderEditor(); });
+
+function setTool(tool) {
+  APP.tool = tool;
+  document.querySelectorAll('.toolBtn').forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
+  refreshHeader();
+}
+
+document.querySelectorAll('.toolBtn').forEach(btn => btn.addEventListener('click', () => setTool(btn.dataset.tool)));
+
+function pxToGrid(canvas, e) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
+  const size = APP.editor.size;
+  const cell = Math.floor(canvas.width / size);
+  return { gx: Math.floor(x / cell), gy: Math.floor(y / cell), cell, x, y };
+}
+
+function getLayer() {
+  return APP.editor.layers[APP.layerIndex] || APP.editor.layers[0];
+}
+
+function findBlockAt(level, gx, gy) {
+  for (let li = level.layers.length - 1; li >= 0; li--) {
+    const layer = level.layers[li];
+    for (let i = layer.blocks.length - 1; i >= 0; i--) {
+      const b = layer.blocks[i];
+      if (gx >= b.x && gy >= b.y && gx < b.x + b.w && gy < b.y + b.h) return { layerIndex: li, index: i, block: b };
+    }
+  }
+  return null;
+}
+
+function paintAt(gx, gy) {
+  const layer = getLayer();
+  const existing = findBlockAt(APP.editor, gx, gy);
+
+  if (APP.tool === 'erase') {
+    if (existing) APP.editor.layers[existing.layerIndex].blocks.splice(existing.index, 1);
+    return;
+  }
+
+  if (APP.tool === 'select') {
+    APP.selected = existing ? existing.block : null;
+    syncEditorUI();
+    return;
+  }
+
+  if (APP.tool === 'player') {
+    APP.editor.players.push({ x: gx, y: gy, color: $('blockColor').value });
+    syncEditorUI();
+    return;
+  }
+
+  if (APP.tool === 'trigger') {
+    layer.blocks.push({ type: 'trigger', x: gx, y: gy, w: 1, h: 1, color: $('blockColor').value, transparency: parseFloat($('blockTransparency').value), anchored: $('blockAnchored').checked, script: $('triggerScript').value || 'onTouch: openDoor' });
+    return;
+  }
+
+  // wall block tool
+  if (existing && existing.block.type === 'wall' && APP.mouse.down) {
+    existing.block.color = $('blockColor').value;
+    existing.block.transparency = parseFloat($('blockTransparency').value);
+    existing.block.anchored = $('blockAnchored').checked;
+    return;
+  }
+
+  layer.blocks.push({ type: 'wall', x: gx, y: gy, w: 1, h: 1, color: $('blockColor').value, transparency: parseFloat($('blockTransparency').value), anchored: $('blockAnchored').checked, layer: APP.layerIndex });
+}
+
+function renderPlayerList() {
+  const box = $('playerList');
+  box.innerHTML = '';
+  APP.editor.players.forEach((p, idx) => {
+    const div = document.createElement('div');
+    div.className = 'listItem';
+    div.innerHTML = `Player ${idx + 1}<small>x:${p.x} y:${p.y}</small>`;
+    div.onclick = () => {
+      APP.selected = { type: 'player', index: idx, ...p };
+      syncEditorUI();
+    };
+    box.appendChild(div);
+  });
+}
+
+$('triggerScript').addEventListener('input', () => {
+  if (APP.selected?.type === 'trigger') APP.selected.script = $('triggerScript').value;
+});
+
+$('gridSizeInput').addEventListener('change', () => {
+  const size = Math.max(8, Math.min(64, parseInt($('gridSizeInput').value || '64', 10)));
+  APP.editor = emptyLevel(size);
+  APP.currentLevel = APP.editor;
+  APP.layerIndex = 0;
+  APP.selected = null;
+  syncEditorUI();
+  renderEditor();
+});
+
+$('newLevelBtn').addEventListener('click', () => {
+  APP.editor = emptyLevel(parseInt($('gridSizeInput').value, 10) || 64);
+  APP.currentLevel = APP.editor;
+  APP.layerIndex = 0;
+  APP.selected = null;
+  $('levelTitleInput').value = '';
+  $('levelIdInput').value = '';
+  $('visibilityInput').value = 'private';
+  $('difficultyInput').value = 'Easy';
+  syncEditorUI();
+  renderEditor();
+  toast('New level created.');
+});
+
+// -----------------------------
+// Rendering
+// -----------------------------
+const gameCanvas = $('gameCanvas');
+const editorCanvas = $('editorCanvas');
+const gctx = gameCanvas.getContext('2d');
+const ectx = editorCanvas.getContext('2d');
+
+function drawLevel(ctx, level, playerOverride = null) {
+  const w = ctx.canvas.width;
+  const h = ctx.canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#0d1120';
+  ctx.fillRect(0, 0, w, h);
+
+  const size = Math.max(8, level?.size || 64);
+  const cell = Math.floor(Math.min(w, h) / size);
+  const ox = Math.floor((w - cell * size) / 2);
+  const oy = Math.floor((h - cell * size) / 2);
+
+  // grid
+  ctx.strokeStyle = 'rgba(255,255,255,.05)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= size; x++) {
+    ctx.beginPath(); ctx.moveTo(ox + x * cell, oy); ctx.lineTo(ox + x * cell, oy + size * cell); ctx.stroke();
+  }
+  for (let y = 0; y <= size; y++) {
+    ctx.beginPath(); ctx.moveTo(ox, oy + y * cell); ctx.lineTo(ox + size * cell, oy + y * cell); ctx.stroke();
+  }
+
+  if (!level) return;
+  // blocks
+  for (const layer of level.layers || []) {
+    for (const b of layer.blocks) {
+      ctx.save();
+      ctx.globalAlpha = 1 - (b.transparency || 0);
+      ctx.fillStyle = b.type === 'trigger' ? '#ffe066' : (b.color || '#999');
+      const x = ox + b.x * cell;
+      const y = oy + b.y * cell;
+      ctx.fillRect(x, y, b.w * cell, b.h * cell);
+      if (b.type === 'trigger') {
+        ctx.globalAlpha = 0.25;
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeRect(x + 1, y + 1, b.w * cell - 2, b.h * cell - 2);
+      }
+      ctx.restore();
+    }
+  }
+
+  // players
+  for (const p of (level.players || [])) {
+    ctx.fillStyle = p.color || '#8bd3ff';
+    ctx.beginPath();
+    ctx.arc(ox + p.x * cell + cell / 2, oy + p.y * cell + cell / 2, cell * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // moving player
+  if (playerOverride) {
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(ox + playerOverride.x * cell + cell / 2, oy + playerOverride.y * cell + cell / 2, cell * 0.28, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = 'rgba(255,255,255,.8)';
+  ctx.font = 'bold 16px Inter, sans-serif';
+  ctx.fillText(level.title || 'Untitled', 16, 28);
+}
+
+function renderEditor() { drawLevel(ectx, APP.editor); }
+function renderGame() { drawLevel(gctx, APP.currentLevel || APP.editor, gameState.player); }
+
+function renderLeaderboards() {
+  $('bricksLeader').innerHTML = '<div class="small">Loading…</div>';
+  $('creatorLeader').innerHTML = '<div class="small">Loading…</div>';
+}
+
+function renderProfile() {
+  const p = APP.profile;
+  $('profileStats').innerHTML = p ? `Username: <b>${p.username}</b><br>Bricks: <b>${p.bricks || 0}</b><br>Creator Points: <b>${p.creatorPoints || 0}</b><br>UID: <b>${p.uid}</b>` : 'No profile loaded.';
+  if (APP.isAdmin) {
+    $('adminPanel').innerHTML = 'Admin enabled for <b>LtpMer</b>.<br>You can add admin actions here: rate levels, set difficulty, remove users, delete levels.';
+  } else {
+    $('adminPanel').textContent = 'Not an admin.';
+  }
+}
+
+// -----------------------------
+// Save / load levels
+// -----------------------------
+function serializeLevel() {
+  APP.editor.size = Math.max(8, Math.min(64, parseInt($('gridSizeInput').value || '64', 10)));
+  APP.editor.title = $('levelTitleInput').value.trim() || 'Untitled';
+  APP.editor.id = $('levelIdInput').value.trim();
+  APP.editor.visibility = $('visibilityInput').value;
+  APP.editor.difficulty = $('difficultyInput').value;
+  APP.editor.ownerUid = auth.currentUser?.uid || '';
+  APP.editor.ownerName = APP.profile?.username || 'Guest';
+  APP.editor.updatedAt = Date.now();
+  return JSON.parse(JSON.stringify(APP.editor));
+}
+
+async function saveLevel() {
+  if (!auth.currentUser) return toast('Sign in first.');
+  const level = serializeLevel();
+  if (!level.id) return toast('Give the level an id.');
+  const docRef = db.collection('levels').doc(String(level.id));
+  const existing = await docRef.get();
+  if (existing.exists && existing.data().ownerUid !== auth.currentUser.uid && !APP.isAdmin) return toast('You can only edit your own levels.');
+  await docRef.set({ ...level, id: String(level.id), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  toast('Level saved.');
+}
+
+async function deleteOwnLevel() {
+  const id = $('levelIdInput').value.trim();
+  if (!id) return toast('Enter the level id first.');
+  const ref = db.collection('levels').doc(String(id));
+  const snap = await ref.get();
+  if (!snap.exists) return toast('Level not found.');
+  const data = snap.data();
+  if (data.ownerUid !== auth.currentUser?.uid && !APP.isAdmin) return toast('Not your level.');
+  await ref.delete();
+  toast('Level deleted.');
+}
+
+$('saveLevelBtn').addEventListener('click', saveLevel);
+$('deleteOwnLevelBtn').addEventListener('click', deleteOwnLevel);
+
+async function loadLevelById(id) {
+  id = String(id).trim();
+  if (!id) return;
+  const official = CACHE.official.find(l => String(l.id) === id);
+  if (official) {
+    APP.currentLevel = cloneLevel(official);
+    $('searchResultBox').innerHTML = renderLevelCard(official, 'Official');
+    toast('Loaded official level.');
+    return;
+  }
+  const snap = await db.collection('levels').doc(id).get();
+  if (!snap.exists) {
+    $('searchResultBox').innerHTML = '<div class="small">No level found.</div>';
+    toast('Level not found.');
+    return;
+  }
+  const level = snap.data();
+  APP.currentLevel = normalizeLevel(level);
+  $('searchResultBox').innerHTML = renderLevelCard(level, level.visibility || 'public');
+  toast(`Loaded level ${id}.`);
+}
+
+function normalizeLevel(level) {
+  const clone = cloneLevel(level);
+  clone.size = Math.max(8, Math.min(64, parseInt(clone.size || 64, 10)));
+  clone.layers = Array.isArray(clone.layers) && clone.layers.length ? clone.layers : [{ name: 'base', blocks: [] }];
+  clone.players = Array.isArray(clone.players) && clone.players.length ? clone.players : [{ x: 1, y: 1, color: '#8bd3ff' }];
+  return clone;
+}
+
+function cloneLevel(level) {
+  return JSON.parse(JSON.stringify(level));
+}
+
+$('searchLevelBtn').addEventListener('click', () => loadLevelById($('searchLevelId').value));
+$('searchLevelId').addEventListener('keydown', (e) => { if (e.key === 'Enter') loadLevelById($('searchLevelId').value); });
+
+function renderLevelCard(level, tag) {
+  return `<div class="listItem"><b>${level.title || 'Untitled'}</b><small>ID: ${level.id || '—'} • ${tag} • ${level.difficulty || 'Easy'}</small></div>`;
+}
+
+async function loadLeaders() {
+  // Build simple live leaderboards from the users collection.
+  const snap = await db.collection('users').orderBy('bricks', 'desc').limit(10).get().catch(() => null);
+  const users = snap ? snap.docs.map(d => d.data()) : [];
+  $('bricksLeader').innerHTML = users.length
+    ? users.map((u, i) => `<div class="listItem">#${i + 1} ${u.username || 'Guest'}<small>${u.bricks || 0} bricks</small></div>`).join('')
+    : '<div class="small">No leaderboard data yet.</div>';
+
+  const cps = await db.collection('users').orderBy('creatorPoints', 'desc').limit(10).get().catch(() => null);
+  const creators = cps ? cps.docs.map(d => d.data()) : [];
+  $('creatorLeader').innerHTML = creators.length
+    ? creators.map((u, i) => `<div class="listItem">#${i + 1} ${u.username || 'Guest'}<small>${u.creatorPoints || 0} creator points</small></div>`).join('')
+    : '<div class="small">No leaderboard data yet.</div>';
+}
+
+// -----------------------------
+// Playtest / gameplay
+// -----------------------------
+const gameState = {
+  player: { x: 1, y: 1 },
+  cooldown: 0,
+};
+
+function startPlaytest(level) {
+  APP.mode = 'play';
+  APP.currentLevel = normalizeLevel(level || APP.editor);
+  gameState.player = { x: (APP.currentLevel.players?.[0]?.x ?? 1), y: (APP.currentLevel.players?.[0]?.y ?? 1) };
+  showTab('playTab');
+  renderGame();
+}
+
+$('playtestBtn').addEventListener('click', () => startPlaytest(serializeLevel()));
+
+function isWall(level, x, y) {
+  for (const layer of level.layers || []) {
+    for (const b of layer.blocks) {
+      if (b.type === 'wall' && x >= b.x && y >= b.y && x < b.x + b.w && y < b.y + b.h) return true;
+    }
+  }
+  return false;
+}
+
+function isTrigger(level, x, y) {
+  for (const layer of level.layers || []) {
+    for (const b of layer.blocks) {
+      if (b.type === 'trigger' && x >= b.x && y >= b.y && x < b.x + b.w && y < b.y + b.h) return b;
+    }
+  }
+  return null;
+}
+
+window.addEventListener('keydown', (e) => {
+  if (!APP.currentLevel) return;
+  if (APP.tab !== 'playTab') return;
+  const p = gameState.player;
+  let nx = p.x, ny = p.y;
+  if (e.key.toLowerCase() === 'w') ny--;
+  if (e.key.toLowerCase() === 's') ny++;
+  if (e.key.toLowerCase() === 'a') nx--;
+  if (e.key.toLowerCase() === 'd') nx++;
+  nx = Math.max(0, Math.min(APP.currentLevel.size - 1, nx));
+  ny = Math.max(0, Math.min(APP.currentLevel.size - 1, ny));
+  if (!isWall(APP.currentLevel, nx, ny)) {
+    p.x = nx; p.y = ny;
+    const trig = isTrigger(APP.currentLevel, nx, ny);
+    if (trig) toast(`Trigger: ${trig.script || 'no script'}`);
+    renderGame();
+  }
+});
+
+// -----------------------------
+// Canvas interaction
+// -----------------------------
+function hookCanvas(canvas, renderFn) {
+  canvas.addEventListener('mousedown', (e) => {
+    APP.mouse.down = true;
+    APP.mouse.button = e.button;
+    const { gx, gy } = pxToGrid(canvas, e);
+    paintAt(gx, gy);
+    renderFn();
+  });
+  canvas.addEventListener('mousemove', (e) => {
+    if (!APP.mouse.down) return;
+    const { gx, gy } = pxToGrid(canvas, e);
+    if (APP.tool === 'erase' || APP.tool === 'wall' || APP.tool === 'trigger') {
+      paintAt(gx, gy);
+      renderFn();
+    }
+  });
+  window.addEventListener('mouseup', () => APP.mouse.down = false);
+}
+
+hookCanvas(editorCanvas, renderEditor);
+
+// Clicking official levels / daily / weekly
+function levelListHTML(levels, containerId, label) {
+  const box = $(containerId);
+  box.innerHTML = levels.map(l => `
+    <div class="listItem" data-lid="${l.id}">
+      <b>${l.title}</b>
+      <small>ID ${l.id} • ${l.difficulty} • ${label}</small>
+    </div>`).join('') || '<div class="small">No levels here yet.</div>';
+  box.querySelectorAll('.listItem[data-lid]').forEach(el => {
+    el.onclick = () => { $('searchLevelId').value = el.dataset.lid; loadLevelById(el.dataset.lid); showTab('playTab'); };
+  });
+}
+
+async function loadSpecialLevels() {
+  // Pick daily / weekly if present, otherwise use placeholders.
+  const levelsSnap = await db.collection('levels').get().catch(() => null);
+  const all = levelsSnap ? levelsSnap.docs.map(d => d.data()) : [];
+  const daily = all.find(l => l.daily) || { id: 'daily', title: 'Daily Challenge', difficulty: 'Hard', visibility: 'public' };
+  const weekly = all.find(l => l.weekly) || { id: 'weekly', title: 'Weekly Marathon', difficulty: 'Insane', visibility: 'public' };
+  CACHE.daily = daily;
+  CACHE.weekly = weekly;
+  levelListHTML(CACHE.official, 'officialLevels', 'Official');
+  levelListHTML([daily], 'dailyLevelBox', 'Daily');
+  levelListHTML([weekly], 'weeklyLevelBox', 'Weekly');
+  $('searchResultBox').innerHTML = '<div class="small">Search by level id to load any level.</div>';
+}
+
+// -----------------------------
+// Admin helpers (client side only)
+// -----------------------------
+async function adminRateLevel(levelId, difficulty, ratedType, targetUid) {
+  if (!APP.isAdmin) return toast('Admin only.');
+  const levelRef = db.collection('levels').doc(String(levelId));
+  await levelRef.set({ difficulty, rated: true, ratedType, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  const userRef = db.collection('users').doc(String(targetUid));
+  const userSnap = await userRef.get();
+  const user = userSnap.exists ? userSnap.data() : null;
+  if (user) {
+    const bricksAdd = { Easy:1, Medium:2, Hard:3, Difficult:4, Insane:5, 'Really Hard':6, 'The Hardest':7 }[difficulty] || 0;
+    const cpAdd = { Rated:1, Good:2, 'Really Good':3, 'Insanely Good':4, Daily:5, Weekly:6 }[ratedType] || 0;
+    await userRef.set({ bricks: (user.bricks || 0) + bricksAdd, creatorPoints: (user.creatorPoints || 0) + cpAdd, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  }
+}
+
+// -----------------------------
+// Editor details sync
+// -----------------------------
+setTool('wall');
+syncEditorUI();
+renderEditor();
+renderGame();
+loadSpecialLevels();
+loadLeaders();
+refreshSession();
+setInterval(() => {
+  renderGame();
+  renderEditor();
+}, 1000 / 30);
+
+// expose a few helpers for debugging in the browser console
+window.APP = APP;
+window.adminRateLevel = adminRateLevel;
+window.loadLevelById = loadLevelById;
+window.startPlaytest = startPlaytest;
+</script>
+</body>
+</html>
