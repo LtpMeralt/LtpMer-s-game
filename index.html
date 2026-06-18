@@ -66,14 +66,15 @@
                 
                 <div id="tab-play" class="hidden flex-1 flex flex-col">
                     <div class="flex gap-3 mb-6">
-                        <input type="number" id="search-level-id" placeholder="Search Level ID..." class="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <input type="text" id="search-level-input" placeholder="Search Level Name or ID..." class="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none">
                         <button onclick="searchLevel()" class="bg-indigo-600 hover:bg-indigo-500 px-6 rounded-lg font-bold shadow-lg transition">Search</button>
                     </div>
-                    <div class="flex gap-6 border-b border-slate-700 mb-6 pb-2">
-                        <button onclick="filterLevels('official')" id="btn-flt-official" class="tab-btn active font-bold uppercase text-sm tracking-wider">Official</button>
-                        <button onclick="filterLevels('daily')" id="btn-flt-daily" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider">Daily</button>
-                        <button onclick="filterLevels('weekly')" id="btn-flt-weekly" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider">Weekly</button>
-                        <button onclick="filterLevels('all')" id="btn-flt-all" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider">Recent</button>
+                    <div class="flex gap-4 border-b border-slate-700 mb-6 pb-2 overflow-x-auto">
+                        <button onclick="filterLevels('all')" id="btn-flt-all" class="tab-btn active font-bold uppercase text-sm tracking-wider whitespace-nowrap">Recent</button>
+                        <button onclick="filterLevels('my')" id="btn-flt-my" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider whitespace-nowrap">My Levels</button>
+                        <button onclick="filterLevels('official')" id="btn-flt-official" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider whitespace-nowrap">Official</button>
+                        <button onclick="filterLevels('daily')" id="btn-flt-daily" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider whitespace-nowrap">Daily</button>
+                        <button onclick="filterLevels('weekly')" id="btn-flt-weekly" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider whitespace-nowrap">Weekly</button>
                     </div>
                     <div id="level-list" class="flex flex-col gap-3 flex-1 overflow-y-auto pr-2"></div>
                 </div>
@@ -111,8 +112,6 @@
                         </div>
 
                         <div class="h-px w-full bg-slate-700 my-6"></div>
-                        <input type="password" id="new-password" placeholder="New Password" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 mb-3 outline-none focus:border-indigo-500">
-                        <button onclick="changePassword()" class="w-full bg-indigo-600 hover:bg-indigo-500 p-3 rounded-lg font-bold shadow-lg transition mb-6">Update Password</button>
                         
                         <button onclick="deleteAccount()" class="w-full border border-rose-600 text-rose-500 hover:bg-rose-600 hover:text-white p-3 rounded-lg font-bold transition">Delete Account</button>
                     </div>
@@ -191,8 +190,7 @@
                                     <option value="ROTATE_TAG">Rotate Tagged Block</option>
                                 </select>
                             </label>
-                            <div id="prop-trig-params" class="flex flex-col gap-2 text-xs">
-                                </div>
+                            <div id="prop-trig-params" class="flex flex-col gap-2 text-xs"></div>
                         </div>
                     </div>
                 </div>
@@ -213,8 +211,8 @@
             <h1 id="play-level-title" class="font-bold text-xl text-white drop-shadow-md">Playing...</h1>
             <div class="w-16"></div>
         </header>
-        <div id="play-status" class="absolute top-1/4 w-full text-center text-4xl font-black drop-shadow-[0_0_15px_rgba(0,0,0,1)] z-30 pointer-events-none"></div>
-        <canvas id="play-canvas" class="flex-1 w-full h-full object-cover"></canvas>
+        <div id="play-status" class="absolute top-1/4 w-full text-center text-4xl font-black drop-shadow-[0_0_15px_rgba(0,0,0,1)] z-30 pointer-events-none transition-all"></div>
+        <canvas id="play-canvas" class="flex-1 w-full h-full object-cover block"></canvas>
     </div>
 
     <script type="module">
@@ -222,18 +220,11 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const app = initializeApp({
-            apiKey: "AIzaSyCo1rtBmJa8ea1PGAx3BTAgFVP9luFtdKI",
-            authDomain: "somethingwicked-87e77.firebaseapp.com",
-            projectId: "somethingwicked-87e77",
-            storageBucket: "somethingwicked-87e77.firebasestorage.app",
-            messagingSenderId: "1011430455701",
-            appId: "1:1011430455701:web:bef8293371d71c143ade9c",
-            measurementId: "G-8LNLNCTDY7"
-        });
+        // Global Firebase Conf
+        const app = initializeApp(JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{"apiKey":"AIzaSyCo1rtBmJa8ea1PGAx3BTAgFVP9luFtdKI","authDomain":"somethingwicked-87e77.firebaseapp.com","projectId":"somethingwicked-87e77","storageBucket":"somethingwicked-87e77.firebasestorage.app","messagingSenderId":"1011430455701","appId":"1:1011430455701:web:bef8293371d71c143ade9c","measurementId":"G-8LNLNCTDY7"}'));
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appIdStr = "1:1011430455701:web:bef8293371d71c143ade9c";
+        const appIdStr = typeof __app_id !== 'undefined' ? __app_id : "1:1011430455701:web:bef8293371d71c143ade9c";
 
         window.g_users = [];
         window.g_levels = [];
@@ -252,6 +243,7 @@
         let e_cam = { x: 0, y: 0, zoom: 1 };
         let e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3 };
         let e_keys = {};
+        window.e_verified = false; // Must be true to publish
         
         // Editor Interaction
         let isDrawing = false, isErasing = false, isSelecting = false, isDragging = false;
@@ -270,21 +262,38 @@
 
         function generateId() { return 'b_' + Date.now() + '_' + Math.floor(Math.random()*10000); }
 
-        // --- Core Init ---
+        window.showMsg = (title, text) => {
+            document.getElementById('msg-title').innerText = title;
+            document.getElementById('msg-text').innerText = text;
+            document.getElementById('msg-modal').classList.remove('hidden');
+        };
+        window.closeMsg = () => document.getElementById('msg-modal').classList.add('hidden');
+
+        window.resizeCanvases = () => {
+            if(edCanvas && edCanvas.parentElement) {
+                const rect = edCanvas.parentElement.getBoundingClientRect();
+                edCanvas.width = rect.width; edCanvas.height = rect.height;
+                if(!document.getElementById('screen-editor').classList.contains('hidden')) drawEditor();
+            }
+            if(plCanvas && plCanvas.parentElement) {
+                const rect = plCanvas.parentElement.getBoundingClientRect();
+                plCanvas.width = rect.width; plCanvas.height = rect.height;
+            }
+        };
+
         async function init() {
             try {
                 await signInAnonymously(auth);
                 onSnapshot(collection(db, 'artifacts', appIdStr, 'public', 'data', 'users'), snap => {
                     window.g_users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     checkLogin();
-                    if(document.getElementById('screen-menu').classList.contains('hidden') === false) updateUI();
+                    if(!document.getElementById('screen-menu').classList.contains('hidden')) updateUI();
                 });
                 onSnapshot(collection(db, 'artifacts', appIdStr, 'public', 'data', 'levels'), snap => {
                     window.g_levels = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    if(document.getElementById('screen-menu').classList.contains('hidden') === false) updateUI();
+                    if(!document.getElementById('screen-menu').classList.contains('hidden')) updateUI();
                 });
                 
-                // Editor input loop
                 setInterval(() => { if(!document.getElementById('screen-editor').classList.contains('hidden')) updateEditorCam(); }, 16);
                 window.addEventListener('resize', resizeCanvases);
                 resizeCanvases();
@@ -293,15 +302,19 @@
 
         function checkLogin() {
             const saved = localStorage.getItem('ltp_maze_uid');
-            if(saved) {
+            if(saved && window.g_users) {
                 const u = window.g_users.find(x => x.id === saved);
                 if(u) {
                     window.currentUser = u;
                     if(!u.color) { u.color = '#00ffff'; u.glow = false; }
                     document.getElementById('prof-color').value = u.color;
                     document.getElementById('prof-glow').checked = u.glow;
-                    showScreen('menu');
-                    showSubMenu('play');
+                    
+                    if(document.getElementById('screen-login').classList.contains('hidden') === false){
+                        showScreen('menu');
+                        showSubMenu('play');
+                        window.curFlt = 'all'; // Default to Recent so they see levels immediately
+                    }
                     if(u.username === 'LtpMer') document.getElementById('admin-btn').classList.remove('hidden');
                 } else { localStorage.removeItem('ltp_maze_uid'); showScreen('login'); }
             }
@@ -315,7 +328,7 @@
             const ex = window.g_users.find(x => x.username.toLowerCase() === u.toLowerCase());
             
             if(type === 'register') {
-                if(ex) return showMsg("Error", "Username taken.");
+                if(ex) { document.getElementById('login-loading').classList.add('hidden'); return showMsg("Error", "Username taken."); }
                 const id = "u_" + Date.now();
                 await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', id), {
                     username: u, password: btoa(p), bricks: 0, cp: 0, beaten: [], color: '#00ffff', glow: false
@@ -337,11 +350,17 @@
         window.saveProfileSettings = async () => {
             const c = document.getElementById('prof-color').value;
             const g = document.getElementById('prof-glow').checked;
+            if(!window.currentUser) return;
             await updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), { color: c, glow: g });
             window.currentUser.color = c; window.currentUser.glow = g;
         };
 
-        // --- UI Navigation ---
+        window.deleteAccount = async () => {
+            if(!confirm("Are you sure you want to permanently delete your account?")) return;
+            await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id));
+            logout();
+        };
+
         window.showScreen = (id) => {
             ['login', 'menu', 'editor', 'play'].forEach(s => document.getElementById('screen-' + s).classList.add('hidden'));
             document.getElementById('screen-' + id).classList.remove('hidden');
@@ -352,42 +371,59 @@
             document.getElementById('tab-' + id).classList.remove('hidden');
             updateUI();
         };
+        
         function updateUI() {
             if(!window.currentUser) return;
             document.getElementById('header-user-info').innerText = `${window.currentUser.username} | Bricks: ${window.currentUser.bricks || 0} | CP: ${window.currentUser.cp || 0}`;
-            if(!document.getElementById('tab-play').classList.contains('hidden')) filterLevels(window.curFlt || 'official');
+            if(!document.getElementById('tab-play').classList.contains('hidden')) filterLevels(window.curFlt || 'all');
             if(!document.getElementById('tab-leaderboard').classList.contains('hidden')) loadLeaderboard(window.curLb || 'bricks');
             if(!document.getElementById('tab-admin').classList.contains('hidden') && window.currentUser.username === 'LtpMer') {
                 loadAdminLevels();
             }
         }
 
-        // --- Lists & Adapters ---
         window.filterLevels = (t) => {
             window.curFlt = t;
-            ['official', 'daily', 'weekly', 'all'].forEach(x => {
+            ['all', 'my', 'official', 'daily', 'weekly'].forEach(x => {
                 let b = document.getElementById('btn-flt-' + x);
                 if(b) { b.classList.remove('active', 'text-indigo-400'); b.classList.add('text-slate-500'); }
             });
             let b = document.getElementById('btn-flt-' + t);
             if(b) { b.classList.add('active', 'text-indigo-400'); b.classList.remove('text-slate-500'); }
             
-            let l = window.g_levels.filter(x => !x.private);
-            if(t !== 'all') l = l.filter(x => x.category === t);
+            let l = window.g_levels;
+            if(t === 'my') {
+                l = l.filter(x => x.authorId === window.currentUser.id);
+            } else {
+                l = l.filter(x => !x.private || x.authorId === window.currentUser.id);
+                if(t !== 'all') l = l.filter(x => x.category === t);
+            }
             renderLevelList(l.sort((a,b) => b.timestamp - a.timestamp));
         };
+        
         window.searchLevel = () => {
-            const id = parseInt(document.getElementById('search-level-id').value);
-            renderLevelList(window.g_levels.filter(x => x.numericId === id && !x.private));
+            const q = document.getElementById('search-level-input').value.toLowerCase().trim();
+            if(!q) return filterLevels(window.curFlt || 'all');
+            const num = parseInt(q);
+            renderLevelList(window.g_levels.filter(x => {
+                if (x.private && x.authorId !== window.currentUser.id) return false;
+                return (x.numericId === num) || (x.name.toLowerCase().includes(q));
+            }));
         };
+
         function renderLevelList(list) {
             const c = document.getElementById('level-list'); c.innerHTML = '';
+            if(list.length === 0) {
+                c.innerHTML = '<div class="text-center text-slate-500 mt-10">No levels found.</div>';
+                return;
+            }
             list.forEach(l => {
                 const b = (window.currentUser.beaten||[]).includes(l.id) ? '<span class="text-emerald-400 text-xs font-bold bg-emerald-900/30 px-2 py-1 rounded ml-2">✓ BEATEN</span>' : '';
+                const priv = l.private ? '<span class="text-amber-400 text-xs font-bold bg-amber-900/30 px-2 py-1 rounded ml-2">🔒 PRIVATE</span>' : '';
                 c.innerHTML += `
                     <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex justify-between items-center hover:border-indigo-500 transition">
                         <div>
-                            <h4 class="font-bold text-lg">${l.name} <span class="text-slate-500 text-sm">#${l.numericId}</span> ${b}</h4>
+                            <h4 class="font-bold text-lg">${l.name} <span class="text-slate-500 text-sm">#${l.numericId}</span> ${priv} ${b}</h4>
                             <p class="text-sm text-slate-400">By ${l.authorName} | Diff: <span class="text-amber-400">${l.difficulty||'Unrated'}</span> | Qual: <span class="text-fuchsia-400">${l.rating||'Unrated'}</span></p>
                         </div>
                         <div class="flex gap-2">
@@ -415,7 +451,6 @@
             });
         };
 
-        // --- Admin Functions ---
         window.loadAdminLevels = () => {
             const c = document.getElementById('admin-list'); c.innerHTML = '';
             [...window.g_levels].sort((a,b)=>b.timestamp-a.timestamp).forEach(l => {
@@ -447,9 +482,16 @@
         };
         window.adminDelUsr = async (id) => { if(confirm("Ban user?")) await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', id)); };
 
-        // --- Editor Engine ---
-        window.openEditor = () => { showScreen('editor'); window.editId = null; e_blocks = []; e_cam = {x:0, y:0, zoom:1}; setTool('select'); drawEditor(); };
-        window.closeEditor = () => { if(confirm("Lose unsaved changes?")) showScreen('menu'); };
+        window.openEditor = () => { 
+            showScreen('editor'); 
+            window.editId = null; 
+            window.e_verified = false;
+            e_blocks = []; 
+            e_cam = {x:0, y:0, zoom:1}; 
+            setTool('select'); 
+            drawEditor(); 
+        };
+        window.closeEditor = () => { if(confirm("Exit Editor? Unsaved changes will be lost.")) showScreen('menu'); };
         
         window.openLevelSettings = () => {
             document.getElementById('cfg-width').value = e_meta.width; document.getElementById('cfg-height').value = e_meta.height;
@@ -462,7 +504,9 @@
             e_meta.height = parseInt(document.getElementById('cfg-height').value) || 40;
             e_meta.zoom = parseFloat(document.getElementById('cfg-zoom').value) || 1;
             e_meta.maxHealth = parseInt(document.getElementById('cfg-health').value) || 3;
-            closeLevelSettings(); drawEditor();
+            closeLevelSettings(); 
+            window.e_verified = false;
+            drawEditor();
         };
 
         window.setLayer = (l) => {
@@ -518,6 +562,7 @@
 
         window.updateProp = () => {
             if(e_tool !== 'select' || e_selectedIds.size === 0) return;
+            window.e_verified = false;
             e_selectedIds.forEach(id => {
                 let b = e_blocks.find(x => x.id === id);
                 if(b) {
@@ -548,7 +593,6 @@
             const pos = getMousePos(e);
             
             if(e_tool === 'select') {
-                // Check if clicking existing selection
                 let clickedSel = false;
                 for(let id of e_selectedIds) {
                     let b = e_blocks.find(x=>x.id===id);
@@ -557,7 +601,6 @@
                 if(clickedSel) {
                     isDragging = true; dragOffsetX = pos.gx; dragOffsetY = pos.gy;
                 } else {
-                    // Start box select
                     isSelecting = true; startSelectX = pos.wx; startSelectY = pos.wy; currentMouseX = pos.wx; currentMouseY = pos.wy;
                     e_selectedIds.clear();
                 }
@@ -573,11 +616,12 @@
             if(isDragging) {
                 const dx = pos.gx - dragOffsetX, dy = pos.gy - dragOffsetY;
                 if(dx !== 0 || dy !== 0) {
+                    window.e_verified = false;
                     e_selectedIds.forEach(id => { let b = e_blocks.find(x=>x.id===id); if(b) { b.x += dx; b.y += dy; } });
                     dragOffsetX = pos.gx; dragOffsetY = pos.gy;
                 }
             } else if(isSelecting) {
-                // Box visual updates in draw
+                // updates drawn below
             } else if(isDrawing || isErasing) {
                 handleDraw(e);
             }
@@ -616,9 +660,10 @@
             const existingIdx = e_blocks.findIndex(b => b.x === pos.gx && b.y === pos.gy && b.layer === e_layer);
             
             if(isErasing || e_tool === 'erase') {
-                if(existingIdx >= 0) e_blocks.splice(existingIdx, 1);
+                if(existingIdx >= 0) { e_blocks.splice(existingIdx, 1); window.e_verified = false; }
             } else if(e_tool !== 'select') {
-                if(existingIdx >= 0) e_blocks.splice(existingIdx, 1); // Overwrite
+                if(existingIdx >= 0) e_blocks.splice(existingIdx, 1);
+                window.e_verified = false;
                 const b = {
                     id: generateId(), x: pos.gx, y: pos.gy, layer: e_layer, type: e_tool,
                     color: document.getElementById('prop-color').value, solid: document.getElementById('prop-solid').checked,
@@ -656,13 +701,11 @@
             edCtx.scale(e_cam.zoom, e_cam.zoom);
             edCtx.translate(-e_cam.x, -e_cam.y);
 
-            // Grid bounds
             edCtx.strokeStyle = 'rgba(255,255,255,0.05)'; edCtx.lineWidth = 1;
             for(let x=0; x<=e_meta.width; x++) { edCtx.beginPath(); edCtx.moveTo(x*TILE, 0); edCtx.lineTo(x*TILE, e_meta.height*TILE); edCtx.stroke(); }
             for(let y=0; y<=e_meta.height; y++) { edCtx.beginPath(); edCtx.moveTo(0, y*TILE); edCtx.lineTo(e_meta.width*TILE, y*TILE); edCtx.stroke(); }
             edCtx.strokeStyle = 'rgba(99,102,241,0.5)'; edCtx.lineWidth = 2; edCtx.strokeRect(0, 0, e_meta.width*TILE, e_meta.height*TILE);
 
-            // Blocks by layer
             const sorted = [...e_blocks].sort((a,b) => a.layer - b.layer);
             sorted.forEach(b => {
                 if(b.layer !== e_layer) edCtx.globalAlpha = b.alpha * 0.3; else edCtx.globalAlpha = b.alpha;
@@ -691,9 +734,9 @@
             const l = window.g_levels.find(x => x.id === id); if(!l) return;
             document.getElementById('editor-level-name').value = l.name;
             e_meta = l.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3 };
+            window.e_verified = false;
             try { 
                 const p = JSON.parse(l.grid);
-                // Legacy support
                 if(p[0] && !p[0].id) e_blocks = p.map(b => ({ ...b, id: generateId(), layer: b.layer||0, rotation: b.rotation||0 }));
                 else e_blocks = p;
             } catch(e) { e_blocks = []; }
@@ -706,20 +749,28 @@
             if(!e_blocks.some(x=>x.type==='start')) return showMsg("Error", "Need a Start block.");
             if(!e_blocks.some(x=>x.type==='end' || (x.type==='trigger' && x.action==='WIN'))) return showMsg("Warning", "No End or WIN trigger. Level impossible?");
 
+            // If making public, require verification
+            if(!isPriv && !window.e_verified) {
+                return showMsg("Verification Required", "You must successfully playtest and beat the level before publishing it publicly.");
+            }
+
             const d = { name: n, authorId: window.currentUser.id, authorName: window.currentUser.username, grid: JSON.stringify(e_blocks), meta: e_meta, private: isPriv, timestamp: Date.now() };
             try {
-                if(window.editId) { await updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'levels', window.editId), d); showMsg("Success", "Updated!"); }
+                if(window.editId) { 
+                    await updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'levels', window.editId), d); 
+                    showMsg("Success", isPriv ? "Saved privately to My Levels!" : "Published successfully!"); 
+                }
                 else {
                     d.numericId = window.g_levels.reduce((m,x)=>Math.max(m, x.numericId||0), 0) + 1;
                     d.category = 'user'; d.difficulty = null; d.rating = null;
                     const nid = "lvl_" + Date.now();
                     await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'levels', nid), d);
-                    window.editId = nid; showMsg("Success", "Uploaded!");
+                    window.editId = nid; 
+                    showMsg("Success", isPriv ? "Saved privately to My Levels!" : "Published successfully!"); 
                 }
             } catch(e) { showMsg("Error", e.message); }
         };
 
-        // --- Game Engine ---
         window.testLevel = () => { startGame(e_blocks, { id: 'test', name: document.getElementById('editor-level-name').value||'Test', isTest: true, meta: e_meta }); };
         window.playLevel = (id) => { const l = window.g_levels.find(x=>x.id===id); if(l) startGame(JSON.parse(l.grid), l); };
 
@@ -728,11 +779,10 @@
             document.getElementById('play-level-title').innerText = lvl.name;
             const status = document.getElementById('play-status'); status.innerText = ""; status.classList.remove('text-rose-500', 'text-emerald-500');
             
-            g_meta = lvl.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3 };
+            g_meta = { ...(lvl.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3 }), isTest: lvl.isTest, levelId: lvl.id, originalBlocks: blocks, levelObj: lvl };
             
-            // Deep copy blocks so logic doesn't alter editor data
             g_blocks = JSON.parse(JSON.stringify(blocks)).map(b => {
-                b.px = b.x * TILE; b.py = b.y * TILE; // physical float coordinates
+                b.px = b.x * TILE; b.py = b.y * TILE; 
                 b.triggered = false; return b;
             });
 
@@ -750,7 +800,25 @@
             g_loop = requestAnimationFrame(gameLoop);
         }
 
-        window.stopPlay = () => { isPlaying = false; cancelAnimationFrame(g_loop); showScreen('menu'); };
+        window.stopPlay = () => { 
+            isPlaying = false; 
+            cancelAnimationFrame(g_loop); 
+            if (g_meta && g_meta.isTest) {
+                showScreen('editor');
+            } else {
+                showScreen('menu'); 
+            }
+        };
+
+        function renderHealth() {
+            const h = document.getElementById('health-bar');
+            if(!h) return;
+            h.innerHTML = '';
+            let hp = g_players[0] ? g_players[0].health : 0;
+            for(let i=0; i<g_meta.maxHealth; i++) {
+                h.innerHTML += `<div class="w-6 h-6 rounded-full ${i < hp ? 'bg-rose-500' : 'bg-slate-700/50'} border-2 border-slate-900 shadow-lg transition-colors duration-300"></div>`;
+            }
+        }
 
         function AABB(x1, y1, w1, h1, x2, y2, w2, h2) {
             return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
@@ -766,7 +834,6 @@
                 let tw = g_tweens[i];
                 tw.t += dt;
                 let prog = Math.min(1, tw.t / tw.dur);
-                // Ease in out quad
                 let ease = prog < 0.5 ? 2 * prog * prog : 1 - Math.pow(-2 * prog + 2, 2) / 2;
                 if(tw.type === 'move') { tw.obj.px = tw.startX + (tw.endX - tw.startX)*ease; tw.obj.py = tw.startY + (tw.endY - tw.startY)*ease; }
                 if(tw.type === 'rotate') { tw.obj.rotation = tw.startR + (tw.endR - tw.startR)*ease; }
@@ -780,7 +847,6 @@
                 }
             }
 
-            // Player logic
             const SPEED = 200 * dt;
             let dx = 0, dy = 0;
             if(e_keys['w']||e_keys['arrowup']) dy -= SPEED; if(e_keys['s']||e_keys['arrowdown']) dy += SPEED;
@@ -790,152 +856,160 @@
             const solids = g_blocks.filter(b => b.solid);
 
             for(let p of g_players) {
-                if(p.health <= 0) continue; alive++;
+                if(p.health <= 0) continue; 
+                alive++;
                 if(p.invuln > 0) p.invuln -= dt;
 
-                // Move X
-                if(dx !== 0) {
-                    p.x += dx;
-                    if(p.x < 0 || p.x+p.w > g_meta.width*TILE) p.x -= dx;
-                    else for(let b of solids) { if(AABB(p.x, p.y, p.w, p.h, b.px, b.py, TILE, TILE)) { p.x -= dx; break; } }
+                let nx = p.x + dx;
+                let ny = p.y + dy;
+                
+                // Slide Collision X
+                let hitX = false;
+                for(let b of solids) {
+                    if(AABB(nx, p.y, p.w, p.h, b.px, b.py, TILE, TILE)) { hitX = true; break; }
                 }
-                // Move Y
-                if(dy !== 0) {
-                    p.y += dy;
-                    if(p.y < 0 || p.y+p.h > g_meta.height*TILE) p.y -= dy;
-                    else for(let b of solids) { if(AABB(p.x, p.y, p.w, p.h, b.px, b.py, TILE, TILE)) { p.y -= dy; break; } }
+                if(!hitX) p.x = nx;
+                
+                // Slide Collision Y
+                let hitY = false;
+                for(let b of solids) {
+                    if(AABB(p.x, ny, p.w, p.h, b.px, b.py, TILE, TILE)) { hitY = true; break; }
                 }
+                if(!hitY) p.y = ny;
 
-                // Interactions
+                // Level Bounds
+                if(p.x < 0) p.x = 0; if(p.y < 0) p.y = 0;
+                if(p.x > g_meta.width*TILE - p.w) p.x = g_meta.width*TILE - p.w;
+                if(p.y > g_meta.height*TILE - p.h) p.y = g_meta.height*TILE - p.h;
+
+                // Process Blocks / Triggers
                 for(let b of g_blocks) {
-                    if(!AABB(p.x, p.y, p.w, p.h, b.px, b.py, TILE, TILE)) continue;
-                    
-                    if(b.type === 'end') { handleWin(); return; }
-                    if(b.type === 'damage' && p.invuln <= 0) {
-                        p.health -= 1; p.invuln = 1.0; renderHealth();
-                        if(p.health <= 0) {
-                            const s = document.getElementById('play-status'); s.innerText = "YOU DIED"; s.classList.add('text-rose-500');
-                            setTimeout(() => { if(isPlaying) stopPlay(); }, 1500);
+                    if(AABB(p.x, p.y, p.w, p.h, b.px, b.py, TILE, TILE)) {
+                        
+                        if(b.type === 'damage' && p.invuln <= 0) {
+                            p.health--; p.invuln = 1.5; 
+                            renderHealth();
+                            if(p.health <= 0) {
+                                loseGame();
+                                return;
+                            }
+                        } 
+                        else if (b.type === 'end' || (b.type === 'trigger' && b.action === 'WIN' && !b.triggered && (!b.listenTag || b.listenTag === ''))) {
+                            if(b.type === 'trigger') b.triggered = true;
+                            winGame();
+                            return;
+                        }
+                        else if (b.type === 'trigger' && !b.triggered && (!b.listenTag || b.listenTag === '')) {
+                            b.triggered = true;
+                            triggerAction(b);
                         }
                     }
-                    if(b.type === 'trigger' && !b.triggered && (!b.listenTag || b.listenTag === '')) { fireTrigger(b); }
                 }
             }
-            
-            // Check Block->Trigger collisions
-            g_blocks.filter(b=>b.type==='trigger' && !b.triggered && b.listenTag).forEach(t => {
-                g_blocks.filter(b => b.tag === t.listenTag).forEach(b => {
-                    if(AABB(t.px, t.py, TILE, TILE, b.px, b.py, TILE, TILE)) fireTrigger(t);
-                });
-            });
 
-            if(!g_cam.active && alive > 0) {
-                let first = g_players.find(p=>p.health>0);
-                g_cam.x += (first.x - g_cam.x) * 5 * dt;
-                g_cam.y += (first.y - g_cam.y) * 5 * dt;
+            // Camera follow
+            if(alive > 0 && !g_cam.active && g_players[0]) {
+                g_cam.x += (g_players[0].x - g_cam.x) * 0.1;
+                g_cam.y += (g_players[0].y - g_cam.y) * 0.1;
             }
 
-            drawGame();
-            g_loop = requestAnimationFrame(gameLoop);
+            renderGame(time);
+            if(isPlaying) g_loop = requestAnimationFrame(gameLoop);
         }
 
-        function fireTrigger(t) {
-            t.triggered = true;
-            if(t.action === 'WIN') handleWin();
-            if(t.action === 'DIE') g_players.forEach(p => { p.health = 0; });
-            if(t.action === 'CAMERA' && t.tData) {
+        function triggerAction(triggerBlock) {
+            let act = triggerBlock.action;
+            let td = triggerBlock.tData;
+            if(act === 'DIE') {
+                g_players.forEach(p => p.health = 0); renderHealth(); loseGame();
+            } else if (act === 'CAMERA') {
                 g_cam.active = true;
-                g_tweens.push({ type: 'camera', obj: null, startX: g_cam.x, startY: g_cam.y, endX: t.tData.x*TILE, endY: t.tData.y*TILE, startZ: g_cam.zoom, endZ: t.tData.z, dur: t.tData.dur, t: 0 });
-            }
-            if(t.action === 'MOVE_TAG' && t.tData) {
-                g_blocks.filter(b=>b.tag===t.tData.tag).forEach(b => {
-                    g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: b.px + t.tData.mx*TILE, endY: b.py + t.tData.my*TILE, dur: t.tData.dur, t: 0 });
+                g_tweens.push({ type: 'camera', startX: g_cam.x, startY: g_cam.y, startZ: g_cam.zoom, endX: td.x*TILE, endY: td.y*TILE, endZ: td.z, dur: td.dur, t: 0 });
+            } else if (act === 'MOVE_TAG' && td.tag) {
+                g_blocks.filter(b => b.tag === td.tag).forEach(b => {
+                    g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: b.px + td.mx*TILE, endY: b.py + td.my*TILE, dur: td.dur, t: 0 });
                 });
-            }
-            if(t.action === 'ROTATE_TAG' && t.tData) {
-                g_blocks.filter(b=>b.tag===t.tData.tag).forEach(b => {
-                    g_tweens.push({ type: 'rotate', obj: b, startR: b.rotation||0, endR: (b.rotation||0) + t.tData.ang, dur: t.tData.dur, t: 0 });
+            } else if (act === 'ROTATE_TAG' && td.tag) {
+                g_blocks.filter(b => b.tag === td.tag).forEach(b => {
+                    g_tweens.push({ type: 'rotate', obj: b, startR: b.rotation||0, endR: (b.rotation||0) + td.ang, dur: td.dur, t: 0 });
                 });
             }
         }
 
-        function renderHealth() {
-            const h = document.getElementById('health-bar'); h.innerHTML = '';
-            let p = g_players[0]; if(!p) return;
-            for(let i=0; i<g_meta.maxHealth; i++) {
-                h.innerHTML += `<span class="text-2xl drop-shadow-lg filter transition ${i < p.health ? 'text-rose-500' : 'text-slate-700 grayscale'}">❤️</span>`;
-            }
+        function winGame() {
+            isPlaying = false;
+            const status = document.getElementById('play-status');
+            status.innerText = "LEVEL CLEARED!";
+            status.classList.add('text-emerald-500');
+            
+            setTimeout(() => {
+                if(g_meta.isTest) {
+                    window.e_verified = true;
+                    showMsg("Verified", "Level successfully verified! You can now publish it publicly.");
+                    showScreen('editor');
+                } else {
+                    if(!window.currentUser.beaten.includes(g_meta.levelId)) {
+                        window.currentUser.beaten.push(g_meta.levelId);
+                        updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), {
+                            beaten: window.currentUser.beaten,
+                            bricks: (window.currentUser.bricks || 0) + (DIFF_BRICKS[g_meta.levelObj.difficulty] || 0)
+                        });
+                    }
+                    showScreen('menu');
+                }
+            }, 2000);
         }
 
-        function drawGame() {
-            plCtx.fillStyle = '#0f172a'; plCtx.fillRect(0, 0, plCanvas.width, plCanvas.height);
+        function loseGame() {
+            isPlaying = false;
+            const status = document.getElementById('play-status');
+            status.innerText = "YOU DIED!";
+            status.classList.add('text-rose-500');
+            setTimeout(() => {
+                if(g_meta.isTest) showScreen('editor');
+                else startGame(g_meta.originalBlocks, g_meta.levelObj); // restart
+            }, 2000);
+        }
+
+        function renderGame(time) {
+            plCtx.fillStyle = '#0f172a'; 
+            plCtx.fillRect(0, 0, plCanvas.width, plCanvas.height);
             plCtx.save();
             plCtx.translate(plCanvas.width/2, plCanvas.height/2);
             plCtx.scale(g_cam.zoom, g_cam.zoom);
             plCtx.translate(-g_cam.x, -g_cam.y);
 
-            // Draw level bounds
-            plCtx.fillStyle = '#1e293b'; plCtx.fillRect(0, 0, g_meta.width*TILE, g_meta.height*TILE);
-
-            const sorted = [...g_blocks].sort((a,b)=>a.layer-b.layer);
-            sorted.forEach(b => {
-                if(b.type === 'start' || b.type === 'trigger') return; // Hide mechanics
+            // Draw level blocks
+            const sortedBlocks = [...g_blocks].sort((a,b) => a.layer - b.layer);
+            sortedBlocks.forEach(b => {
                 plCtx.globalAlpha = b.alpha;
                 plCtx.fillStyle = b.color;
-                
-                if(b.rotation) {
-                    plCtx.save();
-                    plCtx.translate(b.px+TILE/2, b.py+TILE/2);
-                    plCtx.rotate(b.rotation * Math.PI / 180);
-                    plCtx.fillRect(-TILE/2, -TILE/2, TILE, TILE);
-                    plCtx.restore();
-                } else {
-                    plCtx.fillRect(b.px, b.py, TILE, TILE);
-                }
+                plCtx.save();
+                plCtx.translate(b.px + TILE/2, b.py + TILE/2);
+                plCtx.rotate((b.rotation||0) * Math.PI / 180);
+                plCtx.fillRect(-TILE/2, -TILE/2, TILE, TILE);
+                plCtx.restore();
             });
-            plCtx.globalAlpha = 1;
 
+            // Draw Players (with Optional Glow property)
             g_players.forEach(p => {
                 if(p.health <= 0) return;
-                if(p.invuln > 0 && Math.floor(Date.now()/100) % 2 === 0) return; // Blink
+                if(p.invuln > 0 && Math.floor(time / 150) % 2 === 0) return; // Damage blink
                 
-                plCtx.fillStyle = window.currentUser.color || '#00ffff';
-                if(window.currentUser.glow) { plCtx.shadowBlur = 15; plCtx.shadowColor = plCtx.fillStyle; }
+                plCtx.globalAlpha = 1;
+                plCtx.fillStyle = window.currentUser?.color || '#00ffff';
+                
+                if (window.currentUser?.glow) {
+                    plCtx.shadowBlur = 20;
+                    plCtx.shadowColor = window.currentUser.color || '#00ffff';
+                }
+                
                 plCtx.fillRect(p.x, p.y, p.w, p.h);
-                plCtx.shadowBlur = 0;
+                plCtx.shadowBlur = 0; // reset shadow so it doesn't bleed
             });
 
             plCtx.restore();
         }
-
-        async function handleWin() {
-            isPlaying = false;
-            const s = document.getElementById('play-status'); s.innerText = "LEVEL COMPLETE"; s.classList.add('text-emerald-400');
-            const l = window.currentLevelPlaying; // Need to grab from params
-            // To properly track level context
-            const lvlId = document.getElementById('play-level-title').innerText;
-            const actualLvl = window.g_levels.find(x => x.name === lvlId);
-            
-            if(actualLvl && actualLvl.difficulty && DIFF_BRICKS[actualLvl.difficulty]) {
-                const bArr = window.currentUser.beaten || [];
-                if(!bArr.includes(actualLvl.id)) {
-                    bArr.push(actualLvl.id);
-                    const brk = DIFF_BRICKS[actualLvl.difficulty];
-                    await updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), { beaten: bArr, bricks: (window.currentUser.bricks||0) + brk });
-                    setTimeout(()=>showMsg("Victory!", `Earned ${brk} Bricks!`), 500);
-                }
-            }
-            setTimeout(() => stopPlay(), 2000);
-        }
-
-        // --- Utility ---
-        function resizeCanvases() {
-            const ec = document.getElementById('canvas-container');
-            if(ec) { edCanvas.width = ec.clientWidth; edCanvas.height = ec.clientHeight; if(!document.getElementById('screen-editor').classList.contains('hidden')) drawEditor(); }
-            plCanvas.width = window.innerWidth; plCanvas.height = window.innerHeight;
-        }
-        window.showMsg = (t, m) => { document.getElementById('msg-title').innerText=t; document.getElementById('msg-text').innerText=m; document.getElementById('msg-modal').classList.remove('hidden'); };
-        window.closeMsg = () => document.getElementById('msg-modal').classList.add('hidden');
 
         init();
     </script>
