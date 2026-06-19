@@ -6,6 +6,7 @@
     <title>Ltp's Maze Game</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        html, body { height: 100%; overflow: hidden; }
         body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
         .hidden { display: none !important; }
         #canvas-container { overflow: hidden; background-color: #1e293b; position: relative; width: 100%; height: 100%; cursor: crosshair; }
@@ -19,6 +20,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .panel-scroll { min-height: 0; overflow-y: auto; }
         input[type="color"] { padding: 0; border: none; border-radius: 4px; overflow: hidden; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
@@ -47,7 +49,7 @@
         </div>
     </div>
 
-    <div id="screen-menu" class="hidden flex-1 flex flex-col">
+    <div id="screen-menu" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
         <header class="glass-panel px-6 py-4 flex justify-between items-center z-10">
             <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Ltp's Maze Game</h1>
             <div class="flex items-center gap-6">
@@ -56,7 +58,7 @@
                 <button onclick="logout()" class="text-rose-400 hover:text-rose-300 text-sm font-bold transition">Logout</button>
             </div>
         </header>
-        <div class="flex-1 flex gap-6 p-6 overflow-hidden max-w-7xl mx-auto w-full">
+        <div class="flex-1 flex gap-6 p-6 overflow-hidden max-w-7xl mx-auto w-full min-h-0">
             <div class="w-56 flex flex-col gap-3">
                 <button onclick="showSubMenu('play')" class="glass-panel hover:bg-slate-700/50 p-4 rounded-xl font-bold text-left transition text-indigo-300 hover:text-indigo-200">🎮 Play Levels</button>
                 <button onclick="openEditor()" class="glass-panel hover:bg-slate-700/50 p-4 rounded-xl font-bold text-left transition text-fuchsia-300 hover:text-fuchsia-200">🛠️ Level Editor</button>
@@ -66,7 +68,7 @@
 
             <div class="flex-1 glass-panel rounded-2xl p-6 flex flex-col scrollable">
                 
-                <div id="tab-play" class="hidden flex-1 flex flex-col">
+                <div id="tab-play" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
                     <div class="flex gap-3 mb-6">
                         <input type="text" id="search-level-input" placeholder="Search Level Name or ID..." class="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none">
                         <button onclick="searchLevel()" class="bg-indigo-600 hover:bg-indigo-500 px-6 rounded-lg font-bold shadow-lg transition">Search</button>
@@ -78,24 +80,24 @@
                         <button onclick="filterLevels('daily')" id="btn-flt-daily" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider whitespace-nowrap">Daily</button>
                         <button onclick="filterLevels('weekly')" id="btn-flt-weekly" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider whitespace-nowrap">Weekly</button>
                     </div>
-                    <div id="level-list" class="flex flex-col gap-3 flex-1 overflow-y-auto pr-2"></div>
+                    <div id="level-list" class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto pr-2"></div>
                 </div>
 
-                <div id="tab-leaderboard" class="hidden flex-1 flex flex-col">
+                <div id="tab-leaderboard" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
                     <div class="flex gap-6 border-b border-slate-700 mb-6 pb-2">
                         <button onclick="loadLeaderboard('bricks')" id="btn-lb-bricks" class="tab-btn active font-bold uppercase text-sm tracking-wider">Bricks</button>
                         <button onclick="loadLeaderboard('cp')" id="btn-lb-cp" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider">Creator Points</button>
                     </div>
-                    <div id="leaderboard-list" class="flex flex-col gap-3 flex-1 overflow-y-auto pr-2"></div>
+                    <div id="leaderboard-list" class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto pr-2"></div>
                 </div>
 
-                <div id="tab-admin" class="hidden flex-1 flex flex-col">
+                <div id="tab-admin" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
                     <h2 class="text-2xl font-bold mb-6 text-rose-400">Admin Control Panel</h2>
                     <div class="flex gap-6 border-b border-slate-700 mb-6 pb-2">
                         <button onclick="loadAdminLevels()" id="btn-adm-levels" class="tab-btn active font-bold">Manage Levels</button>
                         <button onclick="loadAdminUsers()" id="btn-adm-users" class="tab-btn font-bold text-slate-500">Manage Users</button>
                     </div>
-                    <div id="admin-list" class="flex flex-col gap-3 flex-1 overflow-y-auto pr-2"></div>
+                    <div id="admin-list" class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto pr-2"></div>
                 </div>
 
                 <div id="tab-profile" class="hidden flex-1 flex flex-col items-center justify-center">
@@ -130,6 +132,7 @@
                 <label>Grid Height <input type="number" id="cfg-height" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
                 <label>Default Zoom <input type="number" step="0.1" id="cfg-zoom" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
                 <label>Grid Step (1, 0.5, 0.25...) <input type="number" id="cfg-grid-step" step="0.125" min="0.125" max="1" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
+                <label>Brush Thickness (1-12) <input type="number" id="cfg-brush-size" min="1" max="12" step="1" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
                 <label>Player Max Hearts (1-10) <input type="number" min="1" max="10" id="cfg-health" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
             </div>
             <div class="flex gap-2 mt-6">
@@ -139,7 +142,7 @@
         </div>
     </div>
 
-    <div id="screen-editor" class="hidden flex-1 flex flex-col">
+    <div id="screen-editor" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
         <header class="glass-panel px-4 py-3 flex justify-between items-center z-20">
             <div class="flex items-center gap-4">
                 <button onclick="closeEditor()" class="text-slate-400 hover:text-white font-semibold">◀ Back</button>
@@ -160,12 +163,15 @@
                 <button onclick="saveLevel(true)" class="bg-slate-700 hover:bg-slate-600 px-4 py-1.5 rounded-lg font-bold shadow-lg transition">Save Private</button>
             </div>
         </header>
-        <div class="flex flex-1 overflow-hidden relative">
-            <div class="w-64 glass-panel flex flex-col p-4 gap-4 z-10 border-r border-slate-700/50">
+        <div class="flex flex-1 overflow-hidden relative min-h-0">
+            <div class="w-64 glass-panel flex flex-col p-4 gap-4 z-10 border-r border-slate-700/50 overflow-y-auto min-h-0">
                 <div class="shrink-0">
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Tools</h3>
                     <div class="grid grid-cols-2 gap-2">
                         <button onclick="setTool('select')" id="tool-select" class="tool-btn bg-indigo-600 border border-indigo-400 rounded-lg p-2 text-sm font-semibold col-span-2 shadow-lg transition">Selection / Move</button>
+                        <div class="col-span-2 text-[11px] text-slate-400 bg-slate-950/40 border border-slate-800 rounded px-2 py-1">
+                            Brush thickness is set in Level Settings.
+                        </div>
                         <button onclick="setTool('wall')" id="tool-wall" class="tool-btn bg-slate-800 rounded-lg p-2 text-sm font-semibold transition">🧱 Wall</button>
                         <button onclick="setTool('start')" id="tool-start" class="tool-btn bg-slate-800 rounded-lg p-2 text-sm font-semibold transition">🟢 Start</button>
                         <button onclick="setTool('end')" id="tool-end" class="tool-btn bg-slate-800 rounded-lg p-2 text-sm font-semibold transition">🏁 End</button>
@@ -174,9 +180,9 @@
                         <button onclick="setTool('erase')" id="tool-erase" class="tool-btn bg-rose-900/50 rounded-lg p-2 text-sm font-semibold transition">🗑️ Erase</button>
                     </div>
                 </div>
-                <div id="properties-panel" class="bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex-1 flex flex-col min-h-0">
+                <div id="properties-panel" class="bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex-1 flex flex-col min-h-0 overflow-hidden">
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 shrink-0">Properties</h3>
-                    <div class="flex flex-col gap-3 text-sm flex-1 overflow-y-auto pr-2 pb-2">
+                    <div class="flex flex-col gap-3 text-sm flex-1 min-h-0 overflow-y-auto pr-2 pb-2">
                         <label class="flex justify-between items-center shrink-0">Color: <input type="color" id="prop-color" value="#ffffff" class="w-8 h-8" onchange="updateProp()"></label>
                         <label class="flex justify-between items-center shrink-0">Solid: <input type="checkbox" id="prop-solid" checked class="w-4 h-4 accent-indigo-500" onchange="updateProp()"></label>
                         <label class="flex justify-between items-center shrink-0">Pushblock: <input type="checkbox" id="prop-pushblock" class="w-4 h-4 accent-indigo-500" onchange="updateProp()"></label>
@@ -219,6 +225,7 @@
                             <label class="text-xs text-slate-400 flex flex-col gap-1">Particle Facing (deg):
                                 <input type="number" id="prop-particle-face" value="0" class="bg-slate-800 p-1.5 rounded border border-slate-600" onchange="updateProp()">
                             </label>
+                            </label>
                             <div id="prop-trig-params" class="flex flex-col gap-2 text-xs"></div>
                         </div>
 
@@ -252,7 +259,7 @@
         </div>
     </div>
 
-    <div id="screen-play" class="hidden flex-1 flex flex-col bg-black relative">
+    <div id="screen-play" class="hidden flex-1 flex flex-col bg-black relative min-h-0 overflow-hidden">
         <div class="absolute top-4 left-4 z-20 flex gap-2" id="health-bar"></div>
         <header class="absolute top-0 w-full bg-gradient-to-b from-black/80 to-transparent p-4 flex justify-between items-center z-10 opacity-0 hover:opacity-100 transition-opacity duration-300">
             <button onclick="stopPlay()" class="bg-rose-600 hover:bg-rose-500 px-4 py-1.5 rounded-lg font-bold shadow-lg transition">Quit</button>
@@ -260,7 +267,7 @@
             <div class="w-16"></div>
         </header>
         <div id="play-status" class="absolute top-1/4 w-full text-center text-4xl font-black drop-shadow-[0_0_15px_rgba(0,0,0,1)] z-30 pointer-events-none transition-all"></div>
-        <canvas id="play-canvas" class="flex-1 w-full h-full object-cover block"></canvas>
+        <canvas id="play-canvas" class="flex-1 w-full h-full object-cover block min-h-0"></canvas>
     </div>
 
     <script type="module">
@@ -292,7 +299,7 @@
         let e_tool = 'select';
         let e_selectedIds = new Set();
         let e_cam = { x: 0, y: 0, zoom: 1 };
-        let e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layerCount: 3 };
+        let e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layerCount: 3, gridStep: 1, brushSize: 1 };
         let e_keys = {};
         window.e_verified = false; // Must be true to publish
         
@@ -300,6 +307,7 @@
         let isDrawing = false, isErasing = false, isSelecting = false, isDragging = false;
         let startSelectX = 0, startSelectY = 0, currentMouseX = 0, currentMouseY = 0;
         let dragOffsetX = 0, dragOffsetY = 0;
+        let currentPaintStroke = new Set();
 
         // Game State
         let g_blocks = [], g_players = [], g_tweens = [], g_particles = [];
@@ -332,6 +340,12 @@
         function blockPx(block) { return block.x * TILE; }
         function blockPy(block) { return block.y * TILE; }
         function blockDim(block) { return TILE * getBlockSize(block); }
+
+        function getBrushThickness(meta) {
+            const raw = parseInt(meta?.brushSize ?? 1, 10);
+            if (!Number.isFinite(raw) || raw < 1) return 1;
+            return Math.max(1, Math.min(12, raw));
+        }
 
         function getDateKey(d = new Date()) {
             const yy = d.getFullYear();
@@ -692,7 +706,7 @@
             window.e_verified = false;
             e_blocks = []; 
             e_cam = {x:0, y:0, zoom:1}; 
-            e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layerCount: 3, gridStep: 1 }; 
+            e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layerCount: 3, gridStep: 1, brushSize: 1 }; 
             setLayer(0); 
             setTool('select'); 
             renderSavedColorsUI();
@@ -702,7 +716,7 @@
         
         window.openLevelSettings = () => {
             document.getElementById('cfg-width').value = e_meta.width; document.getElementById('cfg-height').value = e_meta.height;
-            document.getElementById('cfg-zoom').value = e_meta.zoom; document.getElementById('cfg-grid-step').value = e_meta.gridStep || 1; document.getElementById('cfg-health').value = e_meta.maxHealth;
+            document.getElementById('cfg-zoom').value = e_meta.zoom; document.getElementById('cfg-grid-step').value = e_meta.gridStep || 1; document.getElementById('cfg-brush-size').value = e_meta.brushSize || 1; document.getElementById('cfg-health').value = e_meta.maxHealth;
             document.getElementById('modal-level-settings').classList.remove('hidden');
         };
         window.closeLevelSettings = () => document.getElementById('modal-level-settings').classList.add('hidden');
@@ -711,6 +725,7 @@
             e_meta.height = parseInt(document.getElementById('cfg-height').value) || 40;
             e_meta.zoom = parseFloat(document.getElementById('cfg-zoom').value) || 1;
             e_meta.gridStep = getGridStep({ gridStep: parseFloat(document.getElementById('cfg-grid-step').value) || 1 });
+            e_meta.brushSize = Math.max(1, Math.min(12, parseInt(document.getElementById('cfg-brush-size').value, 10) || 1));
             e_meta.maxHealth = parseInt(document.getElementById('cfg-health').value) || 3;
             closeLevelSettings(); 
             window.e_verified = false;
@@ -836,12 +851,63 @@
             const rawX = e.clientX - r.left, rawY = e.clientY - r.top;
             const worldX = (rawX - edCanvas.width/2) / e_cam.zoom + e_cam.x;
             const worldY = (rawY - edCanvas.height/2) / e_cam.zoom + e_cam.y;
-            const step = e_meta.gridStep || 1;
-            return { wx: worldX, wy: worldY, gx: snapToGridUnits(worldX / TILE, e_meta), gy: snapToGridUnits(worldY / TILE, e_meta), step };
+            return { wx: worldX, wy: worldY, gx: snapToGridUnits(worldX / TILE, e_meta), gy: snapToGridUnits(worldY / TILE, e_meta) };
+        }
+
+        function beginPaintStroke() {
+            currentPaintStroke.clear();
+        }
+
+        function brushCellsAt(pos) {
+            const step = getGridStep(e_meta);
+            const brush = getBrushThickness(e_meta);
+            const half = Math.floor(brush / 2);
+            const cells = [];
+            for (let dx = -half; dx < -half + brush; dx++) {
+                for (let dy = -half; dy < -half + brush; dy++) {
+                    cells.push({
+                        x: snapToGridUnits(pos.gx + dx * step, e_meta),
+                        y: snapToGridUnits(pos.gy + dy * step, e_meta)
+                    });
+                }
+            }
+            return cells;
+        }
+
+        function eraseBlockAt(gridX, gridY) {
+            for (let i = e_blocks.length - 1; i >= 0; i--) {
+                const b = e_blocks[i];
+                if (b.layer === e_layer && Math.abs(b.x - gridX) < 0.0001 && Math.abs(b.y - gridY) < 0.0001) {
+                    e_blocks.splice(i, 1);
+                }
+            }
+        }
+
+        function placeBlockAt(gridX, gridY) {
+            const existingIdx = e_blocks.findIndex(b => b.layer === e_layer && Math.abs(b.x - gridX) < 0.0001 && Math.abs(b.y - gridY) < 0.0001);
+            if (existingIdx >= 0) e_blocks.splice(existingIdx, 1);
+            const b = {
+                id: generateId(), x: gridX, y: gridY, layer: e_layer, type: e_tool,
+                color: document.getElementById('prop-color').value, solid: document.getElementById('prop-solid').checked,
+                pushblock: document.getElementById('prop-pushblock').checked,
+                alpha: parseFloat(document.getElementById('prop-alpha').value), 
+                glow: parseInt(document.getElementById('prop-glow').value) || 0,
+                tag: document.getElementById('prop-tag').value, rotation: 0, size: e_meta.gridStep || 1
+            };
+            if(e_tool === 'trigger') {
+                b.action = document.getElementById('prop-action').value; b.listenTag = document.getElementById('prop-trig-listen').value;
+                b.particleFace = parseFloat(document.getElementById('prop-particle-face').value) || 0;
+                b.tData = {};
+                if(b.action==='CAMERA') b.tData = {x:+document.getElementById('tp-x').value,y:+document.getElementById('tp-y').value,z:+document.getElementById('tp-z').value,dur:+document.getElementById('tp-dur').value};
+                if(b.action==='MOVE_TAG') b.tData = {tag:document.getElementById('tp-tag').value,mx:+document.getElementById('tp-mx').value,my:+document.getElementById('tp-my').value,dur:+document.getElementById('tp-dur').value};
+                if(b.action==='ROTATE_TAG') b.tData = {tag:document.getElementById('tp-tag').value,centerTag:document.getElementById('tp-center-tag').value,ang:+document.getElementById('tp-ang').value,dur:+document.getElementById('tp-dur').value};
+                if(b.action==='SET_PROPERTY') b.tData = {tag:document.getElementById('tp-tag').value,prop:document.getElementById('tp-prop').value,val:document.getElementById('tp-val').value};
+            }
+            e_blocks.push(b);
         }
 
         edCanvas.addEventListener('mousedown', e => {
-            if(e.button === 2) { isErasing = true; handleDraw(e); return; }
+            if(e.button === 2) { isErasing = true; beginPaintStroke(); handleDraw(e); return; }
             const pos = getMousePos(e);
             
             if(e_tool === 'select') {
@@ -857,7 +923,7 @@
                     e_selectedIds.clear();
                 }
             } else {
-                isDrawing = true; handleDraw(e);
+                isDrawing = true; beginPaintStroke(); handleDraw(e);
             }
         });
         
@@ -911,39 +977,34 @@
                     } else document.getElementById('prop-trigger-box').classList.add('hidden');
                 }
             }
-            isDrawing = false; isErasing = false; isSelecting = false; isDragging = false; drawEditor();
+            isDrawing = false; isErasing = false; isSelecting = false; isDragging = false; currentPaintStroke.clear(); drawEditor();
         });
 
         function handleDraw(e) {
             const pos = getMousePos(e);
             if(pos.gx < 0 || pos.gx >= e_meta.width || pos.gy < 0 || pos.gy >= e_meta.height) return;
-            
-            const existingIdx = e_blocks.findIndex(b => b.layer === e_layer && Math.abs(b.x - pos.gx) < 0.0001 && Math.abs(b.y - pos.gy) < 0.0001);
-            
+
+            const cells = brushCellsAt(pos).filter(cell => cell.x >= 0 && cell.x < e_meta.width && cell.y >= 0 && cell.y < e_meta.height);
+
             if(isErasing || e_tool === 'erase') {
-                if(existingIdx >= 0) { e_blocks.splice(existingIdx, 1); window.e_verified = false; }
+                cells.forEach(cell => {
+                    const key = `${e_layer}:${cell.x.toFixed(4)}:${cell.y.toFixed(4)}:erase`;
+                    if (currentPaintStroke.has(key)) return;
+                    currentPaintStroke.add(key);
+                    eraseBlockAt(cell.x, cell.y);
+                    window.e_verified = false;
+                });
             } else if(e_tool !== 'select') {
-                if(existingIdx >= 0) e_blocks.splice(existingIdx, 1);
-                window.e_verified = false;
-                const b = {
-                    id: generateId(), x: pos.gx, y: pos.gy, layer: e_layer, type: e_tool,
-                    color: document.getElementById('prop-color').value, solid: document.getElementById('prop-solid').checked,
-                    pushblock: document.getElementById('prop-pushblock').checked,
-                    alpha: parseFloat(document.getElementById('prop-alpha').value), 
-                    glow: parseInt(document.getElementById('prop-glow').value) || 0,
-                    tag: document.getElementById('prop-tag').value, rotation: 0, size: e_meta.gridStep || 1
-                };
-                if(e_tool === 'trigger') {
-                    b.action = document.getElementById('prop-action').value; b.listenTag = document.getElementById('prop-trig-listen').value;
-                    b.tData = {};
-                    if(b.action==='CAMERA') b.tData = {x:+document.getElementById('tp-x').value,y:+document.getElementById('tp-y').value,z:+document.getElementById('tp-z').value,dur:+document.getElementById('tp-dur').value};
-                    if(b.action==='MOVE_TAG') b.tData = {tag:document.getElementById('tp-tag').value,mx:+document.getElementById('tp-mx').value,my:+document.getElementById('tp-my').value,dur:+document.getElementById('tp-dur').value};
-                    if(b.action==='ROTATE_TAG') b.tData = {tag:document.getElementById('tp-tag').value,centerTag:document.getElementById('tp-center-tag').value,ang:+document.getElementById('tp-ang').value,dur:+document.getElementById('tp-dur').value};
-                    if(b.action==='SET_PROPERTY') b.tData = {tag:document.getElementById('tp-tag').value,prop:document.getElementById('tp-prop').value,val:document.getElementById('tp-val').value};
-                }
-                e_blocks.push(b);
+                cells.forEach(cell => {
+                    const key = `${e_layer}:${cell.x.toFixed(4)}:${cell.y.toFixed(4)}:${e_tool}`;
+                    if (currentPaintStroke.has(key)) return;
+                    currentPaintStroke.add(key);
+                    window.e_verified = false;
+                    placeBlockAt(cell.x, cell.y);
+                });
             }
         }
+
 
         window.addEventListener('keydown', e => { e_keys[e.key.toLowerCase()] = true; });
         window.addEventListener('keyup', e => { e_keys[e.key.toLowerCase()] = false; });
@@ -997,6 +1058,22 @@
             for(let x=0; x<=e_meta.width / eStep; x++) { edCtx.beginPath(); edCtx.moveTo(x*eUnit, 0); edCtx.lineTo(x*eUnit, e_meta.height*TILE); edCtx.stroke(); }
             for(let y=0; y<=e_meta.height / eStep; y++) { edCtx.beginPath(); edCtx.moveTo(0, y*eUnit); edCtx.lineTo(e_meta.width*TILE, y*eUnit); edCtx.stroke(); }
             edCtx.strokeStyle = 'rgba(99,102,241,0.5)'; edCtx.lineWidth = 2; edCtx.strokeRect(0, 0, e_meta.width*TILE, e_meta.height*TILE);
+
+            if (e_tool !== 'select') {
+                const hover = { gx: snapToGridUnits(currentMouseX / TILE, e_meta), gy: snapToGridUnits(currentMouseY / TILE, e_meta) };
+                const cells = brushCellsAt(hover).filter(cell => cell.x >= 0 && cell.x < e_meta.width && cell.y >= 0 && cell.y < e_meta.height);
+                if (cells.length) {
+                    edCtx.save();
+                    edCtx.fillStyle = e_tool === 'erase' ? 'rgba(244,63,94,0.12)' : 'rgba(99,102,241,0.12)';
+                    edCtx.strokeStyle = e_tool === 'erase' ? 'rgba(244,63,94,0.5)' : 'rgba(255,255,255,0.35)';
+                    edCtx.lineWidth = 1;
+                    cells.forEach(cell => {
+                        edCtx.fillRect(cell.x*TILE, cell.y*TILE, TILE, TILE);
+                        edCtx.strokeRect(cell.x*TILE, cell.y*TILE, TILE, TILE);
+                    });
+                    edCtx.restore();
+                }
+            }
 
             const sorted = [...e_blocks].sort((a,b) => a.layer - b.layer);
             sorted.forEach(b => {
@@ -1102,7 +1179,7 @@
         window.editLevel = (id) => {
             const l = window.g_levels.find(x => x.id === id); if(!l) return;
             document.getElementById('editor-level-name').value = l.name;
-            e_meta = l.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3, gridStep: 1 };
+            e_meta = l.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3, gridStep: 1, brushSize: 1 };
             window.e_verified = false;
             
             try { 
