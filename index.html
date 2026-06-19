@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ltp's Maze Game</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        html, body { height: 100%; overflow: hidden; }
+        html, body { height: 100%; overflow: hidden; touch-action: none; }
         body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
         .hidden { display: none !important; }
-        #canvas-container { overflow: hidden; background-color: #1e293b; position: relative; width: 100%; height: 100%; cursor: crosshair; }
+        #canvas-container { overflow: hidden; background-color: #1e293b; position: relative; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
         .glass-panel { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .modal { background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(6px); }
         .scrollable { overflow-y: auto; max-height: calc(100vh - 180px); }
@@ -28,16 +28,16 @@
 </head>
 <body class="h-screen w-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
-    <div id="msg-modal" class="fixed inset-0 z-50 modal hidden flex items-center justify-center">
+    <div id="msg-modal" class="fixed inset-0 z-50 modal hidden flex items-center justify-center p-4">
         <div class="glass-panel p-6 rounded-xl shadow-2xl max-w-sm w-full transition-all">
             <h3 id="msg-title" class="text-xl font-bold mb-2 text-indigo-400">Notice</h3>
-            <p id="msg-text" class="text-slate-300 mb-6"></p>
+            <p id="msg-text" class="text-slate-300 mb-6 text-sm"></p>
             <button onclick="closeMsg()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded-lg font-semibold transition">Understood</button>
         </div>
     </div>
 
-    <div id="screen-login" class="flex-1 flex items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black">
-        <div class="glass-panel p-8 rounded-2xl shadow-2xl w-96 text-center">
+    <div id="screen-login" class="flex-1 flex items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black p-4">
+        <div class="glass-panel p-8 rounded-2xl shadow-2xl w-full max-w-md text-center">
             <h1 class="text-4xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Ltp's Maze Game</h1>
             <input type="text" id="auth-username" placeholder="Username" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none transition">
             <input type="password" id="auth-password" placeholder="Password" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 mb-6 focus:ring-2 focus:ring-indigo-500 outline-none transition">
@@ -50,64 +50,64 @@
     </div>
 
     <div id="screen-menu" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
-        <header class="glass-panel px-6 py-4 flex justify-between items-center z-10">
-            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Ltp's Maze Game</h1>
-            <div class="flex items-center gap-6">
-                <span id="header-user-info" class="text-sm font-medium text-slate-300 bg-slate-800/50 px-4 py-1.5 rounded-full border border-slate-700"></span>
-                <button onclick="showSubMenu('profile')" class="text-slate-400 hover:text-indigo-400 transition">👤 Profile</button>
-                <button onclick="logout()" class="text-rose-400 hover:text-rose-300 text-sm font-bold transition">Logout</button>
+        <header class="glass-panel px-4 py-3 md:px-6 md:py-4 flex flex-col md:flex-row justify-between items-center z-10 gap-2 md:gap-0">
+            <h1 class="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Ltp's Maze Game</h1>
+            <div class="flex flex-wrap justify-center items-center gap-3 md:gap-6">
+                <span id="header-user-info" class="text-xs md:text-sm font-medium text-slate-300 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700"></span>
+                <button onclick="showSubMenu('profile')" class="text-slate-400 hover:text-indigo-400 text-sm md:text-base transition">👤 Profile</button>
+                <button onclick="logout()" class="text-rose-400 hover:text-rose-300 text-xs md:text-sm font-bold transition">Logout</button>
             </div>
         </header>
-        <div class="flex-1 flex gap-6 p-6 overflow-hidden max-w-7xl mx-auto w-full min-h-0">
-            <div class="w-56 flex flex-col gap-3">
-                <button onclick="showSubMenu('play')" class="glass-panel hover:bg-slate-700/50 p-4 rounded-xl font-bold text-left transition text-indigo-300 hover:text-indigo-200">🎮 Play Levels</button>
-                <button onclick="openEditor()" class="glass-panel hover:bg-slate-700/50 p-4 rounded-xl font-bold text-left transition text-fuchsia-300 hover:text-fuchsia-200">🛠️ Level Editor</button>
-                <button onclick="showSubMenu('leaderboard')" class="glass-panel hover:bg-slate-700/50 p-4 rounded-xl font-bold text-left transition text-amber-300 hover:text-amber-200">🏆 Leaderboard</button>
-                <button id="admin-btn" onclick="showSubMenu('admin')" class="hidden glass-panel hover:bg-rose-900/30 p-4 rounded-xl font-bold text-left transition text-rose-400">🛡️ Admin Panel</button>
+        <div class="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 p-4 md:p-6 overflow-hidden max-w-7xl mx-auto w-full min-h-0">
+            <div class="w-full md:w-56 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible shrink-0 pb-2 md:pb-0">
+                <button onclick="showSubMenu('play')" class="glass-panel hover:bg-slate-700/50 p-3 md:p-4 rounded-xl font-bold text-left transition text-indigo-300 hover:text-indigo-200 whitespace-nowrap">🎮 Play Levels</button>
+                <button onclick="openEditor()" class="glass-panel hover:bg-slate-700/50 p-3 md:p-4 rounded-xl font-bold text-left transition text-fuchsia-300 hover:text-fuchsia-200 whitespace-nowrap">🛠️ Level Editor</button>
+                <button onclick="showSubMenu('leaderboard')" class="glass-panel hover:bg-slate-700/50 p-3 md:p-4 rounded-xl font-bold text-left transition text-amber-300 hover:text-amber-200 whitespace-nowrap">🏆 Leaderboard</button>
+                <button id="admin-btn" onclick="showSubMenu('admin')" class="hidden glass-panel hover:bg-rose-900/30 p-3 md:p-4 rounded-xl font-bold text-left transition text-rose-400 whitespace-nowrap">🛡️ Admin Panel</button>
             </div>
 
-            <div class="flex-1 glass-panel rounded-2xl p-6 flex flex-col scrollable">
+            <div class="flex-1 glass-panel rounded-2xl p-4 md:p-6 flex flex-col scrollable">
                 
                 <div id="tab-play" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
-                    <div class="flex gap-3 mb-6">
-                        <input type="text" id="search-level-input" placeholder="Search Level Name or ID..." class="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <button onclick="searchLevel()" class="bg-indigo-600 hover:bg-indigo-500 px-6 rounded-lg font-bold shadow-lg transition">Search</button>
+                    <div class="flex gap-2 mb-4 md:mb-6">
+                        <input type="text" id="search-level-input" placeholder="Search Name/ID..." class="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
+                        <button onclick="searchLevel()" class="bg-indigo-600 hover:bg-indigo-500 px-4 md:px-6 rounded-lg font-bold shadow-lg transition text-sm">Search</button>
                     </div>
-                    <div class="flex gap-4 border-b border-slate-700 mb-6 pb-2 overflow-x-auto">
-                        <button onclick="filterLevels('all')" id="btn-flt-all" class="tab-btn active font-bold uppercase text-sm tracking-wider whitespace-nowrap">Recent</button>
-                        <button onclick="filterLevels('my')" id="btn-flt-my" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider whitespace-nowrap">My Levels</button>
-                        <button onclick="filterLevels('official')" id="btn-flt-official" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider whitespace-nowrap">Official</button>
-                        <button onclick="filterLevels('daily')" id="btn-flt-daily" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider whitespace-nowrap">Daily</button>
-                        <button onclick="filterLevels('weekly')" id="btn-flt-weekly" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider whitespace-nowrap">Weekly</button>
+                    <div class="flex gap-4 border-b border-slate-700 mb-4 md:mb-6 pb-2 overflow-x-auto no-scrollbar">
+                        <button onclick="filterLevels('all')" id="btn-flt-all" class="tab-btn active font-bold uppercase text-xs md:text-sm tracking-wider whitespace-nowrap">Recent</button>
+                        <button onclick="filterLevels('my')" id="btn-flt-my" class="tab-btn font-bold text-slate-500 uppercase text-xs md:text-sm tracking-wider whitespace-nowrap">My Levels</button>
+                        <button onclick="filterLevels('official')" id="btn-flt-official" class="tab-btn font-bold text-slate-500 uppercase text-xs md:text-sm tracking-wider whitespace-nowrap">Official</button>
+                        <button onclick="filterLevels('daily')" id="btn-flt-daily" class="tab-btn font-bold text-slate-500 uppercase text-xs md:text-sm tracking-wider whitespace-nowrap">Daily</button>
+                        <button onclick="filterLevels('weekly')" id="btn-flt-weekly" class="tab-btn font-bold text-slate-500 uppercase text-xs md:text-sm tracking-wider whitespace-nowrap">Weekly</button>
                     </div>
                     <div id="level-list" class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto pr-2"></div>
                 </div>
 
                 <div id="tab-leaderboard" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
-                    <div class="flex gap-6 border-b border-slate-700 mb-6 pb-2">
-                        <button onclick="loadLeaderboard('bricks')" id="btn-lb-bricks" class="tab-btn active font-bold uppercase text-sm tracking-wider">Bricks</button>
-                        <button onclick="loadLeaderboard('cp')" id="btn-lb-cp" class="tab-btn font-bold text-slate-500 uppercase text-sm tracking-wider">Creator Points</button>
+                    <div class="flex gap-4 md:gap-6 border-b border-slate-700 mb-4 md:mb-6 pb-2 overflow-x-auto">
+                        <button onclick="loadLeaderboard('bricks')" id="btn-lb-bricks" class="tab-btn active font-bold uppercase text-xs md:text-sm tracking-wider whitespace-nowrap">Bricks</button>
+                        <button onclick="loadLeaderboard('cp')" id="btn-lb-cp" class="tab-btn font-bold text-slate-500 uppercase text-xs md:text-sm tracking-wider whitespace-nowrap">Creator Points</button>
                     </div>
                     <div id="leaderboard-list" class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto pr-2"></div>
                 </div>
 
                 <div id="tab-admin" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
-                    <h2 class="text-2xl font-bold mb-6 text-rose-400">Admin Control Panel</h2>
-                    <div class="flex gap-6 border-b border-slate-700 mb-6 pb-2">
-                        <button onclick="loadAdminLevels()" id="btn-adm-levels" class="tab-btn active font-bold">Manage Levels</button>
-                        <button onclick="loadAdminUsers()" id="btn-adm-users" class="tab-btn font-bold text-slate-500">Manage Users</button>
+                    <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-rose-400">Admin Control Panel</h2>
+                    <div class="flex gap-4 border-b border-slate-700 mb-4 md:mb-6 pb-2">
+                        <button onclick="loadAdminLevels()" id="btn-adm-levels" class="tab-btn active font-bold text-sm">Manage Levels</button>
+                        <button onclick="loadAdminUsers()" id="btn-adm-users" class="tab-btn font-bold text-slate-500 text-sm">Manage Users</button>
                     </div>
                     <div id="admin-list" class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto pr-2"></div>
                 </div>
 
                 <div id="tab-profile" class="hidden flex-1 flex flex-col items-center justify-center">
-                    <div class="bg-slate-800/50 p-8 rounded-2xl w-full max-w-md border border-slate-700 shadow-2xl">
-                        <h2 class="text-2xl font-bold mb-6 text-center">Player Profile</h2>
+                    <div class="bg-slate-800/50 p-6 md:p-8 rounded-2xl w-full max-w-md border border-slate-700 shadow-2xl">
+                        <h2 class="text-xl md:text-2xl font-bold mb-6 text-center">Player Profile</h2>
                         
-                        <div class="flex flex-col gap-4 mb-6">
+                        <div class="flex flex-col gap-4 mb-6 text-sm md:text-base">
                             <div class="flex justify-between items-center bg-slate-900/50 p-3 rounded-lg border border-slate-700">
                                 <span class="text-slate-400">Player Color</span>
-                                <input type="color" id="prof-color" class="w-10 h-10 cursor-pointer" onchange="saveProfileSettings()">
+                                <input type="color" id="prof-color" class="w-8 h-8 md:w-10 md:h-10 cursor-pointer" onchange="saveProfileSettings()">
                             </div>
                             <div class="flex justify-between items-center bg-slate-900/50 p-3 rounded-lg border border-slate-700">
                                 <span class="text-slate-400">Enable Glow Effect</span>
@@ -124,8 +124,8 @@
         </div>
     </div>
 
-    <div id="modal-level-settings" class="fixed inset-0 z-50 modal hidden flex items-center justify-center">
-        <div class="glass-panel p-6 rounded-xl shadow-2xl w-80">
+    <div id="modal-level-settings" class="fixed inset-0 z-50 modal hidden flex items-center justify-center p-4">
+        <div class="glass-panel p-6 rounded-xl shadow-2xl w-80 max-h-screen overflow-y-auto">
             <h3 class="text-xl font-bold mb-4">Level Settings</h3>
             <div class="flex flex-col gap-3 text-sm">
                 <label>Grid Width <input type="number" id="cfg-width" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
@@ -143,55 +143,62 @@
     </div>
 
     <div id="screen-editor" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
-        <header class="glass-panel px-4 py-3 flex justify-between items-center z-20">
-            <div class="flex items-center gap-4">
-                <button onclick="closeEditor()" class="text-slate-400 hover:text-white font-semibold">◀ Back</button>
-                <input type="text" id="editor-level-name" placeholder="Level Name" class="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none w-48">
-                <button onclick="openLevelSettings()" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">⚙️ Settings</button>
+        <header class="glass-panel px-4 py-2 flex flex-wrap justify-between items-center z-20 gap-2 overflow-x-auto no-scrollbar">
+            <div class="flex items-center gap-2">
+                <button onclick="closeEditor()" class="text-slate-400 hover:text-white font-semibold text-xs md:text-base">◀ Back</button>
+                <input type="text" id="editor-level-name" placeholder="Level Name" class="bg-slate-900/50 border border-slate-700 rounded-lg px-2 py-1 focus:ring-2 focus:ring-indigo-500 outline-none w-32 md:w-48 text-sm">
+                <button onclick="openLevelSettings()" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-lg text-xs md:text-sm font-semibold transition">⚙️</button>
             </div>
             
-            <div class="flex items-center gap-2 max-w-[200px] sm:max-w-[400px]">
+            <div class="flex items-center gap-2 flex-1 overflow-x-auto min-w-[150px]">
                 <div id="layer-controls" class="flex gap-1 bg-slate-900/50 p-1 rounded-lg border border-slate-700 overflow-x-auto no-scrollbar scroll-smooth">
                     <!-- Populated by renderLayerButtons -->
                 </div>
             </div>
 
-            <div class="flex gap-3">
-                <button onclick="testLevel()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-1.5 rounded-lg font-bold shadow-lg shadow-emerald-900/50 transition">▶ Playtest</button>
-                <button onclick="saveLevel(false)" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-lg font-bold shadow-lg transition">Upload Public</button>
-                <button onclick="saveLevel(true)" class="bg-slate-700 hover:bg-slate-600 px-4 py-1.5 rounded-lg font-bold shadow-lg transition">Save Private</button>
+            <div class="flex gap-2 text-xs md:text-sm">
+                <button onclick="testLevel()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded-lg font-bold shadow-lg transition">▶ Play</button>
+                <button onclick="saveLevel(false)" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded-lg font-bold shadow-lg transition hidden md:block">Public</button>
+                <button onclick="saveLevel(true)" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-lg font-bold shadow-lg transition">Save</button>
             </div>
         </header>
-        <div class="flex flex-1 overflow-hidden relative min-h-0">
-            <!-- FIXED: Entire left sidebar is fully scrollable now -->
-            <div class="w-64 glass-panel flex flex-col p-4 gap-4 z-10 border-r border-slate-700/50 overflow-y-auto h-full shrink-0">
+
+        <div class="flex flex-col md:flex-row flex-1 overflow-hidden relative min-h-0">
+            <div class="w-full md:w-64 glass-panel flex flex-col p-3 md:p-4 gap-4 z-10 border-b md:border-b-0 md:border-r border-slate-700/50 overflow-y-auto h-48 md:h-full shrink-0">
                 <div class="shrink-0">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Tools</h3>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="setTool('select')" id="tool-select" class="tool-btn bg-indigo-600 border border-indigo-400 rounded-lg p-2 text-sm font-semibold col-span-2 shadow-lg transition">Selection / Move</button>
-                        <div class="col-span-2 text-[11px] text-slate-400 bg-slate-950/40 border border-slate-800 rounded px-2 py-1">
-                            Brush thickness is set in Level Settings.
-                        </div>
-                        <button onclick="setTool('wall')" id="tool-wall" class="tool-btn bg-slate-800 rounded-lg p-2 text-sm font-semibold transition">🧱 Wall</button>
-                        <button onclick="setTool('start')" id="tool-start" class="tool-btn bg-slate-800 rounded-lg p-2 text-sm font-semibold transition">🟢 Start</button>
-                        <button onclick="setTool('end')" id="tool-end" class="tool-btn bg-slate-800 rounded-lg p-2 text-sm font-semibold transition">🏁 End</button>
-                        <button onclick="setTool('damage')" id="tool-damage" class="tool-btn bg-slate-800 rounded-lg p-2 text-sm font-semibold transition text-rose-400">💥 Damage</button>
-                        <button onclick="setTool('trigger')" id="tool-trigger" class="tool-btn bg-slate-800 rounded-lg p-2 text-sm font-semibold transition text-fuchsia-400">⚡ Trigger</button>
-                        <button onclick="setTool('erase')" id="tool-erase" class="tool-btn bg-rose-900/50 rounded-lg p-2 text-sm font-semibold transition">🗑️ Erase</button>
+                    <h3 class="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</h3>
+                    <div class="grid grid-cols-3 md:grid-cols-2 gap-1.5 md:gap-2">
+                        <button onclick="setTool('select')" id="tool-select" class="tool-btn bg-indigo-600 border border-indigo-400 rounded p-1.5 text-xs font-semibold col-span-3 md:col-span-2 shadow-lg transition">Selection</button>
+                        <button onclick="setTool('wall')" id="tool-wall" class="tool-btn bg-slate-800 rounded p-1.5 text-xs font-semibold transition">🧱 Wall</button>
+                        <button onclick="setTool('start')" id="tool-start" class="tool-btn bg-slate-800 rounded p-1.5 text-xs font-semibold transition">🟢 Start</button>
+                        <button onclick="setTool('end')" id="tool-end" class="tool-btn bg-slate-800 rounded p-1.5 text-xs font-semibold transition">🏁 End</button>
+                        <button onclick="setTool('damage')" id="tool-damage" class="tool-btn bg-slate-800 rounded p-1.5 text-xs font-semibold transition text-rose-400">💥 Damage</button>
+                        <button onclick="setTool('trigger')" id="tool-trigger" class="tool-btn bg-slate-800 rounded p-1.5 text-xs font-semibold transition text-fuchsia-400">⚡ Trigger</button>
+                        <button onclick="setTool('text')" id="tool-text" class="tool-btn bg-slate-800 rounded p-1.5 text-xs font-semibold transition text-cyan-400">🔠 Text</button>
+                        <button onclick="setTool('erase')" id="tool-erase" class="tool-btn bg-rose-900/50 rounded p-1.5 text-xs font-semibold transition col-span-3 md:col-span-2">🗑️ Erase</button>
                     </div>
                 </div>
-                <!-- FIXED: Property panel isn't restricted by flex-1 and will seamlessly scroll within the parent -->
+
                 <div id="properties-panel" class="bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex flex-col shrink-0">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 shrink-0">Properties</h3>
-                    <div class="flex flex-col gap-3 text-sm pb-2">
-                        <label class="flex justify-between items-center shrink-0">Color: <input type="color" id="prop-color" value="#ffffff" class="w-8 h-8" onchange="updateProp()"></label>
+                    <h3 class="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 shrink-0">Properties</h3>
+                    <div class="flex flex-col gap-2 text-[11px] md:text-sm pb-2">
+                        
+                        <div id="prop-text-tool-box" class="hidden flex-col gap-1 mb-2 pb-2 border-b border-slate-700">
+                            <label class="flex flex-col gap-1 text-cyan-400 font-bold">Text to write:
+                                <input type="text" id="prop-text-input" placeholder="HELLO" class="bg-slate-800 p-1.5 rounded border border-slate-600 outline-none w-full text-white font-normal" maxlength="15">
+                            </label>
+                            <span class="text-[10px] text-slate-500">Click canvas to place blocky text.</span>
+                        </div>
+
+                        <label class="flex justify-between items-center shrink-0">Color: <input type="color" id="prop-color" value="#ffffff" class="w-6 h-6 md:w-8 md:h-8" onchange="updateProp()"></label>
                         <label class="flex justify-between items-center shrink-0">Solid: <input type="checkbox" id="prop-solid" checked class="w-4 h-4 accent-indigo-500" onchange="updateProp()"></label>
                         <label class="flex justify-between items-center shrink-0">Pushblock: <input type="checkbox" id="prop-pushblock" class="w-4 h-4 accent-indigo-500" onchange="updateProp()"></label>
+                        <label class="flex justify-between items-center shrink-0">Orient (deg): <input type="number" id="prop-rotation" value="0" step="15" class="w-16 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none" onchange="updateProp()"></label>
                         
                         <div class="flex flex-col gap-1">
                             <div class="flex justify-between items-center">
                                 <span>Alpha (0-1):</span>
-                                <input type="number" id="prop-alpha-num" min="0" max="1" step="0.1" value="1" class="w-16 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none" oninput="syncAlphaInputs(this.value)">
+                                <input type="number" id="prop-alpha-num" min="0" max="1" step="0.1" value="1" class="w-12 md:w-16 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none" oninput="syncAlphaInputs(this.value)">
                             </div>
                             <input type="range" id="prop-alpha" min="0" max="1" step="0.05" value="1" class="w-full accent-indigo-500" oninput="syncAlphaInputs(this.value)">
                         </div>
@@ -199,7 +206,7 @@
                         <div class="flex flex-col gap-1 border-t border-slate-800 pt-2">
                             <div class="flex justify-between items-center">
                                 <span>Glow Size (0-50):</span>
-                                <input type="number" id="prop-glow-num" min="0" max="50" step="1" value="0" class="w-16 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none" oninput="syncGlowInputs(this.value)">
+                                <input type="number" id="prop-glow-num" min="0" max="50" step="1" value="0" class="w-12 md:w-16 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none" oninput="syncGlowInputs(this.value)">
                             </div>
                             <input type="range" id="prop-glow" min="0" max="50" step="1" value="0" class="w-full accent-indigo-500" oninput="syncGlowInputs(this.value)">
                         </div>
@@ -207,11 +214,11 @@
                         <label class="flex flex-col gap-1">Block Tag: <input type="text" id="prop-tag" placeholder="e.g. door1" class="bg-slate-800 p-1.5 rounded border border-slate-600 outline-none w-full" onchange="updateProp()"></label>
                         
                         <div id="prop-trigger-box" class="hidden flex-col gap-2 mt-2 pt-2 border-t border-slate-700">
-                            <span class="text-xs text-fuchsia-400 font-bold">Trigger Logic</span>
-                            <label class="text-xs text-slate-400 flex flex-col gap-1">Fired By (Tag or empty for Player):
-                                <input type="text" id="prop-trig-listen" class="bg-slate-800 p-1.5 rounded border border-slate-600" onchange="updateProp()">
+                            <span class="text-[10px] md:text-xs text-fuchsia-400 font-bold">Trigger Logic</span>
+                            <label class="text-[10px] md:text-xs text-slate-400 flex flex-col gap-1">Activator Tag (Empty = Player):
+                                <input type="text" id="prop-trig-listen" class="bg-slate-800 p-1.5 rounded border border-slate-600" onchange="updateProp()" placeholder="tag that triggers this">
                             </label>
-                            <label class="text-xs text-slate-400 flex flex-col gap-1">Action:
+                            <label class="text-[10px] md:text-xs text-slate-400 flex flex-col gap-1">Action:
                                 <select id="prop-action" class="bg-slate-800 p-1.5 rounded border border-slate-600 w-full" onchange="updateProp()">
                                     <option value="WIN">Win Level</option>
                                     <option value="DIE">Kill Player</option>
@@ -221,26 +228,24 @@
                                     <option value="SET_PROPERTY">Change Tagged Block Property</option>
                                 </select>
                             </label>
-                            <label class="text-xs text-slate-400 flex flex-col gap-1">Particle Facing (deg):
+                            <label class="text-[10px] md:text-xs text-slate-400 flex flex-col gap-1">Particle Facing (deg):
                                 <input type="number" id="prop-particle-face" value="0" class="bg-slate-800 p-1.5 rounded border border-slate-600" onchange="updateProp()">
                             </label>
-                            </label>
-                            <div id="prop-trig-params" class="flex flex-col gap-2 text-xs"></div>
+                            <div id="prop-trig-params" class="flex flex-col gap-2 text-[10px] md:text-xs"></div>
                         </div>
 
                         <div class="mt-4 pt-3 border-t border-slate-700">
                             <div class="flex justify-between items-center">
-                                <span class="text-xs font-bold text-indigo-400 uppercase tracking-wide">Saved Colors</span>
-                                <button onclick="saveCurrentColorToPalette()" class="text-xs bg-indigo-600/50 hover:bg-indigo-600 text-white font-bold px-1.5 py-0.5 rounded transition">+ Bookmark</button>
+                                <span class="text-[10px] md:text-xs font-bold text-indigo-400 uppercase tracking-wide">Saved Colors</span>
+                                <button onclick="saveCurrentColorToPalette()" class="text-[10px] md:text-xs bg-indigo-600/50 hover:bg-indigo-600 text-white font-bold px-1.5 py-0.5 rounded transition">+ Bookmark</button>
                             </div>
-                            <div id="saved-colors-grid" class="flex flex-wrap gap-1.5 my-2 max-h-[72px] overflow-y-auto p-1 bg-slate-950/40 rounded border border-slate-800">
-                                <!-- Colors injected here -->
+                            <div id="saved-colors-grid" class="flex flex-wrap gap-1 md:gap-1.5 my-2 max-h-[72px] overflow-y-auto p-1 bg-slate-950/40 rounded border border-slate-800">
                             </div>
                             <div class="flex flex-col gap-1 mt-2">
-                                <span class="text-[10px] text-slate-500">Share Color Palette Code:</span>
-                                <div class="flex gap-1.5">
-                                    <input type="text" id="palette-share-code" placeholder="Hex palette code" class="bg-slate-900 border border-slate-700 rounded p-1 text-[10px] flex-1 outline-none">
-                                    <button onclick="importPaletteCode()" class="bg-indigo-600 hover:bg-indigo-500 text-[10px] px-2 py-1 rounded font-bold transition">Import</button>
+                                <span class="text-[9px] md:text-[10px] text-slate-500">Share Color Palette Code:</span>
+                                <div class="flex gap-1 md:gap-1.5">
+                                    <input type="text" id="palette-share-code" placeholder="Hex palette code" class="bg-slate-900 border border-slate-700 rounded p-1 text-[9px] md:text-[10px] flex-1 outline-none">
+                                    <button onclick="importPaletteCode()" class="bg-indigo-600 hover:bg-indigo-500 text-[9px] md:text-[10px] px-2 py-1 rounded font-bold transition">Import</button>
                                 </div>
                             </div>
                         </div>
@@ -248,24 +253,40 @@
                     </div>
                 </div>
             </div>
-            <div id="canvas-container" oncontextmenu="return false;">
+            
+            <div id="canvas-container" oncontextmenu="return false;" class="flex-1">
                 <canvas id="editor-canvas"></canvas>
             </div>
-            <div class="absolute bottom-4 right-4 bg-slate-900/80 px-4 py-2 rounded-lg text-xs text-slate-400 pointer-events-none backdrop-blur border border-slate-700 z-10">
+            <div class="absolute bottom-4 right-4 bg-slate-900/80 px-2 py-1 md:px-4 md:py-2 rounded-lg text-[10px] md:text-xs text-slate-400 pointer-events-none backdrop-blur border border-slate-700 z-10 hidden md:block">
                 WASD: Pan Camera | Scroll: Zoom | Right-Click: Erase
             </div>
         </div>
     </div>
 
     <div id="screen-play" class="hidden flex-1 flex flex-col bg-black relative min-h-0 overflow-hidden">
-        <div class="absolute top-4 left-4 z-20 flex gap-2" id="health-bar"></div>
-        <header class="absolute top-0 w-full bg-gradient-to-b from-black/80 to-transparent p-4 flex justify-between items-center z-10 opacity-0 hover:opacity-100 transition-opacity duration-300">
-            <button onclick="stopPlay()" class="bg-rose-600 hover:bg-rose-500 px-4 py-1.5 rounded-lg font-bold shadow-lg transition">Quit</button>
-            <h1 id="play-level-title" class="font-bold text-xl text-white drop-shadow-md">Playing...</h1>
-            <div class="w-16"></div>
+        <div class="absolute top-4 left-4 z-20 flex gap-1 md:gap-2" id="health-bar"></div>
+        <header class="absolute top-0 w-full bg-gradient-to-b from-black/80 to-transparent p-2 md:p-4 flex justify-between items-center z-10 opacity-100 md:opacity-0 hover:opacity-100 transition-opacity duration-300">
+            <button onclick="stopPlay()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1 md:px-4 md:py-1.5 rounded-lg font-bold shadow-lg transition text-sm">Quit</button>
+            <h1 id="play-level-title" class="font-bold text-sm md:text-xl text-white drop-shadow-md">Playing...</h1>
+            <div class="w-12 md:w-16"></div>
         </header>
-        <div id="play-status" class="absolute top-1/4 w-full text-center text-4xl font-black drop-shadow-[0_0_15px_rgba(0,0,0,1)] z-30 pointer-events-none transition-all"></div>
+        <div id="play-status" class="absolute top-1/4 w-full text-center text-2xl md:text-4xl font-black drop-shadow-[0_0_15px_rgba(0,0,0,1)] z-30 pointer-events-none transition-all"></div>
+        
         <canvas id="play-canvas" class="flex-1 w-full h-full object-cover block min-h-0"></canvas>
+
+        <!-- Mobile Controls Overlay -->
+        <div id="mobile-controls" class="absolute bottom-8 left-8 z-40 md:hidden pointer-events-none">
+            <div class="relative w-36 h-36 bg-slate-800/40 rounded-full border border-slate-600/50 backdrop-blur-md pointer-events-auto">
+                <button class="absolute top-1 left-1/2 -translate-x-1/2 w-12 h-12 bg-indigo-500/80 rounded-full active:bg-indigo-400 touch-none shadow-lg text-white font-bold flex items-center justify-center text-lg" 
+                    ontouchstart="window.e_keys['w']=true; event.preventDefault()" ontouchend="window.e_keys['w']=false; event.preventDefault()" ontouchcancel="window.e_keys['w']=false; event.preventDefault()">W</button>
+                <button class="absolute bottom-1 left-1/2 -translate-x-1/2 w-12 h-12 bg-indigo-500/80 rounded-full active:bg-indigo-400 touch-none shadow-lg text-white font-bold flex items-center justify-center text-lg" 
+                    ontouchstart="window.e_keys['s']=true; event.preventDefault()" ontouchend="window.e_keys['s']=false; event.preventDefault()" ontouchcancel="window.e_keys['s']=false; event.preventDefault()">S</button>
+                <button class="absolute left-1 top-1/2 -translate-y-1/2 w-12 h-12 bg-indigo-500/80 rounded-full active:bg-indigo-400 touch-none shadow-lg text-white font-bold flex items-center justify-center text-lg" 
+                    ontouchstart="window.e_keys['a']=true; event.preventDefault()" ontouchend="window.e_keys['a']=false; event.preventDefault()" ontouchcancel="window.e_keys['a']=false; event.preventDefault()">A</button>
+                <button class="absolute right-1 top-1/2 -translate-y-1/2 w-12 h-12 bg-indigo-500/80 rounded-full active:bg-indigo-400 touch-none shadow-lg text-white font-bold flex items-center justify-center text-lg" 
+                    ontouchstart="window.e_keys['d']=true; event.preventDefault()" ontouchend="window.e_keys['d']=false; event.preventDefault()" ontouchcancel="window.e_keys['d']=false; event.preventDefault()">D</button>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -291,6 +312,31 @@
         // Color Palettes
         let localColors = ["#ffffff", "#00ffff", "#ff0044", "#ffaa00", "#00ffaa", "#aa00ff", "#38bdf8", "#ec4899", "#eab308"];
 
+        // Blocky Font (5x5)
+        const BLOCK_FONT = {
+            'A': [".***.", "*...*", "*****", "*...*", "*...*"], 'B': ["****.", "*...*", "****.", "*...*", "****."],
+            'C': [".****", "*....", "*....", "*....", ".****"], 'D': ["****.", "*...*", "*...*", "*...*", "****."],
+            'E': ["*****", "*....", "****.", "*....", "*****"], 'F': ["*****", "*....", "****.", "*....", "*...."],
+            'G': [".****", "*....", "*..**", "*...*", ".***."], 'H': ["*...*", "*...*", "*****", "*...*", "*...*"],
+            'I': ["*****", "..*..", "..*..", "..*..", "*****"], 'J': ["...**", "....*", "....*", "*...*", ".***."],
+            'K': ["*...*", "*..*.", "***..", "*..*.", "*...*"], 'L': ["*....", "*....", "*....", "*....", "*****"],
+            'M': ["*...*", "**.**", "*.*.*", "*...*", "*...*"], 'N': ["*...*", "**..*", "*.*.*", "*..**", "*...*"],
+            'O': [".***.", "*...*", "*...*", "*...*", ".***."], 'P': ["****.", "*...*", "****.", "*....", "*...."],
+            'Q': [".***.", "*...*", "*.*.*", "*..**", ".***."], 'R': ["****.", "*...*", "****.", "*..*.", "*...*"],
+            'S': [".****", "*....", ".***.", "....*", "****."], 'T': ["*****", "..*..", "..*..", "..*..", "..*.."],
+            'U': ["*...*", "*...*", "*...*", "*...*", ".***."], 'V': ["*...*", "*...*", "*...*", ".*.*.", "..*.."],
+            'W': ["*...*", "*...*", "*.*.*", "**.**", "*...*"], 'X': ["*...*", ".*.*.", "..*..", ".*.*.", "*...*"],
+            'Y': ["*...*", ".*.*.", "..*..", "..*..", "..*.."], 'Z': ["*****", "...*.", "..*..", ".*...", "*****"],
+            '0': [".***.", "*...*", "*.*.*", "*...*", ".***."], '1': ["..*..", ".*...", "..*..", "..*..", ".***."],
+            '2': ["****.", "....*", ".***.", "*....", "*****"], '3': ["****.", "....*", ".***.", "....*", "****."],
+            '4': ["*...*", "*...*", "*****", "....*", "....*"], '5': ["*****", "*....", "****.", "....*", "****."],
+            '6': [".****", "*....", "****.", "*...*", ".***."], '7': ["*****", "....*", "...*.", "..*..", "..*.."],
+            '8': [".***.", "*...*", ".***.", "*...*", ".***."], '9': [".***.", "*...*", ".****", "....*", ".***."],
+            ' ': [".....", ".....", ".....", ".....", "....."], '.': [".....", ".....", ".....", ".....", "..*.."],
+            '!': ["..*..", "..*..", "..*..", ".....", "..*.."], '?': [".***.", "*...*", "...*.", "..*..", "..*.."],
+            '-': [".....", ".....", "*****", ".....", "....."]
+        };
+
         // Editor State
         let e_blocks = []; 
         let e_layer = 0;
@@ -298,7 +344,7 @@
         let e_selectedIds = new Set();
         let e_cam = { x: 0, y: 0, zoom: 1 };
         let e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layerCount: 3, gridStep: 1, brushSize: 1 };
-        let e_keys = {};
+        window.e_keys = {};
         window.e_verified = false; 
         
         // Editor Interaction
@@ -310,7 +356,7 @@
         // Game State
         let g_blocks = [], g_players = [], g_tweens = [], g_particles = [];
         let g_cam = { x: 0, y: 0, zoom: 1, targetX: null, targetY: null, active: false };
-        let g_keys = {}, g_loop = null, isPlaying = false, g_meta = null;
+        let g_keys = window.e_keys, g_loop = null, isPlaying = false, g_meta = null;
 
         const edCanvas = document.getElementById('editor-canvas');
         const edCtx = edCanvas.getContext('2d');
@@ -325,13 +371,11 @@
             return Math.max(0.125, Math.min(step, 1));
         }
 
-        // FIXED: Using floor prevents the brush from targeting the adjacent tile on the positive boundaries
         function floorToGridUnits(value, meta) {
             const step = getGridStep(meta);
             return Math.round(Math.floor(value / step) * step * 1000) / 1000;
         }
 
-        // General grid snap helper using rounding
         function snapToGridUnits(value, meta) {
             const step = getGridStep(meta);
             return Math.round(Math.round(value / step) * step * 1000) / 1000;
@@ -344,7 +388,6 @@
 
         function blockPx(block) { return block.x * TILE; }
         function blockPy(block) { return block.y * TILE; }
-        function blockDim(block) { return TILE * getBlockSize(block); }
 
         function getBrushThickness(meta) {
             const raw = parseInt(meta?.brushSize ?? 1, 10);
@@ -397,11 +440,7 @@
         function loadPaletteFromStorage() {
             const saved = localStorage.getItem('ltp_maze_custom_palette');
             if (saved) {
-                try {
-                    localColors = JSON.parse(saved);
-                } catch(e) {
-                    console.error("Failed loading saved colors:", e);
-                }
+                try { localColors = JSON.parse(saved); } catch(e) { console.error(e); }
             }
             renderSavedColorsUI();
         }
@@ -432,23 +471,14 @@
             const code = document.getElementById('palette-share-code').value.trim();
             if(!code) return showMsg("Error", "Please input a valid palette share code first.");
             try {
-                let imported = [];
-                if (code.startsWith('[')) {
-                    imported = JSON.parse(code);
-                } else {
-                    imported = code.split(',').map(c => c.trim()).filter(c => c.startsWith('#'));
-                }
+                let imported = code.startsWith('[') ? JSON.parse(code) : code.split(',').map(c => c.trim()).filter(c => c.startsWith('#'));
                 if (imported.length > 0) {
                     localColors = [...new Set([...imported, ...localColors])].slice(0, 24);
                     localStorage.setItem('ltp_maze_custom_palette', JSON.stringify(localColors));
                     renderSavedColorsUI();
                     showMsg("Success", "Colors successfully imported and merged into your palette!");
-                } else {
-                    showMsg("Invalid Format", "Colors must be comma-separated hex codes (e.g., #ffffff,#000000).");
-                }
-            } catch(e) {
-                showMsg("Parsing Error", "Invalid palette code formatting.");
-            }
+                } else showMsg("Invalid Format", "Colors must be comma-separated hex codes.");
+            } catch(e) { showMsg("Parsing Error", "Invalid palette code formatting."); }
         };
 
         function renderSavedColorsUI() {
@@ -457,7 +487,7 @@
             cGrid.innerHTML = '';
             localColors.forEach(color => {
                 cGrid.innerHTML += `
-                    <div onclick="useColorFromPalette('${color}')" class="relative group w-6 h-6 rounded cursor-pointer border border-slate-700/60 transition-transform transform hover:scale-110 active:scale-95" style="background-color: ${color};" title="Click to apply">
+                    <div onclick="useColorFromPalette('${color}')" class="relative group w-5 h-5 md:w-6 md:h-6 rounded cursor-pointer border border-slate-700/60 transition-transform transform hover:scale-110 active:scale-95" style="background-color: ${color};" title="Click to apply">
                         <button onclick="removeColorFromPalette(event, '${color}')" class="absolute -top-1 -right-1 hidden group-hover:flex items-center justify-center bg-rose-600 text-white rounded-full w-3.5 h-3.5 text-[8px] font-black leading-none hover:bg-rose-500 shadow" title="Delete">×</button>
                     </div>`;
             });
@@ -495,9 +525,7 @@
                     document.getElementById('prof-glow').checked = u.glow;
                     
                     if(document.getElementById('screen-login').classList.contains('hidden') === false){
-                        showScreen('menu');
-                        showSubMenu('play');
-                        window.curFlt = 'all'; 
+                        showScreen('menu'); showSubMenu('play'); window.curFlt = 'all'; 
                     }
                     if(u.username === 'LtpMer') document.getElementById('admin-btn').classList.remove('hidden');
                 } else { localStorage.removeItem('ltp_maze_uid'); showScreen('login'); }
@@ -532,8 +560,7 @@
         window.logout = () => { localStorage.removeItem('ltp_maze_uid'); window.currentUser = null; showScreen('login'); };
 
         window.saveProfileSettings = async () => {
-            const c = document.getElementById('prof-color').value;
-            const g = document.getElementById('prof-glow').checked;
+            const c = document.getElementById('prof-color').value, g = document.getElementById('prof-glow').checked;
             if(!window.currentUser) return;
             await updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), { color: c, glow: g });
             window.currentUser.color = c; window.currentUser.glow = g;
@@ -561,9 +588,7 @@
             document.getElementById('header-user-info').innerText = `${window.currentUser.username} | Bricks: ${window.currentUser.bricks || 0} | CP: ${window.currentUser.cp || 0}`;
             if(!document.getElementById('tab-play').classList.contains('hidden')) filterLevels(window.curFlt || 'all');
             if(!document.getElementById('tab-leaderboard').classList.contains('hidden')) loadLeaderboard(window.curLb || 'bricks');
-            if(!document.getElementById('tab-admin').classList.contains('hidden') && window.currentUser.username === 'LtpMer') {
-                loadAdminLevels();
-            }
+            if(!document.getElementById('tab-admin').classList.contains('hidden') && window.currentUser.username === 'LtpMer') loadAdminLevels();
         }
 
         window.filterLevels = (t) => {
@@ -576,9 +601,8 @@
             if(b) { b.classList.add('active', 'text-indigo-400'); b.classList.remove('text-slate-500'); }
             
             let l = window.g_levels;
-            if(t === 'my') {
-                l = l.filter(x => x.authorId === window.currentUser.id);
-            } else {
+            if(t === 'my') l = l.filter(x => x.authorId === window.currentUser.id);
+            else {
                 l = l.filter(x => !x.private || x.authorId === window.currentUser.id);
                 if(t === 'daily' || t === 'weekly') l = l.filter(x => levelScheduleMatches(x, t));
                 else if(t !== 'all') l = l.filter(x => x.category === t);
@@ -598,23 +622,20 @@
 
         function renderLevelList(list) {
             const c = document.getElementById('level-list'); c.innerHTML = '';
-            if(list.length === 0) {
-                c.innerHTML = '<div class="text-center text-slate-500 mt-10">No levels found.</div>';
-                return;
-            }
+            if(list.length === 0) { c.innerHTML = '<div class="text-center text-slate-500 mt-10">No levels found.</div>'; return; }
             list.forEach(l => {
                 const b = (window.currentUser.beaten||[]).includes(l.id) ? '<span class="text-emerald-400 text-xs font-bold bg-emerald-900/30 px-2 py-1 rounded ml-2">✓ BEATEN</span>' : '';
                 const priv = l.private ? '<span class="text-amber-400 text-xs font-bold bg-amber-900/30 px-2 py-1 rounded ml-2">🔒 PRIVATE</span>' : '';
                 const sched = l.category === 'daily' || l.category === 'weekly' ? `<span class="text-cyan-400 text-xs font-bold bg-cyan-900/30 px-2 py-1 rounded ml-2">${l.category.toUpperCase()} ${l.scheduleDate || ''}</span>` : '';
                 c.innerHTML += `
-                    <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex justify-between items-center hover:border-indigo-500 transition">
+                    <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center hover:border-indigo-500 transition gap-3 md:gap-0">
                         <div>
-                            <h4 class="font-bold text-lg">${l.name} <span class="text-slate-500 text-sm">#${l.numericId}</span> ${priv} ${b} ${sched}</h4>
-                            <p class="text-sm text-slate-400">By ${l.authorName} | Diff: <span class="text-amber-400">${l.difficulty||'Unrated'}</span> | Qual: <span class="text-fuchsia-400">${(l.rating && l.rating !== 'Daily' && l.rating !== 'Weekly') ? l.rating : 'Unrated'}</span></p>
+                            <h4 class="font-bold text-base md:text-lg">${l.name} <span class="text-slate-500 text-xs md:text-sm">#${l.numericId}</span> ${priv} ${b} ${sched}</h4>
+                            <p class="text-xs md:text-sm text-slate-400">By ${l.authorName} | Diff: <span class="text-amber-400">${l.difficulty||'Unrated'}</span> | Qual: <span class="text-fuchsia-400">${(l.rating && l.rating !== 'Daily' && l.rating !== 'Weekly') ? l.rating : 'Unrated'}</span></p>
                         </div>
-                        <div class="flex gap-2">
-                            ${l.authorId === window.currentUser.id || window.currentUser.username === 'LtpMer' ? `<button onclick="editLevel('${l.id}')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">Edit</button>` : ''}
-                            <button onclick="playLevel('${l.id}')" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-lg font-bold shadow-lg transition">Play</button>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            ${l.authorId === window.currentUser.id || window.currentUser.username === 'LtpMer' ? `<button onclick="editLevel('${l.id}')" class="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">Edit</button>` : ''}
+                            <button onclick="playLevel('${l.id}')" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-lg font-bold shadow-lg transition">Play</button>
                         </div>
                     </div>`;
             });
@@ -630,8 +651,8 @@
             const c = document.getElementById('leaderboard-list'); c.innerHTML = '';
             [...window.g_users].sort((a,b) => (b[t]||0) - (a[t]||0)).slice(0,50).forEach((u,i) => {
                 c.innerHTML += `
-                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 flex justify-between items-center">
-                        <div class="flex items-center gap-4"><span class="text-xl font-bold text-slate-500 w-8">#${i+1}</span><span class="font-bold text-lg ${u.username==='LtpMer'?'text-rose-400':'text-slate-200'}">${u.username}</span></div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 flex justify-between items-center text-sm md:text-base">
+                        <div class="flex items-center gap-2 md:gap-4"><span class="text-lg md:text-xl font-bold text-slate-500 w-6 md:w-8">#${i+1}</span><span class="font-bold ${u.username==='LtpMer'?'text-rose-400':'text-slate-200'}">${u.username}</span></div>
                         <div class="font-bold ${t==='bricks'?'text-amber-400':'text-fuchsia-400'}">${u[t]||0} ${t.toUpperCase()}</div>
                     </div>`;
             });
@@ -641,14 +662,14 @@
             const c = document.getElementById('admin-list'); c.innerHTML = '';
             [...window.g_levels].sort((a,b)=>b.timestamp-a.timestamp).forEach(l => {
                 c.innerHTML += `
-                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 flex flex-col gap-2 text-sm">
-                        <div class="flex justify-between">
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 flex flex-col gap-2 text-xs md:text-sm">
+                        <div class="flex flex-col md:flex-row justify-between gap-2">
                             <span class="font-bold text-indigo-300">${l.name} (#${l.numericId}) by ${l.authorName}</span>
-                            <div class="flex gap-2">
+                            <div class="flex flex-wrap gap-2">
                                 <select id="adm-df-${l.id}" class="bg-slate-900 border border-slate-600 rounded p-1"><option value="">Diff</option>${Object.keys(DIFF_BRICKS).map(k=>`<option value="${k}" ${l.difficulty===k?'selected':''}>${k}</option>`).join('')}</select>
                                 <select id="adm-rt-${l.id}" class="bg-slate-900 border border-slate-600 rounded p-1"><option value="">Rate</option>${Object.keys(RATING_CP).map(k=>`<option value="${k}" ${l.rating===k?'selected':''}>${k}</option>`).join('')}</select>
                                 <select id="adm-ct-${l.id}" class="bg-slate-900 border border-slate-600 rounded p-1"><option value="user" ${l.category==='user'?'selected':''}>User</option><option value="official" ${l.category==='official'?'selected':''}>Off</option><option value="daily" ${l.category==='daily'?'selected':''}>Daily</option><option value="weekly" ${l.category==='weekly'?'selected':''}>Week</option></select>
-                                <input type="date" id="adm-date-${l.id}" value="${l.scheduleDate || ''}" class="bg-slate-900 border border-slate-600 rounded p-1 text-xs">
+                                <input type="date" id="adm-date-${l.id}" value="${l.scheduleDate || ''}" class="bg-slate-900 border border-slate-600 rounded p-1">
                                 <button onclick="adminSaveLvl('${l.id}')" class="bg-indigo-600 px-2 rounded">Save</button>
                                 <button onclick="adminDelLvl('${l.id}')" class="bg-rose-600 px-2 rounded">Del</button>
                             </div>
@@ -677,41 +698,22 @@
             for(let i=0; i<count; i++) {
                 const isActive = (i === e_layer);
                 const classes = isActive 
-                    ? "px-3.5 py-1 rounded-md text-sm font-bold bg-indigo-600 border border-indigo-400 text-white min-w-[36px] flex-shrink-0 cursor-pointer shadow-md" 
-                    : "px-3.5 py-1 rounded-md text-sm font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700/80 min-w-[36px] flex-shrink-0 cursor-pointer transition";
+                    ? "px-3 py-1 rounded-md text-xs md:text-sm font-bold bg-indigo-600 border border-indigo-400 text-white min-w-[32px] flex-shrink-0 cursor-pointer shadow-md" 
+                    : "px-3 py-1 rounded-md text-xs md:text-sm font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700/80 min-w-[32px] flex-shrink-0 cursor-pointer transition";
                 html += `<button onclick="setLayer(${i})" id="btn-layer-${i}" class="${classes}">L${i+1}</button>`;
             }
-            html += `<button onclick="addLayer()" class="px-3.5 py-1 rounded-md text-sm font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition min-w-[36px] flex-shrink-0 cursor-pointer" title="Add Layer">+</button>`;
+            html += `<button onclick="addLayer()" class="px-3 py-1 rounded-md text-xs md:text-sm font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition min-w-[32px] flex-shrink-0 cursor-pointer" title="Add Layer">+</button>`;
             container.innerHTML = html;
         };
 
-        window.addLayer = () => {
-            e_meta.layerCount = (e_meta.layerCount || 3) + 1;
-            setLayer(e_meta.layerCount - 1);
-            setTimeout(() => {
-                const container = document.getElementById('layer-controls');
-                container.scrollLeft = container.scrollWidth;
-            }, 50);
-        };
+        window.addLayer = () => { e_meta.layerCount = (e_meta.layerCount || 3) + 1; setLayer(e_meta.layerCount - 1); setTimeout(() => { const container = document.getElementById('layer-controls'); container.scrollLeft = container.scrollWidth; }, 50); };
 
-        window.setLayer = (l) => {
-            e_layer = l; 
-            e_selectedIds.clear();
-            renderLayerButtons();
-            drawEditor();
-        };
+        window.setLayer = (l) => { e_layer = l; e_selectedIds.clear(); renderLayerButtons(); drawEditor(); };
 
         window.openEditor = () => { 
-            showScreen('editor'); 
-            window.editId = null; 
-            window.e_verified = false;
-            e_blocks = []; 
-            e_cam = {x:0, y:0, zoom:1}; 
+            showScreen('editor'); window.editId = null; window.e_verified = false; e_blocks = []; e_cam = {x:0, y:0, zoom:1}; 
             e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layerCount: 3, gridStep: 1, brushSize: 1 }; 
-            setLayer(0); 
-            setTool('select'); 
-            renderSavedColorsUI();
-            drawEditor(); 
+            setLayer(0); setTool('select'); renderSavedColorsUI(); drawEditor(); 
         };
         window.closeEditor = () => { if(confirm("Exit Editor? Unsaved changes will be lost.")) showScreen('menu'); };
         
@@ -722,15 +724,11 @@
         };
         window.closeLevelSettings = () => document.getElementById('modal-level-settings').classList.add('hidden');
         window.applyLevelSettings = () => {
-            e_meta.width = parseInt(document.getElementById('cfg-width').value) || 40;
-            e_meta.height = parseInt(document.getElementById('cfg-height').value) || 40;
-            e_meta.zoom = parseFloat(document.getElementById('cfg-zoom').value) || 1;
-            e_meta.gridStep = getGridStep({ gridStep: parseFloat(document.getElementById('cfg-grid-step').value) || 1 });
+            e_meta.width = parseInt(document.getElementById('cfg-width').value) || 40; e_meta.height = parseInt(document.getElementById('cfg-height').value) || 40;
+            e_meta.zoom = parseFloat(document.getElementById('cfg-zoom').value) || 1; e_meta.gridStep = getGridStep({ gridStep: parseFloat(document.getElementById('cfg-grid-step').value) || 1 });
             e_meta.brushSize = Math.max(1, Math.min(12, parseInt(document.getElementById('cfg-brush-size').value, 10) || 1));
             e_meta.maxHealth = parseInt(document.getElementById('cfg-health').value) || 3;
-            closeLevelSettings(); 
-            window.e_verified = false;
-            drawEditor();
+            closeLevelSettings(); window.e_verified = false; drawEditor();
         };
 
         window.setTool = (t) => {
@@ -742,42 +740,30 @@
             else { btn.classList.remove('bg-slate-800'); btn.classList.add('bg-slate-600', 'border', 'border-slate-400'); }
             
             document.getElementById('prop-trigger-box').classList.add('hidden');
+            document.getElementById('prop-text-tool-box').classList.add('hidden');
+            
             if(t === 'wall') { setProps('#ffffff', true, 1, 0); }
             else if(t === 'start') { setProps('#00ffaa', false, 1, 10); }
             else if(t === 'end') { setProps('#ffaa00', false, 1, 15); }
             else if(t === 'damage') { setProps('#ff0044', true, 0.8, 12); }
             else if(t === 'trigger') { setProps('#aa00ff', false, 0.5, 8); document.getElementById('prop-trigger-box').classList.remove('hidden'); document.getElementById('prop-particle-face').value = 0; renderTriggerParams('WIN'); }
+            else if(t === 'text') { setProps('#38bdf8', true, 1, 0); document.getElementById('prop-text-tool-box').classList.remove('hidden'); document.getElementById('prop-text-input').focus(); }
         };
 
         function setProps(c, s, a, g) { 
-            document.getElementById('prop-color').value = c; 
-            document.getElementById('prop-solid').checked = s; 
-            document.getElementById('prop-pushblock').checked = false; 
-            syncAlphaInputs(a);
-            syncGlowInputs(g || 0);
-            document.getElementById('prop-tag').value = ''; 
+            document.getElementById('prop-color').value = c; document.getElementById('prop-solid').checked = s; 
+            document.getElementById('prop-pushblock').checked = false; document.getElementById('prop-rotation').value = 0;
+            syncAlphaInputs(a); syncGlowInputs(g || 0); document.getElementById('prop-tag').value = ''; 
         }
 
         window.syncAlphaInputs = (val) => {
-            let floatVal = parseFloat(val);
-            if (isNaN(floatVal)) floatVal = 1;
-            floatVal = Math.max(0, Math.min(1, floatVal));
-            
-            document.getElementById('prop-alpha').value = floatVal;
-            document.getElementById('prop-alpha-num').value = floatVal;
-            
-            updateProp();
+            let floatVal = parseFloat(val); if (isNaN(floatVal)) floatVal = 1; floatVal = Math.max(0, Math.min(1, floatVal));
+            document.getElementById('prop-alpha').value = floatVal; document.getElementById('prop-alpha-num').value = floatVal; updateProp();
         };
 
         window.syncGlowInputs = (val) => {
-            let intVal = parseInt(val);
-            if (isNaN(intVal)) intVal = 0;
-            intVal = Math.max(0, Math.min(50, intVal));
-            
-            document.getElementById('prop-glow').value = intVal;
-            document.getElementById('prop-glow-num').value = intVal;
-            
-            updateProp();
+            let intVal = parseInt(val); if (isNaN(intVal)) intVal = 0; intVal = Math.max(0, Math.min(50, intVal));
+            document.getElementById('prop-glow').value = intVal; document.getElementById('prop-glow-num').value = intVal; updateProp();
         };
 
         function renderTriggerParams(action, data = {}) {
@@ -787,32 +773,23 @@
                 h = `<label>Target X: <input type="number" id="tp-x" value="${data.x||0}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
                      <label>Target Y: <input type="number" id="tp-y" value="${data.y||0}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
                      <label>Zoom: <input type="number" step="0.1" id="tp-z" value="${data.z||1}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
-                     <label>Duration (s): <input type="number" step="0.1" id="tp-dur" value="${data.dur||1}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>`;
+                     <label>Dur (s): <input type="number" step="0.1" id="tp-dur" value="${data.dur||1}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>`;
             } else if(action === 'MOVE_TAG') {
                 h = `<label>Target Tag: <input type="text" id="tp-tag" value="${data.tag||''}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded" placeholder="e.g. door1"></label>
-                     <label>Move X (Tiles): <input type="number" id="tp-mx" value="${data.mx||0}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
-                     <label>Move Y (Tiles): <input type="number" id="tp-my" value="${data.my||0}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
-                     <label>Duration (s): <input type="number" step="0.1" id="tp-dur" value="${data.dur||1}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>`;
+                     <label>Move X: <input type="number" id="tp-mx" value="${data.mx||0}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
+                     <label>Move Y: <input type="number" id="tp-my" value="${data.my||0}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
+                     <label>Dur (s): <input type="number" step="0.1" id="tp-dur" value="${data.dur||1}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>`;
             } else if(action === 'ROTATE_TAG') {
-                h = `<label>Target Tag: <input type="text" id="tp-tag" value="${data.tag||''}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded" placeholder="e.g. door1"></label>
-                     <label>Center Tag: <input type="text" id="tp-center-tag" value="${data.centerTag||''}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded" placeholder="e.g. pivot"></label>
-                     <label>Angle (deg): <input type="number" id="tp-ang" value="${data.ang||90}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
-                     <label>Duration (s): <input type="number" step="0.1" id="tp-dur" value="${data.dur||1}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>`;
+                h = `<label>Target Tag: <input type="text" id="tp-tag" value="${data.tag||''}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
+                     <label>Center Tag: <input type="text" id="tp-center-tag" value="${data.centerTag||''}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
+                     <label>Angle: <input type="number" id="tp-ang" value="${data.ang||90}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
+                     <label>Dur (s): <input type="number" step="0.1" id="tp-dur" value="${data.dur||1}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>`;
             } else if(action === 'SET_PROPERTY') {
-                h = `<label>Target Tag: <input type="text" id="tp-tag" value="${data.tag||''}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded" placeholder="e.g. wallA"></label>
-                     <label>Property Name:
-                        <select id="tp-prop" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded">
-                            <option value="color" ${data.prop==='color'?'selected':''}>Color</option>
-                            <option value="solid" ${data.prop==='solid'?'selected':''}>Solid (true/false)</option>
-                            <option value="pushblock" ${data.prop==='pushblock'?'selected':''}>Pushblock (true/false)</option>
-                            <option value="alpha" ${data.prop==='alpha'?'selected':''}>Alpha (0-1)</option>
-                            <option value="glow" ${data.prop==='glow'?'selected':''}>Glow (0-50)</option>
-                        </select>
-                     </label>
-                     <label>New Value: <input type="text" id="tp-val" value="${data.val!==undefined?data.val:''}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded" placeholder="e.g. #ff0000, false, 0.5"></label>`;
+                h = `<label>Target Tag: <input type="text" id="tp-tag" value="${data.tag||''}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>
+                     <label>Property: <select id="tp-prop" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"><option value="color" ${data.prop==='color'?'selected':''}>Color</option><option value="solid" ${data.prop==='solid'?'selected':''}>Solid (true/false)</option><option value="pushblock" ${data.prop==='pushblock'?'selected':''}>Pushblock (true/false)</option><option value="alpha" ${data.prop==='alpha'?'selected':''}>Alpha (0-1)</option><option value="glow" ${data.prop==='glow'?'selected':''}>Glow (0-50)</option><option value="rotation" ${data.prop==='rotation'?'selected':''}>Rotation</option></select></label>
+                     <label>Value: <input type="text" id="tp-val" value="${data.val!==undefined?data.val:''}" class="bg-slate-800 p-1 w-full mt-1 border border-slate-700 rounded"></label>`;
             }
-            p.innerHTML = h;
-            Array.from(p.querySelectorAll('input, select')).forEach(i => i.addEventListener('change', updateProp));
+            p.innerHTML = h; Array.from(p.querySelectorAll('input, select')).forEach(i => i.addEventListener('change', updateProp));
         }
 
         document.getElementById('prop-action').addEventListener('change', (e) => { renderTriggerParams(e.target.value); updateProp(); });
@@ -826,54 +803,44 @@
                     b.color = document.getElementById('prop-color').value; 
                     b.solid = document.getElementById('prop-solid').checked;
                     b.pushblock = document.getElementById('prop-pushblock').checked;
+                    b.rotation = parseFloat(document.getElementById('prop-rotation').value) || 0;
                     b.alpha = parseFloat(document.getElementById('prop-alpha').value); 
                     b.glow = parseInt(document.getElementById('prop-glow').value) || 0;
                     b.tag = document.getElementById('prop-tag').value;
-                    b.pushblock = document.getElementById('prop-pushblock').checked;
                     if(b.type === 'trigger') {
                         b.listenTag = document.getElementById('prop-trig-listen').value; 
                         b.action = document.getElementById('prop-action').value;
                         b.particleFace = parseFloat(document.getElementById('prop-particle-face').value) || 0;
                         b.tData = {};
-                        if(b.action === 'CAMERA') { b.tData = { x: +document.getElementById('tp-x').value, y: +document.getElementById('tp-y').value, z: +document.getElementById('tp-z').value, dur: +document.getElementById('tp-dur').value }; }
-                        if(b.action === 'MOVE_TAG') { b.tData = { tag: document.getElementById('tp-tag').value, mx: +document.getElementById('tp-mx').value, my: +document.getElementById('tp-my').value, dur: +document.getElementById('tp-dur').value }; }
-                        if(b.action === 'ROTATE_TAG') { b.tData = { tag: document.getElementById('tp-tag').value, centerTag: document.getElementById('tp-center-tag').value, ang: +document.getElementById('tp-ang').value, dur: +document.getElementById('tp-dur').value }; }
-                        if(b.action === 'SET_PROPERTY') { b.tData = { tag: document.getElementById('tp-tag').value, prop: document.getElementById('tp-prop').value, val: document.getElementById('tp-val').value }; }
+                        if(b.action === 'CAMERA') b.tData = { x: +document.getElementById('tp-x').value, y: +document.getElementById('tp-y').value, z: +document.getElementById('tp-z').value, dur: +document.getElementById('tp-dur').value };
+                        if(b.action === 'MOVE_TAG') b.tData = { tag: document.getElementById('tp-tag').value, mx: +document.getElementById('tp-mx').value, my: +document.getElementById('tp-my').value, dur: +document.getElementById('tp-dur').value };
+                        if(b.action === 'ROTATE_TAG') b.tData = { tag: document.getElementById('tp-tag').value, centerTag: document.getElementById('tp-center-tag').value, ang: +document.getElementById('tp-ang').value, dur: +document.getElementById('tp-dur').value };
+                        if(b.action === 'SET_PROPERTY') b.tData = { tag: document.getElementById('tp-tag').value, prop: document.getElementById('tp-prop').value, val: document.getElementById('tp-val').value };
                     }
                 }
             });
             drawEditor();
         };
 
-        // FIXED: Using floor grid mapping prevents the brush from targeting the adjacent tile
         function getMousePos(e) {
             const r = edCanvas.getBoundingClientRect();
-            const rawX = e.clientX - r.left, rawY = e.clientY - r.top;
+            // Handle touches
+            let clientX = e.clientX, clientY = e.clientY;
+            if(e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+            const rawX = clientX - r.left, rawY = clientY - r.top;
             const worldX = (rawX - edCanvas.width/2) / e_cam.zoom + e_cam.x;
             const worldY = (rawY - edCanvas.height/2) / e_cam.zoom + e_cam.y;
-            return { 
-                wx: worldX, 
-                wy: worldY, 
-                gx: floorToGridUnits(worldX / TILE, e_meta), 
-                gy: floorToGridUnits(worldY / TILE, e_meta) 
-            };
+            return { wx: worldX, wy: worldY, gx: floorToGridUnits(worldX / TILE, e_meta), gy: floorToGridUnits(worldY / TILE, e_meta) };
         }
 
-        function beginPaintStroke() {
-            currentPaintStroke.clear();
-        }
+        function beginPaintStroke() { currentPaintStroke.clear(); }
 
         function brushCellsAt(pos) {
-            const step = getGridStep(e_meta);
-            const brush = getBrushThickness(e_meta);
-            const half = Math.floor(brush / 2);
+            const step = getGridStep(e_meta), brush = getBrushThickness(e_meta), half = Math.floor(brush / 2);
             const cells = [];
             for (let dx = -half; dx < -half + brush; dx++) {
                 for (let dy = -half; dy < -half + brush; dy++) {
-                    cells.push({
-                        x: Math.round((pos.gx + dx * step) * 1000) / 1000,
-                        y: Math.round((pos.gy + dy * step) * 1000) / 1000
-                    });
+                    cells.push({ x: Math.round((pos.gx + dx * step) * 1000) / 1000, y: Math.round((pos.gy + dy * step) * 1000) / 1000 });
                 }
             }
             return cells;
@@ -882,9 +849,7 @@
         function eraseBlockAt(gridX, gridY) {
             for (let i = e_blocks.length - 1; i >= 0; i--) {
                 const b = e_blocks[i];
-                if (b.layer === e_layer && Math.abs(b.x - gridX) < 0.0001 && Math.abs(b.y - gridY) < 0.0001) {
-                    e_blocks.splice(i, 1);
-                }
+                if (b.layer === e_layer && Math.abs(b.x - gridX) < 0.0001 && Math.abs(b.y - gridY) < 0.0001) e_blocks.splice(i, 1);
             }
         }
 
@@ -892,12 +857,13 @@
             const existingIdx = e_blocks.findIndex(b => b.layer === e_layer && Math.abs(b.x - gridX) < 0.0001 && Math.abs(b.y - gridY) < 0.0001);
             if (existingIdx >= 0) e_blocks.splice(existingIdx, 1);
             const b = {
-                id: generateId(), x: gridX, y: gridY, layer: e_layer, type: e_tool,
+                id: generateId(), x: gridX, y: gridY, layer: e_layer, type: e_tool === 'text' ? 'wall' : e_tool,
                 color: document.getElementById('prop-color').value, solid: document.getElementById('prop-solid').checked,
                 pushblock: document.getElementById('prop-pushblock').checked,
+                rotation: parseFloat(document.getElementById('prop-rotation').value) || 0,
                 alpha: parseFloat(document.getElementById('prop-alpha').value), 
                 glow: parseInt(document.getElementById('prop-glow').value) || 0,
-                tag: document.getElementById('prop-tag').value, rotation: 0, size: e_meta.gridStep || 1
+                tag: document.getElementById('prop-tag').value, size: e_meta.gridStep || 1
             };
             if(e_tool === 'trigger') {
                 b.action = document.getElementById('prop-action').value; b.listenTag = document.getElementById('prop-trig-listen').value;
@@ -911,10 +877,27 @@
             e_blocks.push(b);
         }
 
-        edCanvas.addEventListener('mousedown', e => {
+        const handlePointerDown = e => {
             if(e.button === 2) { isErasing = true; beginPaintStroke(); handleDraw(e); return; }
             const pos = getMousePos(e);
             
+            if(e_tool === 'text') {
+                const textStr = document.getElementById('prop-text-input').value.toUpperCase();
+                if (!textStr) return;
+                let startGx = pos.gx, startGy = pos.gy;
+                for (let i = 0; i < textStr.length; i++) {
+                    let char = textStr[i], grid = BLOCK_FONT[char] || BLOCK_FONT[' '];
+                    for (let r = 0; r < 5; r++) {
+                        for (let c = 0; c < 5; c++) {
+                            if (grid[r] && grid[r][c] === '*') placeBlockAt(startGx + c * e_meta.gridStep, startGy + r * e_meta.gridStep);
+                        }
+                    }
+                    startGx += 6 * e_meta.gridStep;
+                }
+                window.e_verified = false; drawEditor();
+                return;
+            }
+
             if(e_tool === 'select') {
                 let clickedSel = false;
                 for(let id of e_selectedIds) {
@@ -924,15 +907,13 @@
                 if(clickedSel) {
                     isDragging = true; dragOffsetX = pos.gx; dragOffsetY = pos.gy;
                 } else {
-                    isSelecting = true; startSelectX = pos.wx; startSelectY = pos.wy; currentMouseX = pos.wx; currentMouseY = pos.wy;
-                    e_selectedIds.clear();
+                    isSelecting = true; startSelectX = pos.wx; startSelectY = pos.wy; currentMouseX = pos.wx; currentMouseY = pos.wy; e_selectedIds.clear();
                 }
-            } else {
-                isDrawing = true; beginPaintStroke(); handleDraw(e);
-            }
-        });
-        
-        edCanvas.addEventListener('mousemove', e => {
+            } else { isDrawing = true; beginPaintStroke(); handleDraw(e); }
+        };
+
+        const handlePointerMove = e => {
+            if(!isDragging && !isSelecting && !isDrawing && !isErasing) return;
             const pos = getMousePos(e);
             currentMouseX = pos.wx; currentMouseY = pos.wy;
             
@@ -943,15 +924,11 @@
                     e_selectedIds.forEach(id => { let b = e_blocks.find(x=>x.id===id); if(b) { b.x = snapToGridUnits(b.x + dx, e_meta); b.y = snapToGridUnits(b.y + dy, e_meta); } });
                     dragOffsetX = pos.gx; dragOffsetY = pos.gy;
                 }
-            } else if(isSelecting) {
-                // updates drawn below
-            } else if(isDrawing || isErasing) {
-                handleDraw(e);
-            }
+            } else if(isDrawing || isErasing) { handleDraw(e); }
             drawEditor();
-        });
+        };
 
-        window.addEventListener('mouseup', e => {
+        const handlePointerUp = e => {
             if(isSelecting) {
                 const xMin = Math.min(startSelectX, currentMouseX), xMax = Math.max(startSelectX, currentMouseX);
                 const yMin = Math.min(startSelectY, currentMouseY), yMax = Math.max(startSelectY, currentMouseY);
@@ -961,18 +938,12 @@
                         if(bx+bw > xMin && bx < xMax && by+bw > yMin && by < yMax) e_selectedIds.add(b.id);
                     }
                 });
-                
                 if(e_selectedIds.size > 0) {
                     const first = e_blocks.find(x=>x.id===Array.from(e_selectedIds)[0]);
-                    document.getElementById('prop-color').value = first.color; 
-                    document.getElementById('prop-solid').checked = first.solid;
-                    document.getElementById('prop-pushblock').checked = !!first.pushblock;
-                    
-                    syncAlphaInputs(first.alpha !== undefined ? first.alpha : 1);
-                    syncGlowInputs(first.glow !== undefined ? first.glow : 0);
-                    
+                    document.getElementById('prop-color').value = first.color; document.getElementById('prop-solid').checked = first.solid;
+                    document.getElementById('prop-pushblock').checked = !!first.pushblock; document.getElementById('prop-rotation').value = first.rotation || 0;
+                    syncAlphaInputs(first.alpha !== undefined ? first.alpha : 1); syncGlowInputs(first.glow !== undefined ? first.glow : 0);
                     document.getElementById('prop-tag').value = first.tag||'';
-                    document.getElementById('prop-pushblock').checked = !!first.pushblock;
                     if(first.type === 'trigger') {
                         document.getElementById('prop-trigger-box').classList.remove('hidden');
                         document.getElementById('prop-action').value = first.action; document.getElementById('prop-trig-listen').value = first.listenTag||'';
@@ -982,97 +953,70 @@
                 }
             }
             isDrawing = false; isErasing = false; isSelecting = false; isDragging = false; currentPaintStroke.clear(); drawEditor();
-        });
+        };
+
+        edCanvas.addEventListener('mousedown', handlePointerDown);
+        edCanvas.addEventListener('mousemove', handlePointerMove);
+        window.addEventListener('mouseup', handlePointerUp);
+        
+        edCanvas.addEventListener('touchstart', e => { e.preventDefault(); handlePointerDown(e); }, {passive: false});
+        edCanvas.addEventListener('touchmove', e => { e.preventDefault(); handlePointerMove(e); }, {passive: false});
+        window.addEventListener('touchend', handlePointerUp);
 
         function handleDraw(e) {
             const pos = getMousePos(e);
             if(pos.gx < 0 || pos.gx >= e_meta.width || pos.gy < 0 || pos.gy >= e_meta.height) return;
-
             const cells = brushCellsAt(pos).filter(cell => cell.x >= 0 && cell.x < e_meta.width && cell.y >= 0 && cell.y < e_meta.height);
 
             if(isErasing || e_tool === 'erase') {
                 cells.forEach(cell => {
                     const key = `${e_layer}:${cell.x.toFixed(4)}:${cell.y.toFixed(4)}:erase`;
                     if (currentPaintStroke.has(key)) return;
-                    currentPaintStroke.add(key);
-                    eraseBlockAt(cell.x, cell.y);
-                    window.e_verified = false;
+                    currentPaintStroke.add(key); eraseBlockAt(cell.x, cell.y); window.e_verified = false;
                 });
-            } else if(e_tool !== 'select') {
+            } else if(e_tool !== 'select' && e_tool !== 'text') {
                 cells.forEach(cell => {
                     const key = `${e_layer}:${cell.x.toFixed(4)}:${cell.y.toFixed(4)}:${e_tool}`;
                     if (currentPaintStroke.has(key)) return;
-                    currentPaintStroke.add(key);
-                    window.e_verified = false;
-                    placeBlockAt(cell.x, cell.y);
+                    currentPaintStroke.add(key); window.e_verified = false; placeBlockAt(cell.x, cell.y);
                 });
             }
         }
 
-
-        window.addEventListener('keydown', e => { e_keys[e.key.toLowerCase()] = true; });
-        window.addEventListener('keyup', e => { e_keys[e.key.toLowerCase()] = false; });
-        edCanvas.addEventListener('wheel', e => {
-            e_cam.zoom -= e.deltaY * 0.001; e_cam.zoom = Math.max(0.1, Math.min(e_cam.zoom, 5));
-            drawEditor();
-        });
+        window.addEventListener('keydown', e => { window.e_keys[e.key.toLowerCase()] = true; });
+        window.addEventListener('keyup', e => { window.e_keys[e.key.toLowerCase()] = false; });
+        edCanvas.addEventListener('wheel', e => { e_cam.zoom -= e.deltaY * 0.001; e_cam.zoom = Math.max(0.1, Math.min(e_cam.zoom, 5)); drawEditor(); }, {passive: true});
 
         function updateEditorCam() {
             let spd = 10 / e_cam.zoom;
-            if(e_keys['w']) e_cam.y -= spd; if(e_keys['s']) e_cam.y += spd;
-            if(e_keys['a']) e_cam.x -= spd; if(e_keys['d']) e_cam.x += spd;
+            if(window.e_keys['w']) e_cam.y -= spd; if(window.e_keys['s']) e_cam.y += spd;
+            if(window.e_keys['a']) e_cam.x -= spd; if(window.e_keys['d']) e_cam.x += spd;
             drawEditor();
         }
 
         function drawVisualArrow(ctx, fromX, fromY, toX, toY, color = '#f472b6', width = 2) {
-            ctx.save();
-            ctx.strokeStyle = color;
-            ctx.fillStyle = color;
-            ctx.lineWidth = width;
-            ctx.setLineDash([6, 4]);
-            
-            ctx.beginPath();
-            ctx.moveTo(fromX, fromY);
-            ctx.lineTo(toX, toY);
-            ctx.stroke();
-
-            const angle = Math.atan2(toY - fromY, toX - fromX);
-            ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.moveTo(toX, toY);
-            ctx.lineTo(toX - 10 * Math.cos(angle - Math.PI / 6), toY - 10 * Math.sin(angle - Math.PI / 6));
-            ctx.lineTo(toX - 10 * Math.cos(angle + Math.PI / 6), toY - 10 * Math.sin(angle + Math.PI / 6));
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
+            ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width; ctx.setLineDash([6, 4]);
+            ctx.beginPath(); ctx.moveTo(fromX, fromY); ctx.lineTo(toX, toY); ctx.stroke();
+            const angle = Math.atan2(toY - fromY, toX - fromX); ctx.setLineDash([]);
+            ctx.beginPath(); ctx.moveTo(toX, toY); ctx.lineTo(toX - 10 * Math.cos(angle - Math.PI / 6), toY - 10 * Math.sin(angle - Math.PI / 6)); ctx.lineTo(toX - 10 * Math.cos(angle + Math.PI / 6), toY - 10 * Math.sin(angle + Math.PI / 6)); ctx.closePath(); ctx.fill(); ctx.restore();
         }
 
         function drawEditor() {
             edCtx.fillStyle = '#1e293b'; edCtx.fillRect(0, 0, edCanvas.width, edCanvas.height);
-            edCtx.save();
-            edCtx.translate(edCanvas.width/2, edCanvas.height/2);
-            edCtx.scale(e_cam.zoom, e_cam.zoom);
-            edCtx.translate(-e_cam.x, -e_cam.y);
+            edCtx.save(); edCtx.translate(edCanvas.width/2, edCanvas.height/2); edCtx.scale(e_cam.zoom, e_cam.zoom); edCtx.translate(-e_cam.x, -e_cam.y);
 
             edCtx.strokeStyle = 'rgba(255,255,255,0.05)'; edCtx.lineWidth = 1;
-            const eStep = e_meta.gridStep || 1;
-            const eUnit = TILE * eStep;
+            const eStep = e_meta.gridStep || 1, eUnit = TILE * eStep;
             for(let x=0; x<=e_meta.width / eStep; x++) { edCtx.beginPath(); edCtx.moveTo(x*eUnit, 0); edCtx.lineTo(x*eUnit, e_meta.height*TILE); edCtx.stroke(); }
             for(let y=0; y<=e_meta.height / eStep; y++) { edCtx.beginPath(); edCtx.moveTo(0, y*eUnit); edCtx.lineTo(e_meta.width*TILE, y*eUnit); edCtx.stroke(); }
             edCtx.strokeStyle = 'rgba(99,102,241,0.5)'; edCtx.lineWidth = 2; edCtx.strokeRect(0, 0, e_meta.width*TILE, e_meta.height*TILE);
 
-            if (e_tool !== 'select') {
+            if (e_tool !== 'select' && e_tool !== 'text') {
                 const hover = { gx: floorToGridUnits(currentMouseX / TILE, e_meta), gy: floorToGridUnits(currentMouseY / TILE, e_meta) };
                 const cells = brushCellsAt(hover).filter(cell => cell.x >= 0 && cell.x < e_meta.width && cell.y >= 0 && cell.y < e_meta.height);
                 if (cells.length) {
-                    edCtx.save();
-                    edCtx.fillStyle = e_tool === 'erase' ? 'rgba(244,63,94,0.12)' : 'rgba(99,102,241,0.12)';
-                    edCtx.strokeStyle = e_tool === 'erase' ? 'rgba(244,63,94,0.5)' : 'rgba(255,255,255,0.35)';
-                    edCtx.lineWidth = 1;
-                    cells.forEach(cell => {
-                        edCtx.fillRect(cell.x*TILE, cell.y*TILE, TILE, TILE);
-                        edCtx.strokeRect(cell.x*TILE, cell.y*TILE, TILE, TILE);
-                    });
+                    edCtx.save(); edCtx.fillStyle = e_tool === 'erase' ? 'rgba(244,63,94,0.12)' : 'rgba(99,102,241,0.12)'; edCtx.strokeStyle = e_tool === 'erase' ? 'rgba(244,63,94,0.5)' : 'rgba(255,255,255,0.35)'; edCtx.lineWidth = 1;
+                    cells.forEach(cell => { edCtx.fillRect(cell.x*TILE, cell.y*TILE, TILE, TILE); edCtx.strokeRect(cell.x*TILE, cell.y*TILE, TILE, TILE); });
                     edCtx.restore();
                 }
             }
@@ -1080,82 +1024,53 @@
             const sorted = [...e_blocks].sort((a,b) => a.layer - b.layer);
             sorted.forEach(b => {
                 const isCurrentLayer = (b.layer === e_layer);
-                if(!isCurrentLayer) edCtx.globalAlpha = (b.alpha !== undefined ? b.alpha : 1) * 0.3; 
-                else edCtx.globalAlpha = (b.alpha !== undefined ? b.alpha : 1);
+                edCtx.save();
+                edCtx.globalAlpha = isCurrentLayer ? (b.alpha !== undefined ? parseFloat(b.alpha) : 1) : (b.alpha !== undefined ? parseFloat(b.alpha) : 1) * 0.3; 
                 
                 const bw = TILE * getBlockSize(b);
-                if(b.glow && b.glow > 0) {
-                    edCtx.save();
-                    edCtx.shadowBlur = b.glow * e_cam.zoom;
-                    edCtx.shadowColor = b.color;
-                    edCtx.fillStyle = b.color;
-                    edCtx.fillRect(b.x*TILE, b.y*TILE, bw, bw);
-                    edCtx.restore();
-                } else {
-                    edCtx.fillStyle = b.color;
-                    edCtx.fillRect(b.x*TILE, b.y*TILE, bw, bw);
-                }
+                edCtx.translate(b.x*TILE + bw/2, b.y*TILE + bw/2);
+                edCtx.rotate((b.rotation||0) * Math.PI/180);
+
+                if(b.glow && b.glow > 0) { edCtx.shadowBlur = b.glow * e_cam.zoom; edCtx.shadowColor = b.color; }
                 
+                edCtx.fillStyle = b.color;
+                edCtx.fillRect(-bw/2, -bw/2, bw, bw);
+                
+                edCtx.shadowBlur = 0;
                 edCtx.fillStyle = '#fff'; edCtx.font = '12px Arial'; edCtx.textAlign = 'center';
-                if(b.type === 'start') edCtx.fillText('S', b.x*TILE+TILE/2, b.y*TILE+TILE/1.5);
-                if(b.type === 'end') edCtx.fillText('E', b.x*TILE+TILE/2, b.y*TILE+TILE/1.5);
-                if(b.type === 'damage') edCtx.fillText('D', b.x*TILE+TILE/2, b.y*TILE+TILE/1.5);
-                if(b.type === 'trigger') edCtx.fillText('T', b.x*TILE+TILE/2, b.y*TILE+TILE/1.5);
+                // counter-rotate text so it remains readable
+                edCtx.rotate(-(b.rotation||0) * Math.PI/180);
+                if(b.type === 'start') edCtx.fillText('S', 0, 4);
+                if(b.type === 'end') edCtx.fillText('E', 0, 4);
+                if(b.type === 'damage') edCtx.fillText('D', 0, 4);
+                if(b.type === 'trigger') edCtx.fillText('T', 0, 4);
+                edCtx.rotate((b.rotation||0) * Math.PI/180); // restore rotation for stroke
                 
-                if(e_selectedIds.has(b.id)) { 
-                    edCtx.strokeStyle = '#fff'; 
-                    edCtx.lineWidth = 2; 
-                    edCtx.strokeRect(b.x*TILE, b.y*TILE, bw, bw); 
-                }
+                if(e_selectedIds.has(b.id)) { edCtx.strokeStyle = '#fff'; edCtx.lineWidth = 2; edCtx.strokeRect(-bw/2, -bw/2, bw, bw); }
+                edCtx.restore();
             });
-            edCtx.globalAlpha = 1;
 
             sorted.forEach(b => {
                 if (b.type === 'trigger' && b.layer === e_layer) {
-                    const fromX = b.x * TILE + TILE/2;
-                    const fromY = b.y * TILE + TILE/2;
-                    const isSelected = e_selectedIds.has(b.id);
-                    const alpha = isSelected ? 1 : 0.45;
-                    const color = isSelected ? '#a855f7' : '#ec4899'; 
+                    const fromX = b.x * TILE + TILE/2, fromY = b.y * TILE + TILE/2;
+                    const isSelected = e_selectedIds.has(b.id), alpha = isSelected ? 1 : 0.45, color = isSelected ? '#a855f7' : '#ec4899'; 
 
-                    edCtx.save();
-                    edCtx.globalAlpha = alpha;
-                    
+                    edCtx.save(); edCtx.globalAlpha = alpha;
                     if (b.action === 'CAMERA' && b.tData) {
-                        const targetX = (b.tData.x || 0) * TILE + TILE/2;
-                        const targetY = (b.tData.y || 0) * TILE + TILE/2;
+                        const targetX = (b.tData.x || 0) * TILE + TILE/2, targetY = (b.tData.y || 0) * TILE + TILE/2;
                         drawVisualArrow(edCtx, fromX, fromY, targetX, targetY, color, isSelected ? 3 : 1.5);
-                        
-                        edCtx.strokeStyle = color;
-                        edCtx.lineWidth = 2;
-                        edCtx.beginPath();
-                        edCtx.arc(targetX, targetY, 12, 0, Math.PI*2);
-                        edCtx.stroke();
-                        edCtx.beginPath();
-                        edCtx.moveTo(targetX - 16, targetY); edCtx.lineTo(targetX + 16, targetY);
-                        edCtx.moveTo(targetX, targetY - 16); edCtx.lineTo(targetX, targetY + 16);
-                        edCtx.stroke();
+                        edCtx.strokeStyle = color; edCtx.lineWidth = 2; edCtx.beginPath(); edCtx.arc(targetX, targetY, 12, 0, Math.PI*2); edCtx.stroke();
+                        edCtx.beginPath(); edCtx.moveTo(targetX - 16, targetY); edCtx.lineTo(targetX + 16, targetY); edCtx.moveTo(targetX, targetY - 16); edCtx.lineTo(targetX, targetY + 16); edCtx.stroke();
                     } 
                     else if ((b.action === 'MOVE_TAG' || b.action === 'ROTATE_TAG' || b.action === 'SET_PROPERTY') && b.tData && b.tData.tag) {
                         const targets = e_blocks.filter(x => x.tag === b.tData.tag);
                         targets.forEach(t => {
-                            const toX = t.x * TILE + TILE/2;
-                            const toY = t.y * TILE + TILE/2;
+                            const toX = t.x * TILE + TILE/2, toY = t.y * TILE + TILE/2;
                             drawVisualArrow(edCtx, fromX, fromY, toX, toY, color, isSelected ? 3 : 1.5);
-                            
-                            edCtx.strokeStyle = color;
-                            edCtx.lineWidth = isSelected ? 3 : 1.5;
-                            edCtx.strokeRect(t.x*TILE - 2, t.y*TILE - 2, (TILE * getBlockSize(t)) + 4, (TILE * getBlockSize(t)) + 4);
-                            
+                            edCtx.strokeStyle = color; edCtx.lineWidth = isSelected ? 3 : 1.5; edCtx.strokeRect(t.x*TILE - 2, t.y*TILE - 2, (TILE * getBlockSize(t)) + 4, (TILE * getBlockSize(t)) + 4);
                             if (b.action === 'MOVE_TAG') {
-                                const destX = (t.x + (b.tData.mx || 0)) * TILE;
-                                const destY = (t.y + (b.tData.my || 0)) * TILE;
-                                edCtx.save();
-                                edCtx.strokeStyle = '#22c55e';
-                                edCtx.lineWidth = 1.5;
-                                edCtx.setLineDash([4, 4]);
-                                edCtx.strokeRect(destX + 2, destY + 2, TILE - 4, TILE - 4);
-                                edCtx.restore();
+                                const destX = (t.x + (b.tData.mx || 0)) * TILE, destY = (t.y + (b.tData.my || 0)) * TILE;
+                                edCtx.save(); edCtx.strokeStyle = '#22c55e'; edCtx.lineWidth = 1.5; edCtx.setLineDash([4, 4]); edCtx.strokeRect(destX + 2, destY + 2, TILE - 4, TILE - 4); edCtx.restore();
                             }
                         });
                     }
@@ -1164,9 +1079,9 @@
             });
 
             if(isSelecting) {
-                edCtx.fillStyle = 'rgba(99, 102, 241, 0.2)'; edCtx.strokeStyle = '#6366f1'; edCtx.lineWidth = 1;
-                edCtx.fillRect(startSelectX, startSelectY, currentMouseX-startSelectX, currentMouseY-startSelectY);
-                edCtx.strokeRect(startSelectX, startSelectY, currentMouseX-startSelectX, currentMouseY-startSelectY);
+                edCtx.save(); edCtx.fillStyle = 'rgba(99, 102, 241, 0.2)'; edCtx.strokeStyle = '#6366f1'; edCtx.lineWidth = 1;
+                edCtx.fillRect(startSelectX, startSelectY, currentMouseX-startSelectX, currentMouseY-startSelectY); edCtx.strokeRect(startSelectX, startSelectY, currentMouseX-startSelectX, currentMouseY-startSelectY);
+                edCtx.restore();
             }
             edCtx.restore();
         }
@@ -1183,14 +1098,9 @@
                 else e_blocks = p;
             } catch(e) { e_blocks = []; }
 
-            if(!e_meta.layerCount) {
-                let maxL = 2; 
-                e_blocks.forEach(b => { if(b.layer > maxL) maxL = b.layer; });
-                e_meta.layerCount = maxL + 1;
-            }
+            if(!e_meta.layerCount) { let maxL = 2; e_blocks.forEach(b => { if(b.layer > maxL) maxL = b.layer; }); e_meta.layerCount = maxL + 1; }
 
-            window.editId = id; showScreen('editor'); e_cam = { x:(e_meta.width*TILE)/2, y:(e_meta.height*TILE)/2, zoom:1 }; 
-            setLayer(0); 
+            window.editId = id; showScreen('editor'); e_cam = { x:(e_meta.width*TILE)/2, y:(e_meta.height*TILE)/2, zoom:1 }; setLayer(0); 
         };
 
         window.saveLevel = async (isPriv) => {
@@ -1199,9 +1109,7 @@
             if(!e_blocks.some(x=>x.type==='start')) return showMsg("Error", "Need a Start block.");
             if(!e_blocks.some(x=>x.type==='end' || (x.type==='trigger' && x.action==='WIN'))) return showMsg("Warning", "No End or WIN trigger. Level impossible?");
 
-            if(!isPriv && !window.e_verified) {
-                return showMsg("Verification Required", "You must successfully playtest and beat the level before publishing it publicly.");
-            }
+            if(!isPriv && !window.e_verified) return showMsg("Verification Required", "You must successfully playtest and beat the level before publishing it publicly.");
 
             const d = { name: n, authorId: window.currentUser.id, authorName: window.currentUser.username, grid: JSON.stringify(e_blocks), meta: e_meta, private: isPriv, timestamp: Date.now() };
             try {
@@ -1214,8 +1122,7 @@
                     d.category = 'user'; d.difficulty = null; d.rating = null; d.scheduleDate = null;
                     const nid = "lvl_" + Date.now();
                     await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'levels', nid), d);
-                    window.editId = nid; 
-                    showMsg("Success", isPriv ? "Saved privately to My Levels!" : "Published successfully!"); 
+                    window.editId = nid; showMsg("Success", isPriv ? "Saved privately to My Levels!" : "Published successfully!"); 
                 }
             } catch(e) { showMsg("Error", e.message); }
         };
@@ -1231,48 +1138,65 @@
             g_meta = { ...(lvl.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3 }), isTest: lvl.isTest, levelId: lvl.id, originalBlocks: blocks, levelObj: lvl };
             
             g_blocks = JSON.parse(JSON.stringify(blocks)).map(b => {
-                b.px = b.x * TILE; b.py = b.y * TILE; 
-                b.triggered = false; return b;
+                b.px = b.x * TILE; b.py = b.y * TILE; b.triggered = false; return b;
             });
 
             g_players = [];
             g_blocks.filter(b=>b.type==='start').forEach(b => {
                 const bw = TILE * getBlockSize(b);
-                g_players.push({ x: b.px+bw/4, y: b.py+bw/4, w: bw/2, h: bw/2, health: g_meta.maxHealth, invuln: 0 });
+                g_players.push({ id: 'p_'+Date.now(), x: b.px+bw/4, y: b.py+bw/4, w: bw/2, h: bw/2, health: g_meta.maxHealth, invuln: 0 });
             });
-            if(g_players.length === 0) g_players.push({ x: 0, y: 0, w: TILE/2, h: TILE/2, health: g_meta.maxHealth, invuln: 0 });
+            if(g_players.length === 0) g_players.push({ id: 'p_'+Date.now(), x: 0, y: 0, w: TILE/2, h: TILE/2, health: g_meta.maxHealth, invuln: 0 });
 
             g_cam = { x: g_players[0].x, y: g_players[0].y, zoom: g_meta.zoom || 1, targetX: null, targetY: null, active: false };
-            g_tweens = [];
-            isPlaying = true; renderHealth();
+            g_tweens = []; isPlaying = true; renderHealth();
             if(g_loop) cancelAnimationFrame(g_loop);
-            g_particles = [];
-            lastTime = performance.now();
-            g_loop = requestAnimationFrame(gameLoop);
+            g_particles = []; window.e_keys = {}; lastTime = performance.now(); g_loop = requestAnimationFrame(gameLoop);
         }
 
         window.stopPlay = () => { 
-            isPlaying = false; 
-            cancelAnimationFrame(g_loop); 
-            if (g_meta && g_meta.isTest) {
-                showScreen('editor');
-            } else {
-                showScreen('menu'); 
-            }
+            isPlaying = false; cancelAnimationFrame(g_loop); 
+            if (g_meta && g_meta.isTest) showScreen('editor'); else showScreen('menu'); 
         };
 
         function renderHealth() {
-            const h = document.getElementById('health-bar');
-            if(!h) return;
-            h.innerHTML = '';
-            let hp = g_players[0] ? g_players[0].health : 0;
-            for(let i=0; i<g_meta.maxHealth; i++) {
-                h.innerHTML += `<div class="w-6 h-6 rounded-full ${i < hp ? 'bg-rose-500' : 'bg-slate-700/50'} border-2 border-slate-900 shadow-lg transition-colors duration-300"></div>`;
-            }
+            const h = document.getElementById('health-bar'); if(!h) return;
+            h.innerHTML = ''; let hp = g_players[0] ? g_players[0].health : 0;
+            for(let i=0; i<g_meta.maxHealth; i++) h.innerHTML += `<div class="w-4 h-4 md:w-6 md:h-6 rounded-full ${i < hp ? 'bg-rose-500' : 'bg-slate-700/50'} border-2 border-slate-900 shadow-lg transition-colors duration-300"></div>`;
         }
 
-        function AABB(x1, y1, w1, h1, x2, y2, w2, h2) {
-            return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+        function AABB(x1, y1, w1, h1, x2, y2, w2, h2) { return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2; }
+
+        function pushBlock(block, mx, my) {
+            let bw = TILE * getBlockSize(block), nx = block.px + mx, ny = block.py + my;
+            const solids = g_blocks.filter(b => b.solid);
+            
+            if (mx !== 0) {
+                let hit = false;
+                if (nx < 0 || nx + bw > g_meta.width * TILE) hit = true;
+                for (let other of solids) {
+                    if (other.id === block.id) continue;
+                    let ow = TILE * getBlockSize(other);
+                    if (AABB(nx, block.py, bw, bw, other.px, other.py, ow, ow)) {
+                        if (other.pushblock) { if (!pushBlock(other, mx, 0)) hit = true; } else hit = true;
+                    }
+                }
+                if (!hit) { block.px = nx; block.x = block.px / TILE; } else mx = 0;
+            }
+
+            if (my !== 0) {
+                let hit = false;
+                if (ny < 0 || ny + bw > g_meta.height * TILE) hit = true;
+                for (let other of solids) {
+                    if (other.id === block.id) continue;
+                    let ow = TILE * getBlockSize(other);
+                    if (AABB(block.px, ny, bw, bw, other.px, other.py, ow, ow)) {
+                        if (other.pushblock) { if (!pushBlock(other, 0, my)) hit = true; } else hit = true;
+                    }
+                }
+                if (!hit) { block.py = ny; block.y = block.py / TILE; } else my = 0;
+            }
+            return mx !== 0 || my !== 0;
         }
 
         let lastTime = 0;
@@ -1281,57 +1205,35 @@
             const dt = (time - lastTime) / 1000; lastTime = time;
             
             for(let i=g_tweens.length-1; i>=0; i--) {
-                let tw = g_tweens[i];
-                tw.t += dt;
+                let tw = g_tweens[i]; tw.t += dt;
                 let prog = Math.min(1, tw.t / tw.dur);
                 let ease = prog < 0.5 ? 2 * prog * prog : 1 - Math.pow(-2 * prog + 2, 2) / 2;
                 if(tw.type === 'move') { tw.obj.px = tw.startX + (tw.endX - tw.startX)*ease; tw.obj.py = tw.startY + (tw.endY - tw.startY)*ease; tw.obj.x = tw.obj.px / TILE; tw.obj.y = tw.obj.py / TILE; }
                 if(tw.type === 'rotate') { tw.obj.rotation = tw.startR + (tw.endR - tw.startR)*ease; }
-                if(tw.type === 'camera') { 
-                    g_cam.x = tw.startX + (tw.endX - tw.startX)*ease; g_cam.y = tw.startY + (tw.endY - tw.startY)*ease;
-                    g_cam.zoom = tw.startZ + (tw.endZ - tw.startZ)*ease;
-                }
-                if(prog >= 1) {
-                    if(tw.type==='camera') g_cam.active = false;
-                    g_tweens.splice(i, 1);
-                }
+                if(tw.type === 'camera') { g_cam.x = tw.startX + (tw.endX - tw.startX)*ease; g_cam.y = tw.startY + (tw.endY - tw.startY)*ease; g_cam.zoom = tw.startZ + (tw.endZ - tw.startZ)*ease; }
+                if(prog >= 1) { if(tw.type==='camera') g_cam.active = false; g_tweens.splice(i, 1); }
             }
 
             const SPEED = 200 * dt;
             let dx = 0, dy = 0;
-            if(e_keys['w']||e_keys['arrowup']) dy -= SPEED; if(e_keys['s']||e_keys['arrowdown']) dy += SPEED;
-            if(e_keys['a']||e_keys['arrowleft']) dx -= SPEED; if(e_keys['d']||e_keys['arrowright']) dx += SPEED;
+            if(window.e_keys['w']||window.e_keys['arrowup']) dy -= SPEED; if(window.e_keys['s']||window.e_keys['arrowdown']) dy += SPEED;
+            if(window.e_keys['a']||window.e_keys['arrowleft']) dx -= SPEED; if(window.e_keys['d']||window.e_keys['arrowright']) dx += SPEED;
 
             let alive = 0;
             const solids = g_blocks.filter(b => b.solid);
-
-            function tryPushBlock(block, pushDx, pushDy) {
-                const step = TILE * getBlockSize(block);
-                const nx = block.px + (pushDx !== 0 ? Math.sign(pushDx) * step : 0);
-                const ny = block.py + (pushDy !== 0 ? Math.sign(pushDy) * step : 0);
-                const bw = step, bh = step;
-                for (const other of solids) {
-                    if (other.id === block.id) continue;
-                    const ow = TILE * getBlockSize(other), oh = ow;
-                    if (AABB(nx, ny, bw, bh, other.px, other.py, ow, oh)) return false;
-                }
-                block.px = nx; block.py = ny; block.x = block.px / TILE; block.y = block.py / TILE;
-                return true;
-            }
 
             for(let p of g_players) {
                 if(p.health <= 0) continue; 
                 alive++;
                 if(p.invuln > 0) p.invuln -= dt;
 
-                let nx = p.x + dx;
-                let ny = p.y + dy;
+                let nx = p.x + dx, ny = p.y + dy;
                 
                 let hitX = false;
                 for(let b of solids) {
                     const bw = TILE * getBlockSize(b);
                     if(AABB(nx, p.y, p.w, p.h, b.px, b.py, bw, bw)) {
-                        if(b.pushblock && dx !== 0 && tryPushBlock(b, dx, 0)) continue;
+                        if(b.pushblock && dx !== 0 && pushBlock(b, dx, 0)) continue;
                         hitX = true; break;
                     }
                 }
@@ -1341,7 +1243,7 @@
                 for(let b of solids) {
                     const bw = TILE * getBlockSize(b);
                     if(AABB(p.x, ny, p.w, p.h, b.px, b.py, bw, bw)) {
-                        if(b.pushblock && dy !== 0 && tryPushBlock(b, 0, dy)) continue;
+                        if(b.pushblock && dy !== 0 && pushBlock(b, 0, dy)) continue;
                         hitY = true; break;
                     }
                 }
@@ -1350,45 +1252,54 @@
                 if(p.x < 0) p.x = 0; if(p.y < 0) p.y = 0;
                 if(p.x > g_meta.width*TILE - p.w) p.x = g_meta.width*TILE - p.w;
                 if(p.y > g_meta.height*TILE - p.h) p.y = g_meta.height*TILE - p.h;
+            }
 
-                for(let b of g_blocks) {
-                    const bw = TILE * getBlockSize(b);
-                    if(AABB(p.x, p.y, p.w, p.h, b.px, b.py, bw, bw)) {
-                        
-                        if(b.type === 'damage' && p.invuln <= 0) {
-                            p.health--; p.invuln = 1.5; 
-                            renderHealth();
-                            if(p.health <= 0) {
-                                loseGame();
-                                return;
+            // Trigger & Hazard logic separated to handle sub-level tags and player contact
+            for(let b of g_blocks) {
+                const bw = TILE * getBlockSize(b);
+                
+                // Triggers
+                if (b.type === 'trigger' && !b.triggered) {
+                    let triggered = false;
+                    if (!b.listenTag || b.listenTag === '') {
+                        for(let p of g_players) { if (p.health > 0 && AABB(p.x, p.y, p.w, p.h, b.px, b.py, bw, bw)) { triggered = true; break; } }
+                    } else {
+                        for(let other of g_blocks) {
+                            if (other.id !== b.id && other.tag === b.listenTag) {
+                                let ow = TILE * getBlockSize(other);
+                                if (AABB(other.px, other.py, ow, ow, b.px, b.py, bw, bw)) { triggered = true; break; }
                             }
-                        } 
-                        else if (b.type === 'end' || (b.type === 'trigger' && b.action === 'WIN' && !b.triggered && (!b.listenTag || b.listenTag === ''))) {
-                            if(b.type === 'trigger') b.triggered = true;
-                            winGame();
-                            return;
                         }
-                        else if (b.type === 'trigger' && !b.triggered && (!b.listenTag || b.listenTag === '')) {
-                            b.triggered = true;
-                            triggerAction(b);
+                    }
+                    if (triggered) {
+                        b.triggered = true; 
+                        if (b.action === 'WIN') { winGame(); return; }
+                        else triggerAction(b);
+                    }
+                }
+
+                // Hazards / End (Player only)
+                if (b.type === 'damage' || b.type === 'end') {
+                    for(let p of g_players) {
+                        if (p.health > 0 && AABB(p.x, p.y, p.w, p.h, b.px, b.py, bw, bw)) {
+                            if (b.type === 'damage' && p.invuln <= 0) {
+                                p.health--; p.invuln = 1.5; renderHealth();
+                                if(p.health <= 0) { loseGame(); return; }
+                            } else if (b.type === 'end') {
+                                winGame(); return;
+                            }
                         }
                     }
                 }
             }
 
             for (let i = g_particles.length - 1; i >= 0; i--) {
-                const p = g_particles[i];
-                p.t += dt;
-                p.x += p.vx * dt;
-                p.y += p.vy * dt;
-                p.vx *= 0.98;
-                p.vy *= 0.98;
+                const p = g_particles[i]; p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.98; p.vy *= 0.98;
                 if (p.t >= p.life) g_particles.splice(i, 1);
             }
 
             if(alive > 0 && !g_cam.active && g_players[0]) {
-                g_cam.x += (g_players[0].x - g_cam.x) * 0.1;
-                g_cam.y += (g_players[0].y - g_cam.y) * 0.1;
+                g_cam.x += (g_players[0].x - g_cam.x) * 0.1; g_cam.y += (g_players[0].y - g_cam.y) * 0.1;
             }
 
             renderGame(time);
@@ -1398,82 +1309,54 @@
         function spawnParticlesFromBlocks(blocks, faceAngle = 0) {
             const base = faceAngle * Math.PI / 180;
             blocks.forEach(b => {
-                const bw = TILE * getBlockSize(b);
-                const count = Math.max(4, Math.min(12, Math.round(bw / 4)));
+                const bw = TILE * getBlockSize(b), count = Math.max(4, Math.min(12, Math.round(bw / 4)));
                 for (let i = 0; i < count; i++) {
                     g_particles.push({
-                        x: b.px + bw / 2,
-                        y: b.py + bw / 2,
+                        x: b.px + bw / 2, y: b.py + bw / 2,
                         vx: Math.cos(base + (Math.random() - 0.5) * 0.9) * (80 + Math.random() * 140),
                         vy: Math.sin(base + (Math.random() - 0.5) * 0.9) * (80 + Math.random() * 140),
-                        life: 0.45 + Math.random() * 0.45,
-                        t: 0,
-                        size: 2 + Math.random() * 4,
-                        color: b.color || '#ffffff',
-                        rot: Math.random() * Math.PI * 2
+                        life: 0.45 + Math.random() * 0.45, t: 0, size: 2 + Math.random() * 4,
+                        color: b.color || '#ffffff', rot: Math.random() * Math.PI * 2
                     });
                 }
             });
         }
 
         function rotateAroundPoint(px, py, cx, cy, angDeg) {
-            const a = angDeg * Math.PI / 180;
-            const s = Math.sin(a), c = Math.cos(a);
-            const dx = px - cx, dy = py - cy;
+            const a = angDeg * Math.PI / 180, s = Math.sin(a), c = Math.cos(a), dx = px - cx, dy = py - cy;
             return { x: cx + dx * c - dy * s, y: cy + dx * s + dy * c };
         }
 
         function triggerAction(triggerBlock) {
-            let act = triggerBlock.action;
-            let td = triggerBlock.tData || {};
-            const face = triggerBlock.particleFace || 0;
-            if(act === 'DIE') {
-                g_players.forEach(p => p.health = 0); renderHealth(); loseGame();
-            } else if (act === 'CAMERA') {
-                g_cam.active = true;
-                g_tweens.push({ type: 'camera', startX: g_cam.x, startY: g_cam.y, startZ: g_cam.zoom, endX: td.x*TILE, endY: td.y*TILE, endZ: td.z, dur: td.dur, t: 0 });
+            let act = triggerBlock.action, td = triggerBlock.tData || {}, face = triggerBlock.particleFace || 0;
+            if(act === 'DIE') { g_players.forEach(p => p.health = 0); renderHealth(); loseGame(); } 
+            else if (act === 'CAMERA') {
+                g_cam.active = true; g_tweens.push({ type: 'camera', startX: g_cam.x, startY: g_cam.y, startZ: g_cam.zoom, endX: td.x*TILE, endY: td.y*TILE, endZ: td.z, dur: td.dur, t: 0 });
             } else if (act === 'MOVE_TAG' && td.tag) {
-                const targets = g_blocks.filter(b => b.tag === td.tag);
-                spawnParticlesFromBlocks(targets, face);
-                targets.forEach(b => {
-                    g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: b.px + td.mx*TILE, endY: b.py + td.my*TILE, dur: td.dur, t: 0 });
-                });
+                const targets = g_blocks.filter(b => b.tag === td.tag); spawnParticlesFromBlocks(targets, face);
+                targets.forEach(b => { g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: b.px + td.mx*TILE, endY: b.py + td.my*TILE, dur: td.dur, t: 0 }); });
             } else if (act === 'ROTATE_TAG' && td.tag) {
-                const targets = g_blocks.filter(b => b.tag === td.tag);
-                const centers = td.centerTag ? g_blocks.filter(b => b.tag === td.centerTag) : [];
+                const targets = g_blocks.filter(b => b.tag === td.tag), centers = td.centerTag ? g_blocks.filter(b => b.tag === td.centerTag) : [];
                 spawnParticlesFromBlocks(targets, face);
                 let pivot = null;
-                if (centers.length) {
-                    let sx = 0, sy = 0, n = 0;
-                    centers.forEach(c => { sx += c.px + (TILE * getBlockSize(c))/2; sy += c.py + (TILE * getBlockSize(c))/2; n++; });
-                    pivot = { x: sx / n, y: sy / n };
-                }
+                if (centers.length) { let sx = 0, sy = 0, n = 0; centers.forEach(c => { sx += c.px + (TILE * getBlockSize(c))/2; sy += c.py + (TILE * getBlockSize(c))/2; n++; }); pivot = { x: sx / n, y: sy / n }; }
                 targets.forEach(b => {
-                    const startR = b.rotation || 0;
-                    const endR = startR + td.ang;
+                    const startR = b.rotation || 0, endR = startR + td.ang;
                     if (pivot) {
-                        const bw = TILE * getBlockSize(b);
-                        const center = { x: b.px + bw / 2, y: b.py + bw / 2 };
-                        const rotated = rotateAroundPoint(center.x, center.y, pivot.x, pivot.y, td.ang);
+                        const bw = TILE * getBlockSize(b), center = { x: b.px + bw / 2, y: b.py + bw / 2 }, rotated = rotateAroundPoint(center.x, center.y, pivot.x, pivot.y, td.ang);
                         g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: rotated.x - bw/2, endY: rotated.y - bw/2, dur: td.dur, t: 0 });
                     }
                     g_tweens.push({ type: 'rotate', obj: b, startR, endR, dur: td.dur, t: 0 });
                 });
             } else if (act === 'SET_PROPERTY' && td.tag && td.prop) {
-                const targets = g_blocks.filter(b => b.tag === td.tag);
-                spawnParticlesFromBlocks(targets, face);
+                const targets = g_blocks.filter(b => b.tag === td.tag); spawnParticlesFromBlocks(targets, face);
                 targets.forEach(b => {
-                    if (td.prop === 'color') {
-                        b.color = td.val;
-                    } else if (td.prop === 'solid') {
-                        b.solid = (td.val === 'true' || td.val === true || td.val === '1');
-                    } else if (td.prop === 'pushblock') {
-                        b.pushblock = (td.val === 'true' || td.val === true || td.val === '1');
-                    } else if (td.prop === 'alpha') {
-                        b.alpha = parseFloat(td.val) !== undefined ? parseFloat(td.val) : 1;
-                    } else if (td.prop === 'glow') {
-                        b.glow = parseInt(td.val) || 0;
-                    }
+                    if (td.prop === 'color') b.color = td.val;
+                    else if (td.prop === 'solid') b.solid = (td.val === 'true' || td.val === true || td.val === '1');
+                    else if (td.prop === 'pushblock') b.pushblock = (td.val === 'true' || td.val === true || td.val === '1');
+                    else if (td.prop === 'alpha') b.alpha = parseFloat(td.val) !== undefined ? parseFloat(td.val) : 1;
+                    else if (td.prop === 'glow') b.glow = parseInt(td.val) || 0;
+                    else if (td.prop === 'rotation') b.rotation = parseFloat(td.val) || 0;
                 });
             }
         }
@@ -1481,21 +1364,14 @@
         function winGame() {
             isPlaying = false;
             const status = document.getElementById('play-status');
-            status.innerText = "LEVEL CLEARED!";
-            status.classList.add('text-emerald-500');
-            
+            status.innerText = "LEVEL CLEARED!"; status.classList.add('text-emerald-500');
             setTimeout(() => {
                 if(g_meta.isTest) {
-                    window.e_verified = true;
-                    showMsg("Verified", "Level successfully verified! You can now publish it publicly.");
-                    showScreen('editor');
+                    window.e_verified = true; showMsg("Verified", "Level successfully verified! You can now publish it publicly."); showScreen('editor');
                 } else {
                     if(!window.currentUser.beaten.includes(g_meta.levelId)) {
                         window.currentUser.beaten.push(g_meta.levelId);
-                        updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), {
-                            beaten: window.currentUser.beaten,
-                            bricks: (window.currentUser.bricks || 0) + (DIFF_BRICKS[g_meta.levelObj.difficulty] || 0)
-                        });
+                        updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), { beaten: window.currentUser.beaten, bricks: (window.currentUser.bricks || 0) + (DIFF_BRICKS[g_meta.levelObj.difficulty] || 0) });
                     }
                     showScreen('menu');
                 }
@@ -1505,71 +1381,43 @@
         function loseGame() {
             isPlaying = false;
             const status = document.getElementById('play-status');
-            status.innerText = "YOU DIED!";
-            status.classList.add('text-rose-500');
-            setTimeout(() => {
-                if(g_meta.isTest) showScreen('editor');
-                else startGame(g_meta.originalBlocks, g_meta.levelObj); // restart
-            }, 2000);
+            status.innerText = "YOU DIED!"; status.classList.add('text-rose-500');
+            setTimeout(() => { if(g_meta.isTest) showScreen('editor'); else startGame(g_meta.originalBlocks, g_meta.levelObj); }, 2000);
         }
 
         function renderGame(time) {
-            plCtx.fillStyle = '#0f172a'; 
-            plCtx.fillRect(0, 0, plCanvas.width, plCanvas.height);
-            plCtx.save();
-            plCtx.translate(plCanvas.width/2, plCanvas.height/2);
-            plCtx.scale(g_cam.zoom, g_cam.zoom);
-            plCtx.translate(-g_cam.x, -g_cam.y);
+            plCtx.fillStyle = '#0f172a'; plCtx.fillRect(0, 0, plCanvas.width, plCanvas.height);
+            plCtx.save(); plCtx.translate(plCanvas.width/2, plCanvas.height/2); plCtx.scale(g_cam.zoom, g_cam.zoom); plCtx.translate(-g_cam.x, -g_cam.y);
 
             const sortedBlocks = [...g_blocks].sort((a,b) => a.layer - b.layer);
             sortedBlocks.forEach(b => {
                 const bw = TILE * getBlockSize(b);
-                plCtx.globalAlpha = b.alpha !== undefined ? b.alpha : 1;
+                plCtx.save();
+                plCtx.globalAlpha = b.alpha !== undefined ? parseFloat(b.alpha) : 1;
                 
-                if (b.glow && b.glow > 0) {
-                    plCtx.save();
-                    plCtx.shadowBlur = b.glow * g_cam.zoom;
-                    plCtx.shadowColor = b.color;
-                    plCtx.fillStyle = b.color;
-                    
-                    plCtx.translate(b.px + bw/2, b.py + bw/2);
-                    plCtx.rotate((b.rotation||0) * Math.PI / 180);
-                    plCtx.fillRect(-bw/2, -bw/2, bw, bw);
-                    plCtx.restore();
-                } else {
-                    plCtx.save();
-                    plCtx.fillStyle = b.color;
-                    plCtx.translate(b.px + bw/2, b.py + bw/2);
-                    plCtx.rotate((b.rotation||0) * Math.PI / 180);
-                    plCtx.fillRect(-bw/2, -bw/2, bw, bw);
-                    plCtx.restore();
-                }
+                plCtx.translate(b.px + bw/2, b.py + bw/2);
+                plCtx.rotate((b.rotation||0) * Math.PI / 180);
+
+                if (b.glow && b.glow > 0) { plCtx.shadowBlur = b.glow * g_cam.zoom; plCtx.shadowColor = b.color; }
+                
+                plCtx.fillStyle = b.color;
+                plCtx.fillRect(-bw/2, -bw/2, bw, bw);
+                plCtx.restore();
             });
 
             g_particles.forEach(pt => {
-                plCtx.save();
-                plCtx.globalAlpha = Math.max(0, 1 - (pt.t / pt.life));
-                plCtx.translate(pt.x, pt.y);
-                plCtx.rotate(pt.rot + pt.t * 8);
-                plCtx.fillStyle = pt.color;
-                plCtx.fillRect(-pt.size / 2, -pt.size / 2, pt.size, pt.size);
-                plCtx.restore();
+                plCtx.save(); plCtx.globalAlpha = Math.max(0, 1 - (pt.t / pt.life)); plCtx.translate(pt.x, pt.y); plCtx.rotate(pt.rot + pt.t * 8); plCtx.fillStyle = pt.color; plCtx.fillRect(-pt.size / 2, -pt.size / 2, pt.size, pt.size); plCtx.restore();
             });
 
             g_players.forEach(p => {
                 if(p.health <= 0) return;
                 if(p.invuln > 0 && Math.floor(time / 150) % 2 === 0) return; 
                 
-                plCtx.globalAlpha = 1;
-                plCtx.fillStyle = window.currentUser?.color || '#00ffff';
-                
-                if (window.currentUser?.glow) {
-                    plCtx.shadowBlur = 20;
-                    plCtx.shadowColor = window.currentUser.color || '#00ffff';
-                }
-                
+                plCtx.save();
+                plCtx.globalAlpha = 1; plCtx.fillStyle = window.currentUser?.color || '#00ffff';
+                if (window.currentUser?.glow) { plCtx.shadowBlur = 20; plCtx.shadowColor = window.currentUser.color || '#00ffff'; }
                 plCtx.fillRect(p.x, p.y, p.w, p.h);
-                plCtx.shadowBlur = 0; 
+                plCtx.restore();
             });
 
             plCtx.restore();
