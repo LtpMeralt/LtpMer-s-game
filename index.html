@@ -116,8 +116,11 @@
                         </div>
 
                         <div class="h-px w-full bg-slate-700 my-6"></div>
+                        <button onclick="deleteAccount()" class="w-full border border-rose-600 text-rose-500 hover:bg-rose-600 hover:text-white p-3 rounded-lg font-bold transition mb-4">Delete Account</button>
                         
-                        <button onclick="deleteAccount()" class="w-full border border-rose-600 text-rose-500 hover:bg-rose-600 hover:text-white p-3 rounded-lg font-bold transition">Delete Account</button>
+                        <div class="mt-2 pt-3 border-t border-slate-700 text-center">
+                            <span class="text-xs text-slate-500 font-bold">Game Version: 1.2.1</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -195,54 +198,84 @@
                             <span class="text-[10px] text-slate-500">Click canvas to place blocky text.</span>
                         </div>
 
-                        <label class="flex justify-between items-center shrink-0">Color: <input type="color" id="prop-color" value="#ffffff" class="w-6 h-6 md:w-8 md:h-8" onchange="updateProp()"></label>
-                        <label class="flex justify-between items-center shrink-0">Solid: <input type="checkbox" id="prop-solid" checked class="w-4 h-4 accent-indigo-500" onchange="updateProp()"></label>
-                        <label class="flex justify-between items-center shrink-0">Pushblock: <input type="checkbox" id="prop-pushblock" class="w-4 h-4 accent-indigo-500" onchange="updateProp()"></label>
-                        <label class="flex justify-between items-center shrink-0">Orient (deg): <input type="number" id="prop-rotation" value="0" step="15" class="w-16 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none" onchange="updateProp()"></label>
+                        <label class="flex justify-between items-center shrink-0">Color 1: <input type="color" id="prop-color" value="#ffffff" class="w-6 h-6 md:w-8 md:h-8" onchange="updatePropField('color', this.value, 'text')"></label>
+                        <label class="flex justify-between items-center shrink-0">Color 2: <input type="color" id="prop-color2" value="#000000" class="w-6 h-6 md:w-8 md:h-8" onchange="updatePropField('color2', this.value, 'text')"></label>
                         
-                        <div class="flex flex-col gap-1">
+                        <label class="flex justify-between items-center shrink-0">Gradient:
+                            <select id="prop-gradient" class="w-20 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none p-1" onchange="updatePropField('gradient', this.value, 'text')">
+                                <option value="none">None</option>
+                                <option value="horizontal">Horiz</option>
+                                <option value="vertical">Vert</option>
+                                <option value="radial">Radial</option>
+                            </select>
+                        </label>
+
+                        <label class="flex justify-between items-center shrink-0 mt-1 pt-1 border-t border-slate-700">Solid: <input type="checkbox" id="prop-solid" checked class="w-4 h-4 accent-indigo-500" onchange="updatePropField('solid', this.checked, 'bool')"></label>
+                        <label class="flex justify-between items-center shrink-0">Pushblock: <input type="checkbox" id="prop-pushblock" class="w-4 h-4 accent-indigo-500" onchange="updatePropField('pushblock', this.checked, 'bool')"></label>
+                        
+                        <div class="flex gap-1 justify-between">
+                            <label class="flex flex-col text-[10px]">Size X: <input type="text" id="prop-sizex" value="1" class="w-10 bg-slate-800 text-center rounded border border-slate-600 outline-none p-1" onchange="updatePropField('sizeX', this.value, 'number')"></label>
+                            <label class="flex flex-col text-[10px]">Size Y: <input type="text" id="prop-sizey" value="1" class="w-10 bg-slate-800 text-center rounded border border-slate-600 outline-none p-1" onchange="updatePropField('sizeY', this.value, 'number')"></label>
+                            <label class="flex flex-col text-[10px]">Rot (°): <input type="text" id="prop-rotation" value="0" class="w-10 bg-slate-800 text-center rounded border border-slate-600 outline-none p-1" onchange="updatePropField('rotation', this.value, 'number')"></label>
+                        </div>
+                        
+                        <div class="flex flex-col gap-1 border-t border-slate-800 pt-2">
                             <div class="flex justify-between items-center">
                                 <span>Alpha (0-1):</span>
-                                <input type="number" id="prop-alpha-num" min="0" max="1" step="0.1" value="1" class="w-12 md:w-16 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none" oninput="syncAlphaInputs(this.value)">
+                                <input type="text" id="prop-alpha-num" value="1" class="w-12 md:w-16 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none" oninput="setAlphaUI(this.value); updatePropField('alpha', this.value, 'number')">
                             </div>
-                            <input type="range" id="prop-alpha" min="0" max="1" step="0.05" value="1" class="w-full accent-indigo-500" oninput="syncAlphaInputs(this.value)">
+                            <input type="range" id="prop-alpha" min="0" max="1" step="0.05" value="1" class="w-full accent-indigo-500" oninput="setAlphaUI(this.value); updatePropField('alpha', this.value, 'number')">
                         </div>
 
                         <div class="flex flex-col gap-1 border-t border-slate-800 pt-2">
                             <div class="flex justify-between items-center">
                                 <span>Glow Size (0-50):</span>
-                                <input type="number" id="prop-glow-num" min="0" max="50" step="1" value="0" class="w-12 md:w-16 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none" oninput="syncGlowInputs(this.value)">
+                                <input type="text" id="prop-glow-num" value="0" class="w-12 md:w-16 bg-slate-800 text-center rounded text-xs border border-slate-600 outline-none" oninput="setGlowUI(this.value); updatePropField('glow', this.value, 'number')">
                             </div>
-                            <input type="range" id="prop-glow" min="0" max="50" step="1" value="0" class="w-full accent-indigo-500" oninput="syncGlowInputs(this.value)">
+                            <input type="range" id="prop-glow" min="0" max="50" step="1" value="0" class="w-full accent-indigo-500" oninput="setGlowUI(this.value); updatePropField('glow', this.value, 'number')">
                         </div>
 
-                        <label class="flex flex-col gap-1">Block Tag: <input type="text" id="prop-tag" placeholder="e.g. door1" class="bg-slate-800 p-1.5 rounded border border-slate-600 outline-none w-full" onchange="updateProp()"></label>
+                        <label class="flex flex-col gap-1 mt-1">Block Tag: <input type="text" id="prop-tag" placeholder="e.g. door1" class="bg-slate-800 p-1.5 rounded border border-slate-600 outline-none w-full" onchange="updatePropField('tag', this.value, 'text')"></label>
                         
                         <div id="prop-emitter-box" class="hidden flex-col gap-1 mt-2 pt-2 border-t border-slate-700 text-[10px] md:text-xs">
                              <span class="font-bold text-orange-400">Particle Settings</span>
-                             <label class="flex justify-between items-center">Lifetime (s): <input type="number" id="prop-emit-life" value="1" step="0.1" class="w-16 bg-slate-800 rounded p-1 border border-slate-600" onchange="updateProp()"></label>
-                             <label class="flex justify-between items-center">Spread (deg): <input type="number" id="prop-emit-spread" value="360" class="w-16 bg-slate-800 rounded p-1 border border-slate-600" onchange="updateProp()"></label>
-                             <label class="flex justify-between items-center">Speed: <input type="number" id="prop-emit-speed" value="100" class="w-16 bg-slate-800 rounded p-1 border border-slate-600" onchange="updateProp()"></label>
-                             <label class="flex justify-between items-center">Angle (deg): <input type="number" id="prop-emit-orient" value="0" class="w-16 bg-slate-800 rounded p-1 border border-slate-600" onchange="updateProp()"></label>
-                             <label class="flex justify-between items-center">Spin (deg/s): <input type="number" id="prop-emit-rot" value="5" class="w-16 bg-slate-800 rounded p-1 border border-slate-600" onchange="updateProp()"></label>
-                             <label class="flex justify-between items-center">Rate (per sec): <input type="number" id="prop-emit-rate" value="10" class="w-16 bg-slate-800 rounded p-1 border border-slate-600" onchange="updateProp()"></label>
+                             <label class="flex justify-between items-center">Lifetime (s): <input type="text" id="prop-emit-life" value="1" class="w-14 bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitLife', this.value, 'number')"></label>
+                             <label class="flex justify-between items-center">Spread (deg): <input type="text" id="prop-emit-spread" value="360" class="w-14 bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitSpread', this.value, 'number')"></label>
+                             <label class="flex justify-between items-center">Speed: <input type="text" id="prop-emit-speed" value="100" class="w-14 bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitSpeed', this.value, 'number')"></label>
+                             <label class="flex justify-between items-center">Gravity: <input type="text" id="prop-emit-gravity" value="0" class="w-14 bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitGravity', this.value, 'number')"></label>
+                             <label class="flex justify-between items-center">Angle (deg): <input type="text" id="prop-emit-orient" value="0" class="w-14 bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitOrient', this.value, 'number')"></label>
+                             <label class="flex justify-between items-center">Spin (deg/s): <input type="text" id="prop-emit-rot" value="5" class="w-14 bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitRot', this.value, 'number')"></label>
+                             <label class="flex justify-between items-center">Rate (per sec): <input type="text" id="prop-emit-rate" value="10" class="w-14 bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitRate', this.value, 'number')"></label>
                         </div>
 
                         <div id="prop-trigger-box" class="hidden flex-col gap-2 mt-2 pt-2 border-t border-slate-700">
                             <span class="text-[10px] md:text-xs text-fuchsia-400 font-bold">Trigger Logic</span>
                             <div class="flex gap-2">
                                 <label class="text-[10px] md:text-xs text-slate-400 flex items-center gap-1">Clickable?
-                                    <input type="checkbox" id="prop-trig-click" class="accent-indigo-500 w-4 h-4" onchange="updateProp()">
+                                    <input type="checkbox" id="prop-trig-click" class="accent-indigo-500 w-4 h-4" onchange="updatePropField('clickable', this.checked, 'bool')">
                                 </label>
                                 <label class="text-[10px] md:text-xs text-slate-400 flex items-center gap-1 w-full">Range:
-                                    <input type="number" id="prop-trig-range" value="3" step="0.5" class="bg-slate-800 p-1 rounded border border-slate-600 w-full" onchange="updateProp()">
+                                    <input type="text" id="prop-trig-range" value="3" class="bg-slate-800 p-1 rounded border border-slate-600 w-full" onchange="updatePropField('clickRange', this.value, 'number')">
                                 </label>
                             </div>
+                            <div class="flex gap-2 border-b border-slate-700 pb-2">
+                                <label class="text-[10px] md:text-xs text-slate-400 flex items-center gap-1 w-full">On Enter?
+                                    <input type="checkbox" id="prop-trig-onenter" class="accent-indigo-500 w-4 h-4" onchange="updatePropField('onEnter', this.checked, 'bool')">
+                                </label>
+                                <label class="text-[10px] md:text-xs text-slate-400 flex items-center gap-1 w-full">Looping?
+                                    <input type="checkbox" id="prop-trig-loop" class="accent-indigo-500 w-4 h-4" onchange="updatePropField('isLoop', this.checked, 'bool')">
+                                </label>
+                            </div>
+                            
+                            <label class="text-[10px] md:text-xs text-slate-400 flex flex-col gap-1 mt-1">Loop Interval (s):
+                                <input type="text" id="prop-trig-interval" class="bg-slate-800 p-1.5 rounded border border-slate-600" onchange="updatePropField('loopInterval', this.value, 'number')" placeholder="1.0">
+                            </label>
+
                             <label class="text-[10px] md:text-xs text-slate-400 flex flex-col gap-1">Activator Tag (Empty = Player):
-                                <input type="text" id="prop-trig-listen" class="bg-slate-800 p-1.5 rounded border border-slate-600" onchange="updateProp()" placeholder="tag that triggers this">
+                                <input type="text" id="prop-trig-listen" class="bg-slate-800 p-1.5 rounded border border-slate-600" onchange="updatePropField('listenTag', this.value, 'text')" placeholder="tag that triggers this">
                             </label>
                             <label class="text-[10px] md:text-xs text-slate-400 flex flex-col gap-1 mb-2">Particle Facing (deg):
-                                <input type="number" id="prop-particle-face" value="0" class="bg-slate-800 p-1.5 rounded border border-slate-600" onchange="updateProp()">
+                                <input type="text" id="prop-particle-face" value="0" class="bg-slate-800 p-1.5 rounded border border-slate-600" onchange="updatePropField('particleFace', this.value, 'number')">
                             </label>
                             
                             <div id="prop-trig-actions-list" class="flex flex-col gap-1 text-[10px] md:text-xs"></div>
@@ -282,7 +315,6 @@
         <header class="absolute top-0 w-full bg-gradient-to-b from-black/80 to-transparent p-2 md:p-4 flex justify-between items-start z-20 opacity-100 md:opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none">
             <div class="flex flex-col gap-2 pointer-events-auto">
                 <button onclick="stopPlay()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1 md:px-4 md:py-1.5 rounded-lg font-bold shadow-lg transition text-sm">Quit</button>
-                <div class="flex gap-1 md:gap-2" id="health-bar"></div>
             </div>
             <h1 id="play-level-title" class="font-bold text-sm md:text-xl text-white drop-shadow-md">Playing...</h1>
             <div class="w-12 md:w-16"></div>
@@ -311,7 +343,6 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global Firebase Conf
         const app = initializeApp(JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{"apiKey":"AIzaSyCo1rtBmJa8ea1PGAx3BTAgFVP9luFtdKI","authDomain":"somethingwicked-87e77.firebaseapp.com","projectId":"somethingwicked-87e77","storageBucket":"somethingwicked-87e77.firebasestorage.app","messagingSenderId":"1011430455701","appId":"1:1011430455701:web:bef8293371d71c143ade9c","measurementId":"G-8LNLNCTDY7"}'));
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -322,15 +353,12 @@
         window.currentUser = null;
         window._tempActions = [];
         
-        // Settings & Constants
         const TILE = 32; 
         const DIFF_BRICKS = { "Easy": 1, "Medium": 2, "Hard": 3, "Difficult": 4, "Insane": 5, "Really Hard": 6, "The Hardest": 7 };
         const RATING_CP = { "Rated": 1, "Good": 2, "Really Good": 3, "Insanely Good": 4 };
 
-        // Color Palettes
         let localColors = ["#ffffff", "#00ffff", "#ff0044", "#ffaa00", "#00ffaa", "#aa00ff", "#38bdf8", "#ec4899", "#eab308"];
 
-        // Blocky Font (5x5)
         const BLOCK_FONT = {
             'A': [".***.", "*...*", "*****", "*...*", "*...*"], 'B': ["****.", "*...*", "****.", "*...*", "****."],
             'C': [".****", "*....", "*....", "*....", ".****"], 'D': ["****.", "*...*", "*...*", "*...*", "****."],
@@ -355,37 +383,25 @@
             '-': [".....", ".....", "*****", ".....", "....."]
         };
 
-        // Editor State
-        let e_blocks = []; 
-        let e_layer = 0;
-        let e_tool = 'select';
-        let e_selectedIds = new Set();
+        let e_blocks = [], e_layer = 0, e_tool = 'select', e_selectedIds = new Set();
         let e_cam = { x: 0, y: 0, zoom: 1 };
         let e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layerCount: 3, gridStep: 1, brushSize: 1 };
-        window.e_keys = {};
-        window.e_verified = false; 
+        window.e_keys = {}; window.e_verified = false; 
         
-        // Editor Interaction
         let isDrawing = false, isErasing = false, isSelecting = false, isDragging = false;
         let startSelectX = 0, startSelectY = 0, currentMouseX = 0, currentMouseY = 0;
-        let dragOffsetX = 0, dragOffsetY = 0;
-        let currentPaintStroke = new Set();
+        let dragOffsetX = 0, dragOffsetY = 0; let currentPaintStroke = new Set();
 
-        // Game State
         let g_blocks = [], g_players = [], g_tweens = [], g_particles = [];
         let g_cam = { x: 0, y: 0, zoom: 1, targetX: null, targetY: null, active: false };
         let g_keys = window.e_keys, g_loop = null, isPlaying = false, g_meta = null;
 
-        const edCanvas = document.getElementById('editor-canvas');
-        const edCtx = edCanvas.getContext('2d');
-        const plCanvas = document.getElementById('play-canvas');
-        const plCtx = plCanvas.getContext('2d');
+        const edCanvas = document.getElementById('editor-canvas'); const edCtx = edCanvas.getContext('2d');
+        const plCanvas = document.getElementById('play-canvas'); const plCtx = plCanvas.getContext('2d');
 
-        // Helpers
         function generateId() { return 'b_' + Date.now() + '_' + Math.floor(Math.random()*10000); }
         function rgbToHex(r, g, b) { return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1); }
         
-        // Precise Collision Helpers
         function rotateAroundPoint(px, py, cx, cy, angDeg) {
             const a = angDeg * Math.PI / 180, s = Math.sin(a), c = Math.cos(a), dx = px - cx, dy = py - cy;
             return { x: cx + dx * c - dy * s, y: cy + dx * s + dy * c };
@@ -418,18 +434,18 @@
         function getGridStep(meta) { const step = parseFloat(meta?.gridStep ?? 1); return (Number.isNaN(step) || step <= 0) ? 1 : Math.max(0.125, Math.min(step, 1)); }
         function floorToGridUnits(value, meta) { const step = getGridStep(meta); return Math.round(Math.floor(value / step) * step * 1000) / 1000; }
         function snapToGridUnits(value, meta) { const step = getGridStep(meta); return Math.round(Math.round(value / step) * step * 1000) / 1000; }
-        function getBlockSize(block) { const size = parseFloat(block?.size ?? 1); return Number.isFinite(size) && size > 0 ? size : 1; }
+        
+        function getBlockSizeX(block) { return parseFloat(block?.sizeX ?? block?.size ?? 1) || 1; }
+        function getBlockSizeY(block) { return parseFloat(block?.sizeY ?? block?.size ?? 1) || 1; }
         function getBrushThickness(meta) { const raw = parseInt(meta?.brushSize ?? 1, 10); return (!Number.isFinite(raw) || raw < 1) ? 1 : Math.max(1, Math.min(12, raw)); }
 
         function getDateKey(d = new Date()) {
-            const yy = d.getFullYear(), mm = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
-            return `${yy}-${mm}-${dd}`;
+            const yy = d.getFullYear(), mm = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0'); return `${yy}-${mm}-${dd}`;
         }
         function getWeekKey(d = new Date()) {
             const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
             const dayNum = date.getUTCDay() || 7; date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-            const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-            const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+            const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1)); const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
             return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
         }
         function levelScheduleMatches(level, filterType) {
@@ -449,8 +465,7 @@
 
         function loadPaletteFromStorage() {
             const saved = localStorage.getItem('ltp_maze_custom_palette');
-            if (saved) { try { localColors = JSON.parse(saved); } catch(e) { console.error(e); } }
-            renderSavedColorsUI();
+            if (saved) { try { localColors = JSON.parse(saved); } catch(e) {} } renderSavedColorsUI();
         }
 
         window.saveCurrentColorToPalette = () => {
@@ -461,7 +476,7 @@
             }
         };
 
-        window.useColorFromPalette = (col) => { document.getElementById('prop-color').value = col; updateProp(); };
+        window.useColorFromPalette = (col) => { document.getElementById('prop-color').value = col; window.updatePropField('color', col, 'text'); };
         window.removeColorFromPalette = (event, col) => { event.stopPropagation(); localColors = localColors.filter(c => c !== col); localStorage.setItem('ltp_maze_custom_palette', JSON.stringify(localColors)); renderSavedColorsUI(); };
 
         window.importPaletteCode = () => {
@@ -518,8 +533,7 @@
             const file = e.target.files[0]; if (!file) return;
             const img = new Image();
             img.onload = () => {
-                const c = document.createElement('canvas');
-                let w = img.width, h = img.height; const MAX = 64;
+                const c = document.createElement('canvas'); let w = img.width, h = img.height; const MAX = 64;
                 if (w > MAX || h > MAX) { const ratio = Math.min(MAX/w, MAX/h); w = Math.floor(w*ratio); h = Math.floor(h*ratio); }
                 c.width = w; c.height = h;
                 const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
@@ -566,7 +580,7 @@
             if(type === 'register') {
                 if(ex) { document.getElementById('login-loading').classList.add('hidden'); return showMsg("Error", "Username taken."); }
                 const id = "u_" + Date.now();
-                await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', id), { username: u, password: btoa(p), bricks: 0, cp: 0, beaten: [], color: '#00ffff', glow: false });
+                await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', id), { username: u, password: btoa(p), bricks: 0, cp: 0, beaten: [], beatenVersions: {}, color: '#00ffff', glow: false });
                 localStorage.setItem('ltp_maze_uid', id);
             } else {
                 if(!ex || ex.password !== btoa(p)) { document.getElementById('login-loading').classList.add('hidden'); return showMsg("Error", "Invalid credentials."); }
@@ -629,12 +643,21 @@
             const c = document.getElementById('level-list'); c.innerHTML = '';
             if(list.length === 0) { c.innerHTML = '<div class="text-center text-slate-500 mt-10">No levels found.</div>'; return; }
             list.forEach(l => {
-                const b = (window.currentUser.beaten||[]).includes(l.id) ? '<span class="text-emerald-400 text-xs font-bold bg-emerald-900/30 px-2 py-1 rounded ml-2">✓ BEATEN</span>' : '';
+                let isBeaten = (window.currentUser.beaten||[]).includes(l.id);
+                let bHtml = '';
+                if (isBeaten) {
+                    let beatenVer = window.currentUser.beatenVersions?.[l.id] || 0;
+                    if ((l.version || 1) > beatenVer && beatenVer > 0) {
+                        bHtml = '<span class="text-sky-400 text-xs font-bold bg-sky-900/30 px-2 py-1 rounded ml-2">⚠️ PREV VERSION BEATEN</span>';
+                    } else {
+                        bHtml = '<span class="text-emerald-400 text-xs font-bold bg-emerald-900/30 px-2 py-1 rounded ml-2">✓ BEATEN</span>';
+                    }
+                }
                 const priv = l.private ? '<span class="text-amber-400 text-xs font-bold bg-amber-900/30 px-2 py-1 rounded ml-2">🔒 PRIVATE</span>' : '';
                 const sched = l.category === 'daily' || l.category === 'weekly' ? `<span class="text-cyan-400 text-xs font-bold bg-cyan-900/30 px-2 py-1 rounded ml-2">${l.category.toUpperCase()} ${l.scheduleDate || ''}</span>` : '';
                 c.innerHTML += `
                     <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center hover:border-indigo-500 transition gap-3 md:gap-0">
-                        <div><h4 class="font-bold text-base md:text-lg">${l.name} <span class="text-slate-500 text-xs md:text-sm">#${l.numericId}</span> ${priv} ${b} ${sched}</h4><p class="text-xs md:text-sm text-slate-400">By ${l.authorName} | Diff: <span class="text-amber-400">${l.difficulty||'Unrated'}</span> | Qual: <span class="text-fuchsia-400">${(l.rating && l.rating !== 'Daily' && l.rating !== 'Weekly') ? l.rating : 'Unrated'}</span></p></div>
+                        <div><h4 class="font-bold text-base md:text-lg">${l.name} <span class="text-slate-500 text-xs md:text-sm">#${l.numericId}</span> ${priv} ${bHtml} ${sched}</h4><p class="text-xs md:text-sm text-slate-400">By ${l.authorName} | Diff: <span class="text-amber-400">${l.difficulty||'Unrated'}</span> | Qual: <span class="text-fuchsia-400">${(l.rating && l.rating !== 'Daily' && l.rating !== 'Weekly') ? l.rating : 'Unrated'}</span></p></div>
                         <div class="flex gap-2 w-full md:w-auto">${l.authorId === window.currentUser.id || window.currentUser.username === 'LtpMer' ? `<button onclick="editLevel('${l.id}')" class="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">Edit</button>` : ''}<button onclick="playLevel('${l.id}')" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-lg font-bold shadow-lg transition">Play</button></div>
                     </div>`;
             });
@@ -729,7 +752,7 @@
             if(t === 'wall' || t === 'image') { setProps('#ffffff', true, 1, 0); }
             else if(t === 'start') { setProps('#00ffaa', false, 1, 10); }
             else if(t === 'end') { setProps('#ffaa00', false, 1, 15); }
-            else if(t === 'damage') { setProps('#ff0044', true, 0.8, 12); }
+            else if(t === 'damage') { setProps('#ff0044', false, 0.8, 12); } 
             else if(t === 'emitter') { setProps('#ffaa00', false, 0.5, 5); document.getElementById('prop-emitter-box').classList.remove('hidden'); }
             else if(t === 'trigger') { 
                 setProps('#aa00ff', false, 0.5, 8); 
@@ -739,16 +762,53 @@
                 renderAllTriggerActions();
             }
             else if(t === 'text') { setProps('#38bdf8', true, 1, 0); document.getElementById('prop-text-tool-box').classList.remove('hidden'); document.getElementById('prop-text-input').focus(); }
+            
+            if(t !== 'select') syncUIForFirstProps();
         };
 
         function setProps(c, s, a, g) { 
-            document.getElementById('prop-color').value = c; document.getElementById('prop-solid').checked = s; 
+            document.getElementById('prop-color').value = c; document.getElementById('prop-color2').value = '#000000'; document.getElementById('prop-gradient').value = 'none';
+            document.getElementById('prop-solid').checked = s; 
             document.getElementById('prop-pushblock').checked = false; document.getElementById('prop-rotation').value = 0;
-            syncAlphaInputs(a); syncGlowInputs(g || 0); document.getElementById('prop-tag').value = ''; 
+            document.getElementById('prop-sizex').value = 1; document.getElementById('prop-sizey').value = 1;
+            setAlphaUI(a); setGlowUI(g || 0); document.getElementById('prop-tag').value = ''; 
         }
 
-        window.syncAlphaInputs = (val) => { let floatVal = parseFloat(val); if (isNaN(floatVal)) floatVal = 1; floatVal = Math.max(0, Math.min(1, floatVal)); document.getElementById('prop-alpha').value = floatVal; document.getElementById('prop-alpha-num').value = floatVal; updateProp(); };
-        window.syncGlowInputs = (val) => { let intVal = parseInt(val); if (isNaN(intVal)) intVal = 0; intVal = Math.max(0, Math.min(50, intVal)); document.getElementById('prop-glow').value = intVal; document.getElementById('prop-glow-num').value = intVal; updateProp(); };
+        window.setAlphaUI = (val) => { let floatVal = parseFloat(val)||1; floatVal = Math.max(0, Math.min(1, floatVal)); document.getElementById('prop-alpha').value = floatVal; document.getElementById('prop-alpha-num').value = floatVal; };
+        window.setGlowUI = (val) => { let intVal = parseInt(val)||0; intVal = Math.max(0, Math.min(50, intVal)); document.getElementById('prop-glow').value = intVal; document.getElementById('prop-glow-num').value = intVal; };
+
+        window.updatePropField = (field, value, type) => {
+            if(e_tool !== 'select' || e_selectedIds.size === 0) return;
+            if(value === '' || value === null) return;
+            window.e_verified = false;
+            
+            let finalVal = value;
+            if(type === 'number') { finalVal = parseFloat(value); if(isNaN(finalVal)) return; }
+            if(type === 'bool') { finalVal = !!value; }
+            
+            e_selectedIds.forEach(id => {
+                let b = e_blocks.find(x => x.id === id);
+                if(b) b[field] = finalVal;
+            });
+            triggerAutosave(); drawEditor();
+        };
+
+        window.saveTriggerActions = () => {
+            if(e_tool !== 'select' || e_selectedIds.size === 0) return;
+            const actionDivs = document.querySelectorAll('.trig-action-item');
+            const actions = Array.from(actionDivs).map((div, i) => {
+                let action = document.getElementById(`prop-action-${i}`).value; let tData = {};
+                if(action==='CAMERA') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value,z:+document.getElementById(`tp-z-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
+                if(action==='MOVE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,mx:+document.getElementById(`tp-mx-${i}`).value,my:+document.getElementById(`tp-my-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
+                if(action==='ROTATE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,centerTag:document.getElementById(`tp-center-tag-${i}`).value,ang:+document.getElementById(`tp-ang-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
+                if(action==='SET_PROPERTY') tData = {tag:document.getElementById(`tp-tag-${i}`).value,prop:document.getElementById(`tp-prop-${i}`).value,val:document.getElementById(`tp-val-${i}`).value};
+                if(action==='TELEPORT_PLAYER') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value};
+                if(action==='STOP_LOOP') tData = {tag:document.getElementById(`tp-tag-${i}`).value};
+                return { action, tData };
+            });
+            e_selectedIds.forEach(id => { let b = e_blocks.find(x => x.id === id); if (b && b.type === 'trigger') { b.actions = actions; } });
+            window.e_verified = false; triggerAutosave(); drawEditor();
+        };
 
         window.renderAllTriggerActions = () => {
             const container = document.getElementById('prop-trig-actions-list'); container.innerHTML = '';
@@ -764,6 +824,7 @@
                             <option value="MOVE_TAG" ${act.action==='MOVE_TAG'?'selected':''}>Move Tagged Block</option>
                             <option value="ROTATE_TAG" ${act.action==='ROTATE_TAG'?'selected':''}>Rotate Tagged Block</option>
                             <option value="SET_PROPERTY" ${act.action==='SET_PROPERTY'?'selected':''}>Change Tagged Property</option>
+                            <option value="STOP_LOOP" ${act.action==='STOP_LOOP'?'selected':''}>Stop Looping Trigger</option>
                         </select>
                     </label>
                     <div id="prop-trig-params-${idx}" class="flex flex-col gap-2 mt-2"></div>
@@ -771,12 +832,11 @@
                 container.insertAdjacentHTML('beforeend', html);
                 renderTriggerParams(act.action, act.tData, idx);
             });
-            updateProp();
         };
 
-        window.addTriggerAction = () => { window._tempActions.push({ action: 'WIN', tData: {} }); renderAllTriggerActions(); };
-        window.removeTriggerAction = (idx) => { window._tempActions.splice(idx, 1); renderAllTriggerActions(); };
-        window.changeTriggerActionType = (idx, newType) => { window._tempActions[idx].action = newType; window._tempActions[idx].tData = {}; renderAllTriggerActions(); };
+        window.addTriggerAction = () => { window._tempActions.push({ action: 'WIN', tData: {} }); renderAllTriggerActions(); window.saveTriggerActions(); };
+        window.removeTriggerAction = (idx) => { window._tempActions.splice(idx, 1); renderAllTriggerActions(); window.saveTriggerActions(); };
+        window.changeTriggerActionType = (idx, newType) => { window._tempActions[idx].action = newType; window._tempActions[idx].tData = {}; renderAllTriggerActions(); window.saveTriggerActions(); };
 
         function renderTriggerParams(action, data = {}, idx = 0) {
             const p = document.getElementById(`prop-trig-params-${idx}`); if(!p) return;
@@ -801,51 +861,13 @@
                      <label>Dur (s): <input type="number" step="0.1" id="tp-dur-${idx}" value="${data.dur||1}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label></div>`;
             } else if(action === 'SET_PROPERTY') {
                 h = `<label>Target Tag: <input type="text" id="tp-tag-${idx}" value="${data.tag||''}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
-                     <div class="grid grid-cols-2 gap-1"><label>Property: <select id="tp-prop-${idx}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"><option value="color" ${data.prop==='color'?'selected':''}>Color</option><option value="solid" ${data.prop==='solid'?'selected':''}>Solid (t/f)</option><option value="pushblock" ${data.prop==='pushblock'?'selected':''}>Pushblock</option><option value="alpha" ${data.prop==='alpha'?'selected':''}>Alpha</option><option value="glow" ${data.prop==='glow'?'selected':''}>Glow</option><option value="rotation" ${data.prop==='rotation'?'selected':''}>Rotation</option><option value="size" ${data.prop==='size'?'selected':''}>Size</option><option value="tag" ${data.prop==='tag'?'selected':''}>Tag</option></select></label>
+                     <div class="grid grid-cols-2 gap-1"><label>Property: <select id="tp-prop-${idx}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"><option value="color" ${data.prop==='color'?'selected':''}>Color</option><option value="solid" ${data.prop==='solid'?'selected':''}>Solid (t/f)</option><option value="pushblock" ${data.prop==='pushblock'?'selected':''}>Pushblock</option><option value="alpha" ${data.prop==='alpha'?'selected':''}>Alpha</option><option value="glow" ${data.prop==='glow'?'selected':''}>Glow</option><option value="rotation" ${data.prop==='rotation'?'selected':''}>Rotation</option><option value="size" ${data.prop==='size'?'selected':''}>Size Uniform</option><option value="tag" ${data.prop==='tag'?'selected':''}>Tag</option></select></label>
                      <label>Value: <input type="text" id="tp-val-${idx}" value="${data.val!==undefined?data.val:''}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label></div>`;
+            } else if(action === 'STOP_LOOP') {
+                h = `<label>Target Tag: <input type="text" id="tp-tag-${idx}" value="${data.tag||''}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>`;
             }
-            p.innerHTML = h; Array.from(p.querySelectorAll('input, select')).forEach(i => i.addEventListener('change', updateProp));
+            p.innerHTML = h; Array.from(p.querySelectorAll('input, select')).forEach(i => i.addEventListener('change', window.saveTriggerActions));
         }
-
-        window.updateProp = () => {
-            if(e_tool !== 'select' || e_selectedIds.size === 0) return;
-            window.e_verified = false;
-            e_selectedIds.forEach(id => {
-                let b = e_blocks.find(x => x.id === id);
-                if(b) {
-                    b.color = document.getElementById('prop-color').value; 
-                    b.solid = document.getElementById('prop-solid').checked;
-                    b.pushblock = document.getElementById('prop-pushblock').checked;
-                    b.rotation = parseFloat(document.getElementById('prop-rotation').value) || 0;
-                    b.alpha = parseFloat(document.getElementById('prop-alpha').value); 
-                    b.glow = parseInt(document.getElementById('prop-glow').value) || 0;
-                    b.tag = document.getElementById('prop-tag').value;
-                    
-                    if(b.type === 'trigger') {
-                        b.listenTag = document.getElementById('prop-trig-listen').value;
-                        b.particleFace = parseFloat(document.getElementById('prop-particle-face').value) || 0;
-                        b.clickable = document.getElementById('prop-trig-click').checked;
-                        b.clickRange = parseFloat(document.getElementById('prop-trig-range').value) || 3;
-                        
-                        const actionDivs = document.querySelectorAll('.trig-action-item');
-                        b.actions = Array.from(actionDivs).map((div, i) => {
-                            let action = document.getElementById(`prop-action-${i}`).value; let tData = {};
-                            if(action==='CAMERA') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value,z:+document.getElementById(`tp-z-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
-                            if(action==='MOVE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,mx:+document.getElementById(`tp-mx-${i}`).value,my:+document.getElementById(`tp-my-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
-                            if(action==='ROTATE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,centerTag:document.getElementById(`tp-center-tag-${i}`).value,ang:+document.getElementById(`tp-ang-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
-                            if(action==='SET_PROPERTY') tData = {tag:document.getElementById(`tp-tag-${i}`).value,prop:document.getElementById(`tp-prop-${i}`).value,val:document.getElementById(`tp-val-${i}`).value};
-                            if(action==='TELEPORT_PLAYER') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value};
-                            return { action, tData };
-                        });
-                    }
-                    if(b.type === 'emitter') {
-                        b.emitLife = parseFloat(document.getElementById('prop-emit-life').value); b.emitSpread = parseFloat(document.getElementById('prop-emit-spread').value); b.emitSpeed = parseFloat(document.getElementById('prop-emit-speed').value);
-                        b.emitOrient = parseFloat(document.getElementById('prop-emit-orient').value); b.emitRot = parseFloat(document.getElementById('prop-emit-rot').value); b.emitRate = parseFloat(document.getElementById('prop-emit-rate').value);
-                    }
-                }
-            });
-            triggerAutosave(); drawEditor();
-        };
 
         function getMousePos(e) {
             const r = edCanvas.getBoundingClientRect();
@@ -881,13 +903,16 @@
             if (existingIdx >= 0) e_blocks.splice(existingIdx, 1);
             const b = {
                 id: generateId(), x: gridX, y: gridY, layer: e_layer, type: e_tool === 'text' || e_tool === 'image' ? 'wall' : e_tool,
-                color: document.getElementById('prop-color').value, solid: document.getElementById('prop-solid').checked, pushblock: document.getElementById('prop-pushblock').checked,
+                color: document.getElementById('prop-color').value, color2: document.getElementById('prop-color2').value, gradient: document.getElementById('prop-gradient').value,
+                solid: document.getElementById('prop-solid').checked, pushblock: document.getElementById('prop-pushblock').checked,
                 rotation: parseFloat(document.getElementById('prop-rotation').value) || 0, alpha: parseFloat(document.getElementById('prop-alpha').value), 
-                glow: parseInt(document.getElementById('prop-glow').value) || 0, tag: document.getElementById('prop-tag').value, size: e_meta.gridStep || 1
+                glow: parseInt(document.getElementById('prop-glow').value) || 0, tag: document.getElementById('prop-tag').value, 
+                sizeX: parseFloat(document.getElementById('prop-sizex').value) || (e_meta.gridStep || 1), sizeY: parseFloat(document.getElementById('prop-sizey').value) || (e_meta.gridStep || 1)
             };
             if(e_tool === 'trigger') {
                 b.listenTag = document.getElementById('prop-trig-listen').value; b.particleFace = parseFloat(document.getElementById('prop-particle-face').value) || 0;
                 b.clickable = document.getElementById('prop-trig-click').checked; b.clickRange = parseFloat(document.getElementById('prop-trig-range').value) || 3;
+                b.onEnter = document.getElementById('prop-trig-onenter').checked; b.isLoop = document.getElementById('prop-trig-loop').checked; b.loopInterval = parseFloat(document.getElementById('prop-trig-interval').value) || 1;
                 b.actions = Array.from(document.querySelectorAll('.trig-action-item')).map((div, i) => {
                     let action = document.getElementById(`prop-action-${i}`).value; let tData = {};
                     if(action==='CAMERA') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value,z:+document.getElementById(`tp-z-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
@@ -895,12 +920,13 @@
                     if(action==='ROTATE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,centerTag:document.getElementById(`tp-center-tag-${i}`).value,ang:+document.getElementById(`tp-ang-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                     if(action==='SET_PROPERTY') tData = {tag:document.getElementById(`tp-tag-${i}`).value,prop:document.getElementById(`tp-prop-${i}`).value,val:document.getElementById(`tp-val-${i}`).value};
                     if(action==='TELEPORT_PLAYER') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value};
+                    if(action==='STOP_LOOP') tData = {tag:document.getElementById(`tp-tag-${i}`).value};
                     return { action, tData };
                 });
             }
             if(e_tool === 'emitter') {
                 b.emitLife = parseFloat(document.getElementById('prop-emit-life').value); b.emitSpread = parseFloat(document.getElementById('prop-emit-spread').value); b.emitSpeed = parseFloat(document.getElementById('prop-emit-speed').value);
-                b.emitOrient = parseFloat(document.getElementById('prop-emit-orient').value); b.emitRot = parseFloat(document.getElementById('prop-emit-rot').value); b.emitRate = parseFloat(document.getElementById('prop-emit-rate').value);
+                b.emitGravity = parseFloat(document.getElementById('prop-emit-gravity').value); b.emitOrient = parseFloat(document.getElementById('prop-emit-orient').value); b.emitRot = parseFloat(document.getElementById('prop-emit-rot').value); b.emitRate = parseFloat(document.getElementById('prop-emit-rate').value);
             }
             e_blocks.push(b); triggerAutosave(); window.e_verified = false;
         }
@@ -952,32 +978,62 @@
             drawEditor();
         };
 
+        function syncUIForFirstProps() {
+            if(e_selectedIds.size === 0) {
+                Array.from(document.querySelectorAll('#properties-panel input, #properties-panel select')).forEach(el => { el.placeholder = ''; if (el.type==='checkbox') el.indeterminate = false; });
+                return;
+            }
+            const first = e_blocks.find(x=>x.id===Array.from(e_selectedIds)[0]);
+            const checkMix = (prop) => { let v = first[prop]; for(let id of e_selectedIds) { if(e_blocks.find(x=>x.id===id)[prop] !== v) return true; } return false; };
+            const setUI = (id, prop, def, isColor=false, isCheckbox=false) => {
+                let el = document.getElementById(id); if(!el) return;
+                let mixed = checkMix(prop); el.placeholder = '';
+                if(isCheckbox) { el.indeterminate = mixed; el.checked = mixed ? false : !!first[prop]; } 
+                else if(isColor) { el.value = first[prop] || def; } 
+                else { el.value = mixed ? '' : (first[prop] !== undefined ? first[prop] : def); if(mixed) el.placeholder = '-'; }
+            };
+
+            setUI('prop-color', 'color', '#ffffff', true);
+            setUI('prop-color2', 'color2', '#000000', true);
+            setUI('prop-gradient', 'gradient', 'none');
+            setUI('prop-solid', 'solid', true, false, true);
+            setUI('prop-pushblock', 'pushblock', false, false, true);
+            setUI('prop-rotation', 'rotation', 0);
+            setUI('prop-sizex', 'sizeX', 1);
+            setUI('prop-sizey', 'sizeY', 1);
+            setUI('prop-tag', 'tag', '');
+            
+            let alphaMix = checkMix('alpha'), glowMix = checkMix('glow');
+            document.getElementById('prop-alpha').value = alphaMix ? '' : (first.alpha !== undefined ? first.alpha : 1);
+            document.getElementById('prop-alpha-num').value = alphaMix ? '' : (first.alpha !== undefined ? first.alpha : 1);
+            if(alphaMix) document.getElementById('prop-alpha-num').placeholder = '-';
+            document.getElementById('prop-glow').value = glowMix ? '' : (first.glow || 0);
+            document.getElementById('prop-glow-num').value = glowMix ? '' : (first.glow || 0);
+            if(glowMix) document.getElementById('prop-glow-num').placeholder = '-';
+
+            if(first.type === 'trigger') {
+                document.getElementById('prop-trigger-box').classList.remove('hidden'); document.getElementById('prop-emitter-box').classList.add('hidden');
+                setUI('prop-trig-listen', 'listenTag', ''); setUI('prop-particle-face', 'particleFace', 0);
+                setUI('prop-trig-click', 'clickable', false, false, true); setUI('prop-trig-range', 'clickRange', 3);
+                setUI('prop-trig-onenter', 'onEnter', false, false, true); setUI('prop-trig-loop', 'isLoop', false, false, true);
+                setUI('prop-trig-interval', 'loopInterval', 1);
+                window._tempActions = first.actions ? [...first.actions] : [{ action: first.action||'WIN', tData: first.tData||{} }];
+                renderAllTriggerActions();
+            } else if (first.type === 'emitter') {
+                document.getElementById('prop-trigger-box').classList.add('hidden'); document.getElementById('prop-emitter-box').classList.remove('hidden');
+                setUI('prop-emit-life', 'emitLife', 1); setUI('prop-emit-spread', 'emitSpread', 360);
+                setUI('prop-emit-speed', 'emitSpeed', 100); setUI('prop-emit-gravity', 'emitGravity', 0);
+                setUI('prop-emit-orient', 'emitOrient', 0); setUI('prop-emit-rot', 'emitRot', 5); setUI('prop-emit-rate', 'emitRate', 10);
+            } else { document.getElementById('prop-trigger-box').classList.add('hidden'); document.getElementById('prop-emitter-box').classList.add('hidden'); }
+        }
+
         const handlePointerUp = e => {
             if(isSelecting) {
                 const xMin = Math.min(startSelectX, currentMouseX), xMax = Math.max(startSelectX, currentMouseX), yMin = Math.min(startSelectY, currentMouseY), yMax = Math.max(startSelectY, currentMouseY);
                 e_blocks.forEach(b => {
-                    if(b.layer === e_layer) { const bx = b.x*TILE, by = b.y*TILE, bw = TILE * getBlockSize(b); if(bx+bw > xMin && bx < xMax && by+bw > yMin && by < yMax) e_selectedIds.add(b.id); }
+                    if(b.layer === e_layer) { const bx = b.x*TILE, by = b.y*TILE, bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b); if(bx+bwX > xMin && bx < xMax && by+bwY > yMin && by < yMax) e_selectedIds.add(b.id); }
                 });
-                if(e_selectedIds.size > 0) {
-                    const first = e_blocks.find(x=>x.id===Array.from(e_selectedIds)[0]);
-                    document.getElementById('prop-color').value = first.color; document.getElementById('prop-solid').checked = first.solid;
-                    document.getElementById('prop-pushblock').checked = !!first.pushblock; document.getElementById('prop-rotation').value = first.rotation || 0;
-                    syncAlphaInputs(first.alpha !== undefined ? first.alpha : 1); syncGlowInputs(first.glow !== undefined ? first.glow : 0);
-                    document.getElementById('prop-tag').value = first.tag||'';
-                    
-                    if(first.type === 'trigger') {
-                        document.getElementById('prop-trigger-box').classList.remove('hidden'); document.getElementById('prop-emitter-box').classList.add('hidden');
-                        document.getElementById('prop-trig-listen').value = first.listenTag||''; document.getElementById('prop-particle-face').value = first.particleFace ?? 0;
-                        document.getElementById('prop-trig-click').checked = !!first.clickable; document.getElementById('prop-trig-range').value = first.clickRange || 3;
-                        window._tempActions = first.actions ? [...first.actions] : [{ action: first.action||'WIN', tData: first.tData||{} }];
-                        renderAllTriggerActions();
-                    } else if (first.type === 'emitter') {
-                        document.getElementById('prop-trigger-box').classList.add('hidden'); document.getElementById('prop-emitter-box').classList.remove('hidden');
-                        document.getElementById('prop-emit-life').value = first.emitLife || 1; document.getElementById('prop-emit-spread').value = first.emitSpread || 360;
-                        document.getElementById('prop-emit-speed').value = first.emitSpeed || 100; document.getElementById('prop-emit-orient').value = first.emitOrient || 0;
-                        document.getElementById('prop-emit-rot').value = first.emitRot || 5; document.getElementById('prop-emit-rate').value = first.emitRate || 10;
-                    } else { document.getElementById('prop-trigger-box').classList.add('hidden'); document.getElementById('prop-emitter-box').classList.add('hidden'); }
-                }
+                if(e_selectedIds.size > 0) syncUIForFirstProps();
             }
             isDrawing = false; isErasing = false; isSelecting = false; isDragging = false; currentPaintStroke.clear(); drawEditor();
         };
@@ -1011,6 +1067,18 @@
             ctx.beginPath(); ctx.moveTo(toX, toY); ctx.lineTo(toX - 10 * Math.cos(angle - Math.PI / 6), toY - 10 * Math.sin(angle - Math.PI / 6)); ctx.lineTo(toX - 10 * Math.cos(angle + Math.PI / 6), toY - 10 * Math.sin(angle + Math.PI / 6)); ctx.closePath(); ctx.fill(); ctx.restore();
         }
 
+        function drawBlockContent(ctx, b, bwX, bwY, zoom) {
+            if(b.glow && b.glow > 0) { ctx.shadowBlur = b.glow * zoom; ctx.shadowColor = b.color; }
+            if (b.gradient && b.gradient !== 'none' && b.color2) {
+                let grad;
+                if (b.gradient === 'horizontal') grad = ctx.createLinearGradient(-bwX/2, 0, bwX/2, 0);
+                else if (b.gradient === 'vertical') grad = ctx.createLinearGradient(0, -bwY/2, 0, bwY/2);
+                else if (b.gradient === 'radial') grad = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.max(bwX, bwY)/2);
+                grad.addColorStop(0, b.color); grad.addColorStop(1, b.color2); ctx.fillStyle = grad;
+            } else { ctx.fillStyle = b.color; }
+            ctx.fillRect(-bwX/2, -bwY/2, bwX, bwY);
+        }
+
         function drawEditor() {
             edCtx.fillStyle = '#1e293b'; edCtx.fillRect(0, 0, edCanvas.width, edCanvas.height);
             edCtx.save(); edCtx.translate(edCanvas.width/2, edCanvas.height/2); edCtx.scale(e_cam.zoom, e_cam.zoom); edCtx.translate(-e_cam.x, -e_cam.y);
@@ -1036,12 +1104,10 @@
                 const isCurrentLayer = (b.layer === e_layer);
                 edCtx.save(); edCtx.globalAlpha = isCurrentLayer ? (b.alpha !== undefined ? parseFloat(b.alpha) : 1) : (b.alpha !== undefined ? parseFloat(b.alpha) : 1) * 0.3; 
                 
-                const bw = TILE * getBlockSize(b);
-                edCtx.translate(b.x*TILE + bw/2, b.y*TILE + bw/2); edCtx.rotate((b.rotation||0) * Math.PI/180);
+                const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                edCtx.translate(b.x*TILE + bwX/2, b.y*TILE + bwY/2); edCtx.rotate((b.rotation||0) * Math.PI/180);
 
-                if(b.glow && b.glow > 0) { edCtx.shadowBlur = b.glow * e_cam.zoom; edCtx.shadowColor = b.color; }
-                
-                edCtx.fillStyle = b.color; edCtx.fillRect(-bw/2, -bw/2, bw, bw);
+                drawBlockContent(edCtx, b, bwX, bwY, e_cam.zoom);
                 
                 edCtx.shadowBlur = 0; edCtx.fillStyle = '#fff'; edCtx.font = '12px Arial'; edCtx.textAlign = 'center';
                 edCtx.rotate(-(b.rotation||0) * Math.PI/180);
@@ -1052,13 +1118,13 @@
                 if(b.type === 'emitter') edCtx.fillText('✨', 0, 4);
                 edCtx.rotate((b.rotation||0) * Math.PI/180); 
                 
-                if(e_selectedIds.has(b.id)) { edCtx.strokeStyle = '#fff'; edCtx.lineWidth = 2; edCtx.strokeRect(-bw/2, -bw/2, bw, bw); }
+                if(e_selectedIds.has(b.id)) { edCtx.strokeStyle = '#fff'; edCtx.lineWidth = 2; edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY); }
                 edCtx.restore();
             });
 
             sorted.forEach(b => {
                 if (b.type === 'trigger' && b.layer === e_layer) {
-                    const fromX = b.x * TILE + TILE/2, fromY = b.y * TILE + TILE/2;
+                    const fromX = b.x * TILE + (TILE * getBlockSizeX(b))/2, fromY = b.y * TILE + (TILE * getBlockSizeY(b))/2;
                     const isSelected = e_selectedIds.has(b.id), alpha = isSelected ? 1 : 0.45, color = isSelected ? '#a855f7' : '#ec4899'; 
 
                     edCtx.save(); edCtx.globalAlpha = alpha;
@@ -1072,13 +1138,13 @@
                         } else if (act.action === 'TELEPORT_PLAYER' && act.tData) {
                             const targetX = (act.tData.x || 0) * TILE + TILE/2, targetY = (act.tData.y || 0) * TILE + TILE/2;
                             drawVisualArrow(edCtx, fromX, fromY, targetX, targetY, '#38bdf8', isSelected ? 3 : 1.5);
-                        } else if ((act.action === 'MOVE_TAG' || act.action === 'ROTATE_TAG' || act.action === 'SET_PROPERTY') && act.tData && act.tData.tag) {
+                        } else if ((act.action === 'MOVE_TAG' || act.action === 'ROTATE_TAG' || act.action === 'SET_PROPERTY' || act.action === 'STOP_LOOP') && act.tData && act.tData.tag) {
                             const targets = e_blocks.filter(x => x.tag === act.tData.tag);
                             targets.forEach(t => {
-                                const toX = t.x * TILE + TILE/2, toY = t.y * TILE + TILE/2;
+                                const toX = t.x * TILE + (TILE * getBlockSizeX(t))/2, toY = t.y * TILE + (TILE * getBlockSizeY(t))/2;
                                 drawVisualArrow(edCtx, fromX, fromY, toX, toY, color, isSelected ? 3 : 1.5);
-                                edCtx.strokeStyle = color; edCtx.lineWidth = isSelected ? 3 : 1.5; edCtx.strokeRect(t.x*TILE - 2, t.y*TILE - 2, (TILE * getBlockSize(t)) + 4, (TILE * getBlockSize(t)) + 4);
-                                if (act.action === 'MOVE_TAG') { const destX = (t.x + (act.tData.mx || 0)) * TILE, destY = (t.y + (act.tData.my || 0)) * TILE; edCtx.save(); edCtx.strokeStyle = '#22c55e'; edCtx.lineWidth = 1.5; edCtx.setLineDash([4, 4]); edCtx.strokeRect(destX + 2, destY + 2, TILE - 4, TILE - 4); edCtx.restore(); }
+                                edCtx.strokeStyle = color; edCtx.lineWidth = isSelected ? 3 : 1.5; edCtx.strokeRect(t.x*TILE - 2, t.y*TILE - 2, (TILE * getBlockSizeX(t)) + 4, (TILE * getBlockSizeY(t)) + 4);
+                                if (act.action === 'MOVE_TAG') { const destX = (t.x + (act.tData.mx || 0)) * TILE, destY = (t.y + (act.tData.my || 0)) * TILE; edCtx.save(); edCtx.strokeStyle = '#22c55e'; edCtx.lineWidth = 1.5; edCtx.setLineDash([4, 4]); edCtx.strokeRect(destX + 2, destY + 2, (TILE * getBlockSizeX(t)) - 4, (TILE * getBlockSizeY(t)) - 4); edCtx.restore(); }
                             });
                         }
                     });
@@ -1102,7 +1168,7 @@
             
             try { 
                 const p = JSON.parse(l.grid);
-                if(p[0] && !p[0].id) e_blocks = p.map(b => ({ ...b, id: generateId(), layer: b.layer||0, rotation: b.rotation||0, glow: b.glow||0, size: b.size||1, pushblock: !!b.pushblock }));
+                if(p[0] && !p[0].id) e_blocks = p.map(b => ({ ...b, id: generateId(), layer: b.layer||0, rotation: b.rotation||0, glow: b.glow||0, sizeX: b.sizeX||b.size||1, sizeY: b.sizeY||b.size||1, pushblock: !!b.pushblock }));
                 else e_blocks = p;
             } catch(e) { e_blocks = []; }
 
@@ -1117,9 +1183,11 @@
             let canWin = e_blocks.some(x=>x.type==='end' || (x.type==='trigger' && (x.actions||[{action:x.action}]).some(a=>a.action==='WIN')));
             if(!canWin) return showMsg("Warning", "No End or WIN trigger. Level impossible?");
 
-            if(!isPriv && !window.e_verified) return showMsg("Verification Required", "You must successfully playtest and beat the level before publishing it publicly.");
+            let hasBeatenAnyVersion = (window.currentUser.beaten||[]).includes(window.editId);
+            if(!isPriv && !window.e_verified && !hasBeatenAnyVersion) return showMsg("Verification Required", "You must successfully playtest and beat the level before publishing it publicly.");
 
-            const d = { name: n, authorId: window.currentUser.id, authorName: window.currentUser.username, grid: JSON.stringify(e_blocks), meta: e_meta, private: isPriv, timestamp: Date.now() };
+            let existingLvl = window.g_levels.find(x => x.id === window.editId);
+            const d = { name: n, authorId: window.currentUser.id, authorName: window.currentUser.username, grid: JSON.stringify(e_blocks), meta: e_meta, private: isPriv, timestamp: Date.now(), version: (existingLvl?.version || 0) + 1 };
             try {
                 if(window.editId) { 
                     await updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'levels', window.editId), d); 
@@ -1141,45 +1209,47 @@
             const status = document.getElementById('play-status'); status.innerText = ""; status.classList.remove('text-rose-500', 'text-emerald-500');
             
             g_meta = { ...(lvl.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3 }), isTest: lvl.isTest, levelId: lvl.id, originalBlocks: blocks, levelObj: lvl };
-            g_blocks = JSON.parse(JSON.stringify(blocks)).map(b => { b.px = b.x * TILE; b.py = b.y * TILE; b.triggered = false; return b; });
+            g_blocks = JSON.parse(JSON.stringify(blocks)).map(b => { b.px = b.x * TILE; b.py = b.y * TILE; b.triggered = false; b.loopTimer = 0; return b; });
 
             g_players = [];
-            g_blocks.filter(b=>b.type==='start').forEach(b => { const bw = TILE * getBlockSize(b); g_players.push({ id: 'p_'+Date.now(), x: b.px+bw/4, y: b.py+bw/4, w: bw/2, h: bw/2, health: g_meta.maxHealth, invuln: 0 }); });
+            g_blocks.filter(b=>b.type==='start').forEach(b => { const bwX = TILE * getBlockSizeX(b); g_players.push({ id: 'p_'+Date.now(), x: b.px+bwX/4, y: b.py+bwX/4, w: bwX/2, h: bwX/2, health: g_meta.maxHealth, invuln: 0 }); });
             if(g_players.length === 0) g_players.push({ id: 'p_'+Date.now(), x: 0, y: 0, w: TILE/2, h: TILE/2, health: g_meta.maxHealth, invuln: 0 });
 
             g_cam = { x: g_players[0].x, y: g_players[0].y, zoom: g_meta.zoom || 1, targetX: null, targetY: null, active: false };
-            g_tweens = []; isPlaying = true; renderHealth();
+            g_tweens = []; isPlaying = true; 
             if(g_loop) cancelAnimationFrame(g_loop);
-            g_particles = []; window.e_keys = {}; lastTime = performance.now(); g_loop = requestAnimationFrame(gameLoop);
+            g_particles = []; window.e_keys = {}; lastTime = performance.now(); 
+
+            // Trigger On Enter
+            g_blocks.filter(b => b.type === 'trigger' && b.onEnter).forEach(b => {
+                b.triggered = true; let actions = b.actions || [{action: b.action, tData: b.tData}];
+                actions.forEach(act => triggerAction(b, act));
+            });
+
+            g_loop = requestAnimationFrame(gameLoop);
         }
 
         window.stopPlay = () => { isPlaying = false; cancelAnimationFrame(g_loop); if (g_meta && g_meta.isTest) showScreen('editor'); else showScreen('menu'); };
 
-        function renderHealth() {
-            const h = document.getElementById('health-bar'); if(!h) return; h.innerHTML = ''; let hp = g_players[0] ? g_players[0].health : 0;
-            for(let i=0; i<g_meta.maxHealth; i++) h.innerHTML += `<div class="w-4 h-4 md:w-6 md:h-6 rounded-full ${i < hp ? 'bg-rose-500' : 'bg-slate-700/50'} border-2 border-slate-900 shadow-lg transition-colors duration-300"></div>`;
-        }
-
-        // Standard precise AABB check
         function AABB(x1, y1, w1, h1, x2, y2, w2, h2) { return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2; }
 
         function pushBlock(block, mx, my) {
-            let bw = TILE * getBlockSize(block), nx = block.px + mx, ny = block.py + my; const solids = g_blocks.filter(b => b.solid);
+            let bwX = TILE * getBlockSizeX(block), bwY = TILE * getBlockSizeY(block), nx = block.px + mx, ny = block.py + my; const solids = g_blocks.filter(b => b.solid);
             if (mx !== 0) {
-                let hit = false; if (nx < 0 || nx + bw > g_meta.width * TILE) hit = true;
+                let hit = false; if (nx < 0 || nx + bwX > g_meta.width * TILE) hit = true;
                 for (let other of solids) {
                     if (other.id === block.id) continue;
-                    let ow = TILE * getBlockSize(other);
-                    if (AABB(nx, block.py, bw, bw, other.px, other.py, ow, ow)) { if (other.pushblock) { if (!pushBlock(other, mx, 0)) hit = true; } else hit = true; }
+                    let owX = TILE * getBlockSizeX(other), owY = TILE * getBlockSizeY(other);
+                    if (AABB(nx, block.py, bwX, bwY, other.px, other.py, owX, owY)) { if (other.pushblock) { if (!pushBlock(other, mx, 0)) hit = true; } else hit = true; }
                 }
                 if (!hit) { block.px = nx; block.x = block.px / TILE; } else mx = 0;
             }
             if (my !== 0) {
-                let hit = false; if (ny < 0 || ny + bw > g_meta.height * TILE) hit = true;
+                let hit = false; if (ny < 0 || ny + bwY > g_meta.height * TILE) hit = true;
                 for (let other of solids) {
                     if (other.id === block.id) continue;
-                    let ow = TILE * getBlockSize(other);
-                    if (AABB(block.px, ny, bw, bw, other.px, other.py, ow, ow)) { if (other.pushblock) { if (!pushBlock(other, 0, my)) hit = true; } else hit = true; }
+                    let owX = TILE * getBlockSizeX(other), owY = TILE * getBlockSizeY(other);
+                    if (AABB(block.px, ny, bwX, bwY, other.px, other.py, owX, owY)) { if (other.pushblock) { if (!pushBlock(other, 0, my)) hit = true; } else hit = true; }
                 }
                 if (!hit) { block.py = ny; block.y = block.py / TILE; } else my = 0;
             }
@@ -1211,15 +1281,13 @@
 
                 let nextX = p.x + dx; let hitX = false;
                 for(let b of solids) {
-                    const bw = TILE * getBlockSize(b);
+                    const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
                     if (b.rotation) {
-                        if (satCollide({x: nextX, y: p.y, w: p.w, h: p.h}, {x: b.px, y: b.py, w: bw, h: bw, rotation: b.rotation})) { hitX = true; break; }
+                        if (satCollide({x: nextX, y: p.y, w: p.w, h: p.h}, {x: b.px, y: b.py, w: bwX, h: bwY, rotation: b.rotation})) { hitX = true; break; }
                     } else {
-                        if (AABB(nextX, p.y, p.w, p.h, b.px, b.py, bw, bw)) {
+                        if (AABB(nextX, p.y, p.w, p.h, b.px, b.py, bwX, bwY)) {
                             if(b.pushblock && dx !== 0 && pushBlock(b, dx, 0)) continue;
-                            hitX = true; 
-                            if (dx > 0) p.x = b.px - p.w; else if (dx < 0) p.x = b.px + bw; // precise flush snap
-                            break;
+                            hitX = true; if (dx > 0) p.x = b.px - p.w; else if (dx < 0) p.x = b.px + bwX; break;
                         }
                     }
                 }
@@ -1227,15 +1295,13 @@
                 
                 let nextY = p.y + dy; let hitY = false;
                 for(let b of solids) {
-                    const bw = TILE * getBlockSize(b);
+                    const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
                     if (b.rotation) {
-                        if (satCollide({x: p.x, y: nextY, w: p.w, h: p.h}, {x: b.px, y: b.py, w: bw, h: bw, rotation: b.rotation})) { hitY = true; break; }
+                        if (satCollide({x: p.x, y: nextY, w: p.w, h: p.h}, {x: b.px, y: b.py, w: bwX, h: bwY, rotation: b.rotation})) { hitY = true; break; }
                     } else {
-                        if (AABB(p.x, nextY, p.w, p.h, b.px, b.py, bw, bw)) {
+                        if (AABB(p.x, nextY, p.w, p.h, b.px, b.py, bwX, bwY)) {
                             if(b.pushblock && dy !== 0 && pushBlock(b, 0, dy)) continue;
-                            hitY = true;
-                            if (dy > 0) p.y = b.py - p.h; else if (dy < 0) p.y = b.py + bw; // precise flush snap
-                            break;
+                            hitY = true; if (dy > 0) p.y = b.py - p.h; else if (dy < 0) p.y = b.py + bwY; break;
                         }
                     }
                 }
@@ -1247,56 +1313,62 @@
             }
 
             for(let b of g_blocks) {
-                const bw = TILE * getBlockSize(b);
-                // Triggers
-                if (b.type === 'trigger' && !b.triggered) {
-                    let triggered = false;
-                    if (!b.listenTag || b.listenTag === '') {
-                        for(let p of g_players) { if (p.health > 0 && AABB(p.x, p.y, p.w, p.h, b.px, b.py, bw, bw)) { triggered = true; break; } }
-                    } else {
-                        for(let other of g_blocks) {
-                            if (other.id !== b.id && other.tag === b.listenTag) {
-                                let ow = TILE * getBlockSize(other);
-                                if (AABB(other.px, other.py, ow, ow, b.px, b.py, bw, bw)) { triggered = true; break; }
-                            }
+                const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                if (b.type === 'trigger') {
+                    if (b.isLoop && b.triggered) {
+                        b.loopTimer = (b.loopTimer || 0) + dt;
+                        if (b.loopTimer >= (b.loopInterval || 1)) {
+                            b.loopTimer -= (b.loopInterval || 1);
+                            let actions = b.actions || [{action: b.action, tData: b.tData}];
+                            actions.forEach(act => triggerAction(b, act));
                         }
                     }
-                    if (triggered) {
-                        b.triggered = true; 
-                        let actions = b.actions || [{action: b.action, tData: b.tData}];
-                        if (actions.some(a=>a.action === 'WIN')) { winGame(); return; }
-                        else actions.forEach(act => triggerAction(b, act));
+                    if (!b.triggered) {
+                        let triggered = false;
+                        if (!b.listenTag || b.listenTag === '') {
+                            for(let p of g_players) { if (p.health > 0 && AABB(p.x, p.y, p.w, p.h, b.px, b.py, bwX, bwY)) { triggered = true; break; } }
+                        } else {
+                            for(let other of g_blocks) {
+                                if (other.id !== b.id && other.tag === b.listenTag) {
+                                    let owX = TILE * getBlockSizeX(other), owY = TILE * getBlockSizeY(other);
+                                    if (AABB(other.px, other.py, owX, owY, b.px, b.py, bwX, bwY)) { triggered = true; break; }
+                                }
+                            }
+                        }
+                        if (triggered) {
+                            b.triggered = true; 
+                            let actions = b.actions || [{action: b.action, tData: b.tData}];
+                            if (actions.some(a=>a.action === 'WIN')) { winGame(); return; } else actions.forEach(act => triggerAction(b, act));
+                        }
                     }
                 }
                 
-                // Hazard & End Contact
                 if (b.type === 'damage' || b.type === 'end') {
                     for(let p of g_players) {
-                        if (p.health > 0 && AABB(p.x, p.y, p.w, p.h, b.px, b.py, bw, bw)) {
-                            if (b.type === 'damage' && p.invuln <= 0) { p.health--; p.invuln = 1.5; renderHealth(); if(p.health <= 0) { loseGame(); return; } } 
+                        if (p.health > 0 && AABB(p.x, p.y, p.w, p.h, b.px, b.py, bwX, bwY)) {
+                            if (b.type === 'damage' && p.invuln <= 0) { p.health--; p.invuln = 1.5; if(p.health <= 0) { loseGame(); return; } } 
                             else if (b.type === 'end') { winGame(); return; }
                         }
                     }
                 }
 
-                // Emitter Logic
                 if (b.type === 'emitter') {
-                    b.emitTimer = (b.emitTimer || 0) + dt;
-                    const rate = b.emitRate || 10; const interval = 1 / rate;
+                    b.emitTimer = (b.emitTimer || 0) + dt; const rate = b.emitRate || 10; const interval = 1 / rate;
                     while(b.emitTimer > interval) {
                         b.emitTimer -= interval;
                         const baseAng = (b.emitOrient || 0) * Math.PI / 180, spreadAng = ((Math.random()-0.5) * (b.emitSpread !== undefined ? b.emitSpread : 360)) * Math.PI / 180;
-                        const spd = (b.emitSpeed !== undefined ? b.emitSpeed : 100), rotSpd = (b.emitRot || 5), life = (b.emitLife || 1);
+                        const spd = (b.emitSpeed !== undefined ? b.emitSpeed : 100), rotSpd = (b.emitRot || 5), life = (b.emitLife || 1), grav = (b.emitGravity || 0);
                         g_particles.push({
-                            x: b.px + bw/2, y: b.py + bw/2, vx: Math.cos(baseAng + spreadAng) * spd, vy: Math.sin(baseAng + spreadAng) * spd,
-                            life: life, t: 0, size: 2 + Math.random()*4, color: b.color || '#ffffff', rot: Math.random()*Math.PI*2, rotSpeed: rotSpd
+                            x: b.px + bwX/2, y: b.py + bwY/2, vx: Math.cos(baseAng + spreadAng) * spd, vy: Math.sin(baseAng + spreadAng) * spd,
+                            life: life, t: 0, size: 2 + Math.random()*4, color: b.color || '#ffffff', rot: Math.random()*Math.PI*2, rotSpeed: rotSpd, gravity: grav
                         });
                     }
                 }
             }
 
             for (let i = g_particles.length - 1; i >= 0; i--) {
-                const p = g_particles[i]; p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.98; p.vy *= 0.98; if(p.rotSpeed) p.rot += p.rotSpeed * dt;
+                const p = g_particles[i]; p.t += dt; p.vy += p.gravity * dt;
+                p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.98; p.vy *= 0.98; if(p.rotSpeed) p.rot += p.rotSpeed * dt;
                 if (p.t >= p.life) g_particles.splice(i, 1);
             }
 
@@ -1306,18 +1378,17 @@
             if(isPlaying) g_loop = requestAnimationFrame(gameLoop);
         }
 
-        // Clickable Trigger Handling
         function handlePlayClick(e) {
             if(!isPlaying) return;
             const r = plCanvas.getBoundingClientRect(), rawX = e.clientX - r.left, rawY = e.clientY - r.top;
             const worldX = (rawX - plCanvas.width/2) / g_cam.zoom + g_cam.x, worldY = (rawY - plCanvas.height/2) / g_cam.zoom + g_cam.y;
             
             g_blocks.filter(b => b.type === 'trigger' && b.clickable && !b.triggered).forEach(b => {
-                const bw = TILE * getBlockSize(b);
-                if (pointInRotatedRect(worldX, worldY, b.px, b.py, bw, bw, b.rotation||0)) {
+                const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                if (pointInRotatedRect(worldX, worldY, b.px, b.py, bwX, bwY, b.rotation||0)) {
                     let p = g_players[0];
                     if (p) {
-                        if (Math.hypot((p.x + p.w/2) - (b.px + bw/2), (p.y + p.h/2) - (b.py + bw/2)) <= (b.clickRange || 3) * TILE) {
+                        if (Math.hypot((p.x + p.w/2) - (b.px + bwX/2), (p.y + p.h/2) - (b.py + bwY/2)) <= (b.clickRange || 3) * TILE) {
                             b.triggered = true;
                             let actions = b.actions || [{action: b.action, tData: b.tData}];
                             if (actions.some(a=>a.action === 'WIN')) { winGame(); return; }
@@ -1333,11 +1404,11 @@
         function spawnParticlesFromBlocks(blocks, faceAngle = 0) {
             const base = faceAngle * Math.PI / 180;
             blocks.forEach(b => {
-                const bw = TILE * getBlockSize(b), count = Math.max(4, Math.min(12, Math.round(bw / 4)));
+                const bwX = TILE * getBlockSizeX(b), count = Math.max(4, Math.min(12, Math.round(bwX / 4)));
                 for (let i = 0; i < count; i++) {
                     g_particles.push({
-                        x: b.px + bw / 2, y: b.py + bw / 2, vx: Math.cos(base + (Math.random() - 0.5) * 0.9) * (80 + Math.random() * 140), vy: Math.sin(base + (Math.random() - 0.5) * 0.9) * (80 + Math.random() * 140),
-                        life: 0.45 + Math.random() * 0.45, t: 0, size: 2 + Math.random() * 4, color: b.color || '#ffffff', rot: Math.random() * Math.PI * 2
+                        x: b.px + bwX / 2, y: b.py + (TILE * getBlockSizeY(b)) / 2, vx: Math.cos(base + (Math.random() - 0.5) * 0.9) * (80 + Math.random() * 140), vy: Math.sin(base + (Math.random() - 0.5) * 0.9) * (80 + Math.random() * 140),
+                        life: 0.45 + Math.random() * 0.45, t: 0, size: 2 + Math.random() * 4, color: b.color || '#ffffff', rot: Math.random() * Math.PI * 2, gravity: 0
                     });
                 }
             });
@@ -1345,7 +1416,7 @@
 
         function triggerAction(triggerBlock, actionObj) {
             let act = actionObj.action, td = actionObj.tData || {}, face = triggerBlock.particleFace || 0;
-            if(act === 'DIE') { g_players.forEach(p => p.health = 0); renderHealth(); loseGame(); } 
+            if(act === 'DIE') { g_players.forEach(p => p.health = 0); loseGame(); } 
             else if (act === 'TELEPORT_PLAYER') { g_players.forEach(p => { p.x = (td.x||0)*TILE; p.y = (td.y||0)*TILE; }); }
             else if (act === 'CAMERA') { g_cam.active = true; g_tweens.push({ type: 'camera', startX: g_cam.x, startY: g_cam.y, startZ: g_cam.zoom, endX: td.x*TILE, endY: td.y*TILE, endZ: td.z, dur: td.dur, t: 0 }); } 
             else if (act === 'MOVE_TAG' && td.tag) {
@@ -1354,12 +1425,12 @@
             } else if (act === 'ROTATE_TAG' && td.tag) {
                 const targets = g_blocks.filter(b => b.tag === td.tag), centers = td.centerTag ? g_blocks.filter(b => b.tag === td.centerTag) : [];
                 spawnParticlesFromBlocks(targets, face); let pivot = null;
-                if (centers.length) { let sx = 0, sy = 0, n = 0; centers.forEach(c => { sx += c.px + (TILE * getBlockSize(c))/2; sy += c.py + (TILE * getBlockSize(c))/2; n++; }); pivot = { x: sx / n, y: sy / n }; }
+                if (centers.length) { let sx = 0, sy = 0, n = 0; centers.forEach(c => { sx += c.px + (TILE * getBlockSizeX(c))/2; sy += c.py + (TILE * getBlockSizeY(c))/2; n++; }); pivot = { x: sx / n, y: sy / n }; }
                 targets.forEach(b => {
                     const startR = b.rotation || 0, endR = startR + td.ang;
                     if (pivot) {
-                        const bw = TILE * getBlockSize(b), center = { x: b.px + bw / 2, y: b.py + bw / 2 }, rotated = rotateAroundPoint(center.x, center.y, pivot.x, pivot.y, td.ang);
-                        g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: rotated.x - bw/2, endY: rotated.y - bw/2, dur: td.dur, t: 0 });
+                        const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b), center = { x: b.px + bwX / 2, y: b.py + bwY / 2 }, rotated = rotateAroundPoint(center.x, center.y, pivot.x, pivot.y, td.ang);
+                        g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: rotated.x - bwX/2, endY: rotated.y - bwY/2, dur: td.dur, t: 0 });
                     }
                     g_tweens.push({ type: 'rotate', obj: b, startR, endR, dur: td.dur, t: 0 });
                 });
@@ -1371,9 +1442,11 @@
                     else if (td.prop === 'alpha') b.alpha = parseFloat(td.val) !== undefined ? parseFloat(td.val) : 1;
                     else if (td.prop === 'glow') b.glow = parseInt(td.val) || 0;
                     else if (td.prop === 'rotation') b.rotation = parseFloat(td.val) || 0;
-                    else if (td.prop === 'size') b.size = parseFloat(td.val) || 1;
+                    else if (td.prop === 'size') { b.sizeX = parseFloat(td.val) || 1; b.sizeY = parseFloat(td.val) || 1; }
                     else if (td.prop === 'tag') b.tag = td.val;
                 });
+            } else if (act === 'STOP_LOOP' && td.tag) {
+                g_blocks.filter(b => b.tag === td.tag).forEach(b => { b.isLoop = false; b.triggered = false; });
             }
         }
 
@@ -1384,8 +1457,11 @@
                 else {
                     if(!window.currentUser.beaten.includes(g_meta.levelId)) {
                         window.currentUser.beaten.push(g_meta.levelId);
-                        updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), { beaten: window.currentUser.beaten, bricks: (window.currentUser.bricks || 0) + (DIFF_BRICKS[g_meta.levelObj.difficulty] || 0) });
+                        window.currentUser.bricks = (window.currentUser.bricks || 0) + (DIFF_BRICKS[g_meta.levelObj.difficulty] || 0);
                     }
+                    window.currentUser.beatenVersions = window.currentUser.beatenVersions || {};
+                    window.currentUser.beatenVersions[g_meta.levelId] = g_meta.levelObj.version || 1;
+                    updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), { beaten: window.currentUser.beaten, beatenVersions: window.currentUser.beatenVersions, bricks: window.currentUser.bricks });
                     showScreen('menu');
                 }
             }, 2000);
@@ -1402,28 +1478,46 @@
 
             const sortedBlocks = [...g_blocks].sort((a,b) => a.layer - b.layer);
             sortedBlocks.forEach(b => {
-                if (b.type === 'emitter') return; // Hide emitter blocks during gameplay
-                const bw = TILE * getBlockSize(b);
+                if (b.type === 'emitter') return;
+                const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
                 plCtx.save(); plCtx.globalAlpha = b.alpha !== undefined ? parseFloat(b.alpha) : 1;
-                plCtx.translate(b.px + bw/2, b.py + bw/2); plCtx.rotate((b.rotation||0) * Math.PI / 180);
-
-                if (b.glow && b.glow > 0) { plCtx.shadowBlur = b.glow * g_cam.zoom; plCtx.shadowColor = b.color; }
-                
-                plCtx.fillStyle = b.color; plCtx.fillRect(-bw/2, -bw/2, bw, bw); plCtx.restore();
+                plCtx.translate(b.px + bwX/2, b.py + bwY/2); plCtx.rotate((b.rotation||0) * Math.PI / 180);
+                drawBlockContent(plCtx, b, bwX, bwY, g_cam.zoom);
+                plCtx.restore();
             });
 
             g_particles.forEach(pt => {
-                plCtx.save(); plCtx.globalAlpha = Math.max(0, 1 - (pt.t / pt.life)); plCtx.translate(pt.x, pt.y); plCtx.rotate(pt.rot); plCtx.fillStyle = pt.color; plCtx.fillRect(-pt.size / 2, -pt.size / 2, pt.size, pt.size); plCtx.restore();
+                plCtx.save(); 
+                let prog = pt.t / pt.life;
+                plCtx.globalAlpha = Math.max(0, 1 - prog); 
+                plCtx.translate(pt.x, pt.y); plCtx.rotate(pt.rot); 
+                let curSize = pt.size * (1 - prog * 0.5); // Shrinking effect
+                plCtx.fillStyle = pt.color; 
+                plCtx.fillRect(-curSize / 2, -curSize / 2, curSize, curSize); 
+                plCtx.restore();
             });
 
             g_players.forEach(p => {
                 if(p.health <= 0) return; if(p.invuln > 0 && Math.floor(time / 150) % 2 === 0) return; 
-                
                 plCtx.save(); plCtx.globalAlpha = 1; plCtx.fillStyle = window.currentUser?.color || '#00ffff';
                 if (window.currentUser?.glow) { plCtx.shadowBlur = 20; plCtx.shadowColor = window.currentUser.color || '#00ffff'; }
                 plCtx.fillRect(p.x, p.y, p.w, p.h); plCtx.restore();
             });
 
+            plCtx.restore();
+
+            // Screen Overlay Health Display
+            plCtx.save();
+            plCtx.resetTransform();
+            let hp = g_players[0] ? g_players[0].health : 0;
+            const hSize = 10;
+            for(let i=0; i<g_meta.maxHealth; i++) {
+                plCtx.fillStyle = i < hp ? '#f43f5e' : 'rgba(30, 41, 59, 0.8)';
+                plCtx.strokeStyle = '#0f172a'; plCtx.lineWidth = 2;
+                plCtx.beginPath();
+                plCtx.arc(32 + i * (hSize*2 + 8), 32, hSize, 0, Math.PI*2);
+                plCtx.fill(); plCtx.stroke();
+            }
             plCtx.restore();
         }
 
