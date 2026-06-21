@@ -130,7 +130,7 @@
                         <button onclick="deleteAccount()" class="w-full border border-rose-600 text-rose-500 hover:bg-rose-600 hover:text-white p-3 rounded-lg font-bold transition mb-4">Delete Account</button>
                         
                         <div class="mt-2 pt-3 border-t border-slate-700 text-center">
-                            <span class="text-xs text-slate-500 font-bold">Game Version: 1.3.1</span>
+                            <span class="text-xs text-slate-500 font-bold">Game Version: 1.3.2</span>
                         </div>
                     </div>
                 </div>
@@ -183,7 +183,7 @@
             <div class="flex gap-2 text-xs md:text-sm shrink-0">
                 <button onclick="deleteOutOfBounds()" class="bg-rose-900/40 hover:bg-rose-800/60 border border-rose-700/50 text-rose-300 px-2 py-1 rounded-lg font-semibold transition" title="Delete Out of Bounds">🗑️ OOB</button>
                 <button onclick="testLevel()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded-lg font-bold shadow-lg transition">▶ Play</button>
-                <button onclick="saveLevel(false)" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded-lg font-bold shadow-lg transition hidden md:block">Publish</button>
+                <button onclick="saveLevel(false)" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded-lg font-bold shadow-lg transition">Publish</button>
                 <button onclick="saveLevel(true)" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-lg font-bold shadow-lg transition">Save</button>
             </div>
         </header>
@@ -1424,14 +1424,17 @@
         window.testLevel = () => { startGame(e_blocks, { id: 'test', name: document.getElementById('editor-level-name').value||'Test', isTest: true, meta: e_meta }); };
         window.playLevel = (id) => { const l = window.g_levels.find(x=>x.id===id); if(l) startGame(JSON.parse(l.grid), l); };
 
-        window.togglePractice = () => {
+        window.togglePractice = (skipReset) => {
             g_isPractice = !g_isPractice;
             const btn = document.getElementById('btn-practice');
             btn.innerText = g_isPractice ? "🟢 Practice ON" : "⚪ Practice OFF";
             btn.classList.toggle('text-emerald-400', g_isPractice);
             document.getElementById('btn-checkpoint').classList.toggle('hidden', !g_isPractice);
             document.getElementById('btn-del-checkpoint').classList.toggle('hidden', !g_isPractice);
-            if(!g_isPractice) g_checkpoints = [];
+            if(!g_isPractice) {
+                g_checkpoints = [];
+                if (skipReset !== true && isPlaying && g_meta) startGame(g_meta.originalBlocks, g_meta.levelObj);
+            }
         };
 
         window.setCheckpoint = () => {
@@ -1477,7 +1480,7 @@
             const cp = g_checkpoints[g_checkpoints.length - 1];
             g_blocks = JSON.parse(cp.blocksStr);
             g_players = JSON.parse(cp.players);
-            g_players.forEach(p => { p.health = g_meta.maxHealth; p.invuln = 1.5; });
+            g_players.forEach(p => { p.health = g_meta.maxHealth; p.invuln = 0; });
             g_tweens = []; g_reverts = []; g_particles = [];
             const status = document.getElementById('play-status'); status.innerText = ""; status.classList.remove('text-rose-500');
             isPlaying = true;
@@ -1487,7 +1490,7 @@
 
         window.stopPlay = () => { 
             isPlaying = false; cancelAnimationFrame(g_loop); 
-            if(g_isPractice) togglePractice(); 
+            if(g_isPractice) togglePractice(true); 
             if (g_meta && g_meta.isTest) showScreen('editor'); else showScreen('menu'); 
         };
 
@@ -1521,7 +1524,7 @@
             if(!isPlaying) return;
             const dt = (time - lastTime) / 1000; lastTime = time;
             
-            if(!g_isPractice && g_players.some(p => p.health > 0)) g_timer += dt;
+            if(g_players.some(p => p.health > 0)) g_timer += dt;
             document.getElementById('play-timer').innerText = formatTime(g_timer);
 
             for(let i=g_tweens.length-1; i>=0; i--) {
@@ -1786,17 +1789,22 @@
             isPlaying = false; const status = document.getElementById('play-status'); status.innerText = "LEVEL CLEARED!"; status.classList.add('text-emerald-500');
             saveBestTime();
             setTimeout(() => {
-                if(g_isPractice) togglePractice(); 
+                const wasPractice = g_isPractice;
+                if(g_isPractice) togglePractice(true); 
                 
                 if(g_meta.isTest) { window.e_verified = true; showMsg("Verified", "Level successfully verified! You can now publish it publicly."); showScreen('editor'); } 
                 else {
-                    if(!window.currentUser.beaten.includes(g_meta.levelId) && !g_isPractice) {
-                        window.currentUser.beaten.push(g_meta.levelId);
-                        window.currentUser.bricks = (window.currentUser.bricks || 0) + (DIFF_BRICKS[g_meta.levelObj.difficulty] || 0);
+                    if(!wasPractice) {
+                        if(!window.currentUser.beaten.includes(g_meta.levelId)) {
+                            window.currentUser.beaten.push(g_meta.levelId);
+                            if (g_meta.levelObj.rating) {
+                                window.currentUser.bricks = (window.currentUser.bricks || 0) + (DIFF_BRICKS[g_meta.levelObj.difficulty] || 0);
+                            }
+                        }
+                        window.currentUser.beatenVersions = window.currentUser.beatenVersions || {};
+                        window.currentUser.beatenVersions[g_meta.levelId] = g_meta.levelObj.version || 1;
+                        updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), { beaten: window.currentUser.beaten, beatenVersions: window.currentUser.beatenVersions, bricks: window.currentUser.bricks });
                     }
-                    window.currentUser.beatenVersions = window.currentUser.beatenVersions || {};
-                    window.currentUser.beatenVersions[g_meta.levelId] = g_meta.levelObj.version || 1;
-                    updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), { beaten: window.currentUser.beaten, beatenVersions: window.currentUser.beatenVersions, bricks: window.currentUser.bricks });
                     showScreen('menu');
                 }
             }, 2000);
