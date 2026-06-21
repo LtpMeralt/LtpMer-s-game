@@ -11,7 +11,7 @@
         .hidden { display: none !important; }
         #canvas-container { overflow: hidden; background-color: #1e293b; position: relative; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
         .glass-panel { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .modal { background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(6px); }
+        .modal { background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(6px); z-index: 100; }
         .scrollable { overflow-y: auto; max-height: calc(100vh - 180px); }
         .tab-btn.active { border-bottom: 2px solid #6366f1; color: #818cf8; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -33,6 +33,16 @@
             <h3 id="msg-title" class="text-xl font-bold mb-2 text-indigo-400">Notice</h3>
             <p id="msg-text" class="text-slate-300 mb-6 text-sm"></p>
             <button onclick="closeMsg()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded-lg font-semibold transition">Understood</button>
+        </div>
+    </div>
+
+    <div id="leaderboard-modal" class="fixed inset-0 z-50 modal hidden flex items-center justify-center p-4">
+        <div class="glass-panel p-6 rounded-xl shadow-2xl max-w-md w-full transition-all max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="lb-modal-title" class="text-xl font-bold text-amber-400">Level Best Times</h3>
+                <button onclick="closeLeaderboardModal()" class="text-rose-400 font-bold hover:text-rose-300">✕</button>
+            </div>
+            <div id="lb-modal-list" class="flex-1 overflow-y-auto pr-2 flex flex-col gap-2"></div>
         </div>
     </div>
 
@@ -102,7 +112,8 @@
 
                 <div id="tab-profile" class="hidden flex-1 flex flex-col items-center justify-center">
                     <div class="bg-slate-800/50 p-6 md:p-8 rounded-2xl w-full max-w-md border border-slate-700 shadow-2xl">
-                        <h2 class="text-xl md:text-2xl font-bold mb-6 text-center">Player Profile</h2>
+                        <h2 class="text-xl md:text-2xl font-bold mb-2 text-center">Player Profile</h2>
+                        <div id="profile-user-id" class="text-xs text-slate-500 text-center mb-6 font-mono selection:bg-indigo-500/50 selection:text-white rounded p-1"></div>
                         
                         <div class="flex flex-col gap-4 mb-6 text-sm md:text-base">
                             <div class="flex justify-between items-center bg-slate-900/50 p-3 rounded-lg border border-slate-700">
@@ -119,7 +130,7 @@
                         <button onclick="deleteAccount()" class="w-full border border-rose-600 text-rose-500 hover:bg-rose-600 hover:text-white p-3 rounded-lg font-bold transition mb-4">Delete Account</button>
                         
                         <div class="mt-2 pt-3 border-t border-slate-700 text-center">
-                            <span class="text-xs text-slate-500 font-bold">Game Version: 1.2.1</span>
+                            <span class="text-xs text-slate-500 font-bold">Game Version: 1.3.1</span>
                         </div>
                     </div>
                 </div>
@@ -134,7 +145,7 @@
                 <label>Grid Width <input type="number" id="cfg-width" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
                 <label>Grid Height <input type="number" id="cfg-height" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
                 <label>Default Zoom <input type="number" step="0.1" id="cfg-zoom" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
-                <label>Grid Step (1, 0.5, 0.25...) <input type="number" id="cfg-grid-step" step="0.125" min="0.125" max="1" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
+                <label>Grid Step (0.025 - 1) <input type="number" id="cfg-grid-step" step="0.025" min="0.025" max="1" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
                 <label>Brush Thickness (1-12) <input type="number" id="cfg-brush-size" min="1" max="12" step="1" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
                 <label>Player Max Hearts (1-10) <input type="number" min="1" max="10" id="cfg-health" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
             </div>
@@ -147,23 +158,32 @@
 
     <div id="screen-editor" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
         <header class="glass-panel px-4 py-2 flex flex-wrap justify-between items-center z-20 gap-2 overflow-x-auto no-scrollbar">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 shrink-0">
                 <button onclick="closeEditor()" class="text-slate-400 hover:text-white font-semibold text-xs md:text-base">◀ Back</button>
-                <input type="text" id="editor-level-name" placeholder="Level Name" class="bg-slate-900/50 border border-slate-700 rounded-lg px-2 py-1 focus:ring-2 focus:ring-indigo-500 outline-none w-32 md:w-48 text-sm">
-                <button onclick="openLevelSettings()" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-lg text-xs md:text-sm font-semibold transition">⚙️</button>
-                <button onclick="deleteOutOfBounds()" class="bg-rose-900/40 hover:bg-rose-800/60 border border-rose-700/50 text-rose-300 px-2 py-1 rounded-lg text-xs md:text-sm font-semibold transition">🗑️ OOB</button>
+                <input type="text" id="editor-level-name" placeholder="Level Name" class="bg-slate-900/50 border border-slate-700 rounded-lg px-2 py-1 focus:ring-2 focus:ring-indigo-500 outline-none w-24 md:w-48 text-sm">
+                <button onclick="openLevelSettings()" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-lg text-xs md:text-sm font-semibold transition" title="Settings">⚙️</button>
+                <div class="h-6 w-px bg-slate-600 mx-1"></div>
+                <button onclick="undo()" class="bg-slate-700 hover:bg-indigo-600 px-2 py-1 rounded-lg text-xs md:text-sm font-semibold transition" title="Undo">↩</button>
+                <button onclick="redo()" class="bg-slate-700 hover:bg-indigo-600 px-2 py-1 rounded-lg text-xs md:text-sm font-semibold transition" title="Redo">↪</button>
+                <button onclick="togglePreview()" id="btn-preview" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-lg text-xs font-semibold transition ml-1 w-20">👁️ Normal</button>
             </div>
             
             <div class="flex items-center gap-2 flex-1 overflow-x-auto min-w-[150px]">
-                <div id="layer-controls" class="flex gap-1 bg-slate-900/50 p-1 rounded-lg border border-slate-700 overflow-x-auto no-scrollbar scroll-smooth">
-                    <!-- Populated by renderLayerButtons -->
+                <div class="flex gap-1 bg-slate-900/50 p-1 rounded-lg border border-slate-700 items-center">
+                    <button onclick="moveLayer(-1)" class="text-slate-400 hover:text-white px-1">◀</button>
+                    <div id="layer-controls" class="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth">
+                        <!-- Populated by renderLayerButtons -->
+                    </div>
+                    <button onclick="moveLayer(1)" class="text-slate-400 hover:text-white px-1">▶</button>
+                    <button onclick="renameLayer()" class="text-amber-400 hover:text-amber-300 ml-1 px-1 text-xs" title="Rename Layer">✏️</button>
+                    <button onclick="clearLayer()" class="text-rose-400 hover:text-rose-300 ml-1 px-1 text-xs" title="Clear All in Layer">🗑️</button>
                 </div>
             </div>
 
-            <div class="flex gap-2 text-xs md:text-sm">
-                <button onclick="loadAutosave()" class="bg-amber-600 hover:bg-amber-500 px-3 py-1 rounded-lg font-bold shadow-lg transition">Load Autosave</button>
+            <div class="flex gap-2 text-xs md:text-sm shrink-0">
+                <button onclick="deleteOutOfBounds()" class="bg-rose-900/40 hover:bg-rose-800/60 border border-rose-700/50 text-rose-300 px-2 py-1 rounded-lg font-semibold transition" title="Delete Out of Bounds">🗑️ OOB</button>
                 <button onclick="testLevel()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded-lg font-bold shadow-lg transition">▶ Play</button>
-                <button onclick="saveLevel(false)" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded-lg font-bold shadow-lg transition">Publish to Public</button>
+                <button onclick="saveLevel(false)" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded-lg font-bold shadow-lg transition hidden md:block">Publish</button>
                 <button onclick="saveLevel(true)" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-lg font-bold shadow-lg transition">Save</button>
             </div>
         </header>
@@ -212,13 +232,18 @@
 
                         <label class="flex justify-between items-center shrink-0 mt-1 pt-1 border-t border-slate-700">Solid: <input type="checkbox" id="prop-solid" checked class="w-4 h-4 accent-indigo-500" onchange="updatePropField('solid', this.checked, 'bool')"></label>
                         <label class="flex justify-between items-center shrink-0">Pushblock: <input type="checkbox" id="prop-pushblock" class="w-4 h-4 accent-indigo-500" onchange="updatePropField('pushblock', this.checked, 'bool')"></label>
+                        <label class="flex justify-between items-center shrink-0">Invisible: <input type="checkbox" id="prop-invisible" class="w-4 h-4 accent-indigo-500" onchange="updatePropField('invisible', this.checked, 'bool')"></label>
                         
                         <div class="flex gap-1 justify-between">
                             <label class="flex flex-col text-[10px]">Size X: <input type="text" id="prop-sizex" value="1" class="w-10 bg-slate-800 text-center rounded border border-slate-600 outline-none p-1" onchange="updatePropField('sizeX', this.value, 'number')"></label>
                             <label class="flex flex-col text-[10px]">Size Y: <input type="text" id="prop-sizey" value="1" class="w-10 bg-slate-800 text-center rounded border border-slate-600 outline-none p-1" onchange="updatePropField('sizeY', this.value, 'number')"></label>
                             <label class="flex flex-col text-[10px]">Rot (°): <input type="text" id="prop-rotation" value="0" class="w-10 bg-slate-800 text-center rounded border border-slate-600 outline-none p-1" onchange="updatePropField('rotation', this.value, 'number')"></label>
                         </div>
-                        
+                        <div class="flex gap-1 justify-between">
+                            <label class="flex flex-col text-[10px]">Conv X: <input type="text" id="prop-convx" value="0" class="w-14 bg-slate-800 text-center rounded border border-slate-600 outline-none p-1 text-emerald-400 font-bold" onchange="updatePropField('conveyorX', this.value, 'number')"></label>
+                            <label class="flex flex-col text-[10px]">Conv Y: <input type="text" id="prop-convy" value="0" class="w-14 bg-slate-800 text-center rounded border border-slate-600 outline-none p-1 text-emerald-400 font-bold" onchange="updatePropField('conveyorY', this.value, 'number')"></label>
+                        </div>
+
                         <div class="flex flex-col gap-1 border-t border-slate-800 pt-2">
                             <div class="flex justify-between items-center">
                                 <span>Alpha (0-1):</span>
@@ -312,11 +337,19 @@
     </div>
 
     <div id="screen-play" class="hidden flex-1 flex flex-col bg-black relative min-h-0 overflow-hidden">
-        <header class="absolute top-0 w-full bg-gradient-to-b from-black/80 to-transparent p-2 md:p-4 flex justify-between items-start z-20 opacity-100 md:opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <header class="absolute top-0 w-full bg-gradient-to-b from-black/80 to-transparent p-2 md:p-4 flex justify-between items-start z-20 transition-opacity duration-300 pointer-events-none group hover:bg-black/40">
             <div class="flex flex-col gap-2 pointer-events-auto">
                 <button onclick="stopPlay()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1 md:px-4 md:py-1.5 rounded-lg font-bold shadow-lg transition text-sm">Quit</button>
             </div>
-            <h1 id="play-level-title" class="font-bold text-sm md:text-xl text-white drop-shadow-md">Playing...</h1>
+            <div class="flex flex-col items-center pointer-events-auto">
+                <h1 id="play-level-title" class="font-bold text-sm md:text-xl text-white drop-shadow-md">Playing...</h1>
+                <div id="play-timer" class="text-xl md:text-3xl font-mono text-emerald-400 font-bold drop-shadow-lg">00:00.000</div>
+                <div class="flex gap-2 mt-2">
+                    <button id="btn-practice" onclick="togglePractice()" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-xs font-bold text-slate-300 transition shadow">⚪ Practice OFF</button>
+                    <button id="btn-checkpoint" onclick="setCheckpoint()" class="hidden bg-emerald-600 hover:bg-emerald-500 px-2 py-1 rounded text-xs font-bold text-white transition shadow" title="Hotkey: Z">🚩 Set</button>
+                    <button id="btn-del-checkpoint" onclick="removeCheckpoint()" class="hidden bg-rose-600 hover:bg-rose-500 px-2 py-1 rounded text-xs font-bold text-white transition shadow" title="Hotkey: X">🗑️ Del</button>
+                </div>
+            </div>
             <div class="w-12 md:w-16"></div>
         </header>
         <div id="play-status" class="absolute top-1/4 w-full text-center text-2xl md:text-4xl font-black drop-shadow-[0_0_15px_rgba(0,0,0,1)] z-30 pointer-events-none transition-all"></div>
@@ -341,7 +374,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const app = initializeApp(JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{"apiKey":"AIzaSyCo1rtBmJa8ea1PGAx3BTAgFVP9luFtdKI","authDomain":"somethingwicked-87e77.firebaseapp.com","projectId":"somethingwicked-87e77","storageBucket":"somethingwicked-87e77.firebasestorage.app","messagingSenderId":"1011430455701","appId":"1:1011430455701:web:bef8293371d71c143ade9c","measurementId":"G-8LNLNCTDY7"}'));
         const auth = getAuth(app);
@@ -352,6 +385,7 @@
         window.g_levels = [];
         window.currentUser = null;
         window._tempActions = [];
+        window.g_level_records = []; // Cached leaderboard records
         
         const TILE = 32; 
         const DIFF_BRICKS = { "Easy": 1, "Medium": 2, "Hard": 3, "Difficult": 4, "Insane": 5, "Really Hard": 6, "The Hardest": 7 };
@@ -383,18 +417,28 @@
             '-': [".....", ".....", "*****", ".....", "....."]
         };
 
+        // Editor state
         let e_blocks = [], e_layer = 0, e_tool = 'select', e_selectedIds = new Set();
         let e_cam = { x: 0, y: 0, zoom: 1 };
-        let e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layerCount: 3, gridStep: 1, brushSize: 1 };
+        let e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layers: [{name:"L1"}, {name:"L2"}, {name:"L3"}], gridStep: 1, brushSize: 1 };
         window.e_keys = {}; window.e_verified = false; 
+        window.e_previewMode = 0; // 0=normal, 1=invisible, 2=hitboxes
         
         let isDrawing = false, isErasing = false, isSelecting = false, isDragging = false;
         let startSelectX = 0, startSelectY = 0, currentMouseX = 0, currentMouseY = 0;
         let dragOffsetX = 0, dragOffsetY = 0; let currentPaintStroke = new Set();
 
-        let g_blocks = [], g_players = [], g_tweens = [], g_particles = [];
+        // Undo Redo tracking
+        let e_history = [];
+        let e_redoStack = [];
+
+        // Game state
+        let g_blocks = [], g_players = [], g_tweens = [], g_particles = [], g_reverts = [];
         let g_cam = { x: 0, y: 0, zoom: 1, targetX: null, targetY: null, active: false };
         let g_keys = window.e_keys, g_loop = null, isPlaying = false, g_meta = null;
+        let g_timer = 0;
+        let g_isPractice = false;
+        let g_checkpoints = []; // Stores objects with player data, blocksStr, and coords for rendering box
 
         const edCanvas = document.getElementById('editor-canvas'); const edCtx = edCanvas.getContext('2d');
         const plCanvas = document.getElementById('play-canvas'); const plCtx = plCanvas.getContext('2d');
@@ -402,6 +446,35 @@
         function generateId() { return 'b_' + Date.now() + '_' + Math.floor(Math.random()*10000); }
         function rgbToHex(r, g, b) { return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1); }
         
+        window.saveState = () => {
+            if (!document.getElementById('screen-editor').classList.contains('hidden')) {
+                e_history.push(JSON.stringify(e_blocks));
+                if(e_history.length > 50) e_history.shift(); // Max 50 undos
+                e_redoStack = [];
+            }
+        };
+        
+        window.undo = () => {
+            if(e_history.length > 0) {
+                e_redoStack.push(JSON.stringify(e_blocks));
+                e_blocks = JSON.parse(e_history.pop());
+                window.e_verified = false; triggerAutosave(); e_selectedIds.clear(); drawEditor();
+            }
+        };
+
+        window.redo = () => {
+            if(e_redoStack.length > 0) {
+                e_history.push(JSON.stringify(e_blocks));
+                e_blocks = JSON.parse(e_redoStack.pop());
+                window.e_verified = false; triggerAutosave(); e_selectedIds.clear(); drawEditor();
+            }
+        };
+
+        function formatTime(secs) {
+            let m = Math.floor(secs / 60), s = Math.floor(secs % 60), ms = Math.floor((secs % 1) * 1000);
+            return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(3,'0')}`;
+        }
+
         function rotateAroundPoint(px, py, cx, cy, angDeg) {
             const a = angDeg * Math.PI / 180, s = Math.sin(a), c = Math.cos(a), dx = px - cx, dy = py - cy;
             return { x: cx + dx * c - dy * s, y: cy + dx * s + dy * c };
@@ -431,7 +504,7 @@
             return true;
         }
 
-        function getGridStep(meta) { const step = parseFloat(meta?.gridStep ?? 1); return (Number.isNaN(step) || step <= 0) ? 1 : Math.max(0.125, Math.min(step, 1)); }
+        function getGridStep(meta) { const step = parseFloat(meta?.gridStep ?? 1); return (Number.isNaN(step) || step <= 0) ? 1 : Math.max(0.025, Math.min(step, 1)); }
         function floorToGridUnits(value, meta) { const step = getGridStep(meta); return Math.round(Math.floor(value / step) * step * 1000) / 1000; }
         function snapToGridUnits(value, meta) { const step = getGridStep(meta); return Math.round(Math.round(value / step) * step * 1000) / 1000; }
         
@@ -457,6 +530,7 @@
 
         window.showMsg = (title, text) => { document.getElementById('msg-title').innerText = title; document.getElementById('msg-text').innerText = text; document.getElementById('msg-modal').classList.remove('hidden'); };
         window.closeMsg = () => document.getElementById('msg-modal').classList.add('hidden');
+        window.closeLeaderboardModal = () => document.getElementById('leaderboard-modal').classList.add('hidden');
 
         window.resizeCanvases = () => {
             if(edCanvas && edCanvas.parentElement) { const rect = edCanvas.parentElement.getBoundingClientRect(); edCanvas.width = rect.width; edCanvas.height = rect.height; if(!document.getElementById('screen-editor').classList.contains('hidden')) drawEditor(); }
@@ -517,7 +591,7 @@
             if (saved) {
                 if(!confirm("Load last autosave? Current unsaved changes will be lost.")) return;
                 try {
-                    const data = JSON.parse(saved); e_blocks = data.grid || []; e_meta = data.meta || e_meta;
+                    const data = JSON.parse(saved); window.saveState(); e_blocks = data.grid || []; e_meta = data.meta || e_meta;
                     window.editId = data.id || null; document.getElementById('editor-level-name').value = data.name || "Autosave";
                     window.e_verified = false; drawEditor(); showMsg("Success", "Autosave loaded.");
                 } catch(e) { showMsg("Error", "Failed to parse autosave."); }
@@ -525,6 +599,7 @@
         };
 
         window.deleteOutOfBounds = () => {
+            window.saveState();
             e_blocks = e_blocks.filter(b => b.x >= 0 && b.y >= 0 && b.x < e_meta.width && b.y < e_meta.height);
             window.e_verified = false; drawEditor(); showMsg("Success", "Cleaned up out of bounds blocks.");
         };
@@ -553,6 +628,9 @@
                 onSnapshot(collection(db, 'artifacts', appIdStr, 'public', 'data', 'levels'), snap => {
                     window.g_levels = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     if(!document.getElementById('screen-menu').classList.contains('hidden')) updateUI();
+                });
+                onSnapshot(collection(db, 'artifacts', appIdStr, 'public', 'data', 'level_records'), snap => {
+                    window.g_level_records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 });
                 setInterval(() => { if(!document.getElementById('screen-editor').classList.contains('hidden')) updateEditorCam(); }, 16);
                 window.addEventListener('resize', resizeCanvases); resizeCanvases();
@@ -613,6 +691,10 @@
         function updateUI() {
             if(!window.currentUser) return;
             document.getElementById('header-user-info').innerText = `${window.currentUser.username} | Bricks: ${window.currentUser.bricks || 0} | CP: ${window.currentUser.cp || 0}`;
+            
+            let pidLabel = document.getElementById('profile-user-id');
+            if(pidLabel) pidLabel.innerText = "Player ID: " + window.currentUser.id;
+
             if(!document.getElementById('tab-play').classList.contains('hidden')) filterLevels(window.curFlt || 'all');
             if(!document.getElementById('tab-leaderboard').classList.contains('hidden')) loadLeaderboard(window.curLb || 'bricks');
             if(!document.getElementById('tab-admin').classList.contains('hidden') && window.currentUser.username === 'LtpMer') loadAdminLevels();
@@ -658,10 +740,27 @@
                 c.innerHTML += `
                     <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center hover:border-indigo-500 transition gap-3 md:gap-0">
                         <div><h4 class="font-bold text-base md:text-lg">${l.name} <span class="text-slate-500 text-xs md:text-sm">#${l.numericId}</span> ${priv} ${bHtml} ${sched}</h4><p class="text-xs md:text-sm text-slate-400">By ${l.authorName} | Diff: <span class="text-amber-400">${l.difficulty||'Unrated'}</span> | Qual: <span class="text-fuchsia-400">${(l.rating && l.rating !== 'Daily' && l.rating !== 'Weekly') ? l.rating : 'Unrated'}</span></p></div>
-                        <div class="flex gap-2 w-full md:w-auto">${l.authorId === window.currentUser.id || window.currentUser.username === 'LtpMer' ? `<button onclick="editLevel('${l.id}')" class="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">Edit</button>` : ''}<button onclick="playLevel('${l.id}')" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-lg font-bold shadow-lg transition">Play</button></div>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <button onclick="showLevelLeaderboard('${l.id}', '${l.name.replace(/'/g, "\\'")}')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded-lg text-sm font-semibold transition flex-1 md:flex-none">🏆 Times</button>
+                            ${l.authorId === window.currentUser.id || window.currentUser.username === 'LtpMer' ? `<button onclick="editLevel('${l.id}')" class="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">Edit</button>` : ''}
+                            <button onclick="playLevel('${l.id}')" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-lg font-bold shadow-lg transition">Play</button>
+                        </div>
                     </div>`;
             });
         }
+
+        window.showLevelLeaderboard = (levelId, levelName) => {
+            const c = document.getElementById('lb-modal-list'); c.innerHTML = '';
+            document.getElementById('lb-modal-title').innerText = `${levelName} - Top Times`;
+            const records = window.g_level_records.filter(r => r.levelId === levelId).sort((a,b) => a.time - b.time);
+            if(records.length === 0) { c.innerHTML = '<div class="text-center text-slate-500 mt-4">No records yet. Be the first!</div>'; }
+            else {
+                records.slice(0, 50).forEach((r, i) => {
+                    c.innerHTML += `<div class="bg-slate-900/50 p-2 rounded-lg flex justify-between items-center text-sm"><div class="flex items-center gap-3"><span class="font-bold text-slate-500 w-6">#${i+1}</span><span class="font-bold ${r.username==='LtpMer'?'text-rose-400':'text-slate-200'}">${r.username}</span></div><div class="font-mono text-emerald-400 font-bold">${formatTime(r.time)}</div></div>`;
+                });
+            }
+            document.getElementById('leaderboard-modal').classList.remove('hidden');
+        };
 
         window.loadLeaderboard = (t) => {
             window.curLb = t; ['bricks', 'cp'].forEach(x => { let b = document.getElementById('btn-lb-' + x); b.classList.remove('active', 'text-indigo-400'); b.classList.add('text-slate-500'); }); document.getElementById('btn-lb-' + t).classList.add('active', 'text-indigo-400');
@@ -700,23 +799,67 @@
         window.loadAdminUsers = () => { const c = document.getElementById('admin-list'); c.innerHTML = ''; window.g_users.forEach(u => { if(u.username!=='LtpMer') c.innerHTML += `<div class="bg-slate-800/50 p-2 rounded flex justify-between"><span>${u.username}</span><button onclick="adminDelUsr('${u.id}')" class="bg-rose-600 px-2 rounded text-xs">Ban</button></div>`; }); };
         window.adminDelUsr = async (id) => { if(confirm("Ban user?")) await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', id)); };
 
+        function migrateLayers() {
+            if (!e_meta.layers || !Array.isArray(e_meta.layers)) {
+                e_meta.layers = Array.from({ length: e_meta.layerCount || 3 }, (_, i) => ({ name: 'L' + (i + 1) }));
+            }
+        }
+
         window.renderLayerButtons = () => {
-            const container = document.getElementById('layer-controls'); if(!container) return; let html = ''; const count = e_meta.layerCount || 3;
-            for(let i=0; i<count; i++) {
+            const container = document.getElementById('layer-controls'); if(!container) return; let html = ''; 
+            migrateLayers();
+            for(let i=0; i<e_meta.layers.length; i++) {
                 const isActive = (i === e_layer);
                 const classes = isActive ? "px-3 py-1 rounded-md text-xs md:text-sm font-bold bg-indigo-600 border border-indigo-400 text-white min-w-[32px] flex-shrink-0 cursor-pointer shadow-md" : "px-3 py-1 rounded-md text-xs md:text-sm font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700/80 min-w-[32px] flex-shrink-0 cursor-pointer transition";
-                html += `<button onclick="setLayer(${i})" id="btn-layer-${i}" class="${classes}">L${i+1}</button>`;
+                html += `<button onclick="setLayer(${i})" id="btn-layer-${i}" class="${classes}">${e_meta.layers[i].name}</button>`;
             }
             html += `<button onclick="addLayer()" class="px-3 py-1 rounded-md text-xs md:text-sm font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition min-w-[32px] flex-shrink-0 cursor-pointer" title="Add Layer">+</button>`;
             container.innerHTML = html;
         };
 
-        window.addLayer = () => { e_meta.layerCount = (e_meta.layerCount || 3) + 1; setLayer(e_meta.layerCount - 1); setTimeout(() => { const container = document.getElementById('layer-controls'); container.scrollLeft = container.scrollWidth; }, 50); };
+        window.addLayer = () => { window.saveState(); migrateLayers(); e_meta.layers.push({name: 'L'+(e_meta.layers.length+1)}); setLayer(e_meta.layers.length - 1); setTimeout(() => { const container = document.getElementById('layer-controls'); container.scrollLeft = container.scrollWidth; }, 50); };
         window.setLayer = (l) => { e_layer = l; e_selectedIds.clear(); renderLayerButtons(); drawEditor(); };
+
+        window.moveLayer = (dir) => {
+            migrateLayers();
+            if ((dir < 0 && e_layer > 0) || (dir > 0 && e_layer < e_meta.layers.length - 1)) {
+                window.saveState();
+                let tgt = e_layer + dir;
+                let temp = e_meta.layers[e_layer]; e_meta.layers[e_layer] = e_meta.layers[tgt]; e_meta.layers[tgt] = temp;
+                e_blocks.forEach(b => {
+                    if (b.layer === e_layer) b.layer = -99;
+                    else if (b.layer === tgt) b.layer = e_layer;
+                });
+                e_blocks.forEach(b => { if (b.layer === -99) b.layer = tgt; });
+                e_layer = tgt;
+                renderLayerButtons(); drawEditor();
+            }
+        };
+
+        window.renameLayer = () => {
+            migrateLayers();
+            let newName = prompt("Enter layer name:", e_meta.layers[e_layer].name);
+            if(newName && newName.trim()) { window.saveState(); e_meta.layers[e_layer].name = newName.trim(); renderLayerButtons(); }
+        };
+
+        window.clearLayer = () => {
+            if(confirm("Are you sure you want to delete all objects in this layer?")) {
+                window.saveState();
+                e_blocks = e_blocks.filter(b => b.layer !== e_layer);
+                window.e_verified = false; triggerAutosave(); drawEditor();
+            }
+        };
+
+        window.togglePreview = () => {
+            e_previewMode = (e_previewMode + 1) % 3;
+            document.getElementById('btn-preview').innerText = ['👁️ Normal', '👻 Invis', '📦 Hitboxes'][e_previewMode];
+            drawEditor();
+        };
 
         window.openEditor = () => { 
             showScreen('editor'); window.editId = null; window.e_verified = false; e_blocks = []; e_cam = {x:0, y:0, zoom:1}; 
-            e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layerCount: 3, gridStep: 1, brushSize: 1 }; 
+            e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layers: [{name:"L1"}, {name:"L2"}, {name:"L3"}], gridStep: 1, brushSize: 1 }; 
+            e_history = []; e_redoStack = []; e_previewMode = 0; document.getElementById('btn-preview').innerText = '👁️ Normal';
             setLayer(0); setTool('select'); renderSavedColorsUI(); drawEditor(); 
         };
         window.closeEditor = () => { if(confirm("Exit Editor? Unsaved changes will be lost.")) showScreen('menu'); };
@@ -728,10 +871,30 @@
         };
         window.closeLevelSettings = () => document.getElementById('modal-level-settings').classList.add('hidden');
         window.applyLevelSettings = () => {
-            e_meta.width = parseInt(document.getElementById('cfg-width').value) || 40; e_meta.height = parseInt(document.getElementById('cfg-height').value) || 40;
-            e_meta.zoom = parseFloat(document.getElementById('cfg-zoom').value) || 1; e_meta.gridStep = getGridStep({ gridStep: parseFloat(document.getElementById('cfg-grid-step').value) || 1 });
+            const oldStep = e_meta.gridStep || 1;
+            const newStep = getGridStep({ gridStep: parseFloat(document.getElementById('cfg-grid-step').value) || 1 });
+
+            window.saveState();
+            e_meta.width = parseInt(document.getElementById('cfg-width').value) || 40; 
+            e_meta.height = parseInt(document.getElementById('cfg-height').value) || 40;
+            e_meta.zoom = parseFloat(document.getElementById('cfg-zoom').value) || 1; 
+            e_meta.gridStep = newStep;
             e_meta.brushSize = Math.max(1, Math.min(12, parseInt(document.getElementById('cfg-brush-size').value, 10) || 1));
             e_meta.maxHealth = parseInt(document.getElementById('cfg-health').value) || 3;
+            
+            if (oldStep !== newStep) {
+                if (confirm(`Grid step changed from ${oldStep} to ${newStep}. Snap all existing blocks to perfectly align with the new grid?`)) {
+                    e_blocks.forEach(b => {
+                        b.x = Math.round(Math.round(b.x / newStep) * newStep * 1000) / 1000;
+                        b.y = Math.round(Math.round(b.y / newStep) * newStep * 1000) / 1000;
+                        if (b.sizeX !== undefined) b.sizeX = Math.max(newStep, Math.round(Math.round(b.sizeX / newStep) * newStep * 1000) / 1000);
+                        if (b.sizeY !== undefined) b.sizeY = Math.max(newStep, Math.round(Math.round(b.sizeY / newStep) * newStep * 1000) / 1000);
+                        b.px = b.x * TILE; 
+                        b.py = b.y * TILE;
+                    });
+                }
+            }
+
             closeLevelSettings(); window.e_verified = false; drawEditor();
         };
 
@@ -758,7 +921,7 @@
                 setProps('#aa00ff', false, 0.5, 8); 
                 document.getElementById('prop-trigger-box').classList.remove('hidden'); 
                 document.getElementById('prop-particle-face').value = 0; 
-                window._tempActions = [{ action: 'WIN', tData: {} }];
+                window._tempActions = [{ action: 'WIN', tData: { revertDelay: 0 } }];
                 renderAllTriggerActions();
             }
             else if(t === 'text') { setProps('#38bdf8', true, 1, 0); document.getElementById('prop-text-tool-box').classList.remove('hidden'); document.getElementById('prop-text-input').focus(); }
@@ -768,9 +931,10 @@
 
         function setProps(c, s, a, g) { 
             document.getElementById('prop-color').value = c; document.getElementById('prop-color2').value = '#000000'; document.getElementById('prop-gradient').value = 'none';
-            document.getElementById('prop-solid').checked = s; 
+            document.getElementById('prop-solid').checked = s; document.getElementById('prop-invisible').checked = false;
             document.getElementById('prop-pushblock').checked = false; document.getElementById('prop-rotation').value = 0;
             document.getElementById('prop-sizex').value = 1; document.getElementById('prop-sizey').value = 1;
+            document.getElementById('prop-convx').value = 0; document.getElementById('prop-convy').value = 0;
             setAlphaUI(a); setGlowUI(g || 0); document.getElementById('prop-tag').value = ''; 
         }
 
@@ -780,7 +944,7 @@
         window.updatePropField = (field, value, type) => {
             if(e_tool !== 'select' || e_selectedIds.size === 0) return;
             if(value === '' || value === null) return;
-            window.e_verified = false;
+            window.saveState(); window.e_verified = false;
             
             let finalVal = value;
             if(type === 'number') { finalVal = parseFloat(value); if(isNaN(finalVal)) return; }
@@ -795,15 +959,20 @@
 
         window.saveTriggerActions = () => {
             if(e_tool !== 'select' || e_selectedIds.size === 0) return;
+            window.saveState();
             const actionDivs = document.querySelectorAll('.trig-action-item');
             const actions = Array.from(actionDivs).map((div, i) => {
                 let action = document.getElementById(`prop-action-${i}`).value; let tData = {};
+                let revInput = document.getElementById(`tp-rev-${i}`); let revDelay = revInput ? parseFloat(revInput.value) || 0 : 0;
+                
                 if(action==='CAMERA') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value,z:+document.getElementById(`tp-z-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                 if(action==='MOVE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,mx:+document.getElementById(`tp-mx-${i}`).value,my:+document.getElementById(`tp-my-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                 if(action==='ROTATE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,centerTag:document.getElementById(`tp-center-tag-${i}`).value,ang:+document.getElementById(`tp-ang-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                 if(action==='SET_PROPERTY') tData = {tag:document.getElementById(`tp-tag-${i}`).value,prop:document.getElementById(`tp-prop-${i}`).value,val:document.getElementById(`tp-val-${i}`).value};
                 if(action==='TELEPORT_PLAYER') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value};
+                if(action==='PLAYER_SPEED') tData = {val:+document.getElementById(`tp-val-${i}`).value};
                 if(action==='STOP_LOOP') tData = {tag:document.getElementById(`tp-tag-${i}`).value};
+                tData.revertDelay = revDelay;
                 return { action, tData };
             });
             e_selectedIds.forEach(id => { let b = e_blocks.find(x => x.id === id); if (b && b.type === 'trigger') { b.actions = actions; } });
@@ -813,13 +982,15 @@
         window.renderAllTriggerActions = () => {
             const container = document.getElementById('prop-trig-actions-list'); container.innerHTML = '';
             window._tempActions.forEach((act, idx) => {
+                let revD = act.tData ? (act.tData.revertDelay || 0) : 0;
                 let html = `<div class="trig-action-item border border-slate-700 p-2 relative rounded bg-slate-800/50">
                     <button class="absolute top-1 right-1 text-rose-500 font-bold px-1" onclick="removeTriggerAction(${idx})">×</button>
-                    <label class="text-[10px] md:text-xs text-slate-400 flex flex-col gap-1 pr-6">Action:
+                    <label class="text-[10px] md:text-xs text-slate-400 flex flex-col gap-1 pr-6 mb-1">Action:
                         <select id="prop-action-${idx}" class="bg-slate-900 p-1.5 rounded border border-slate-600 w-full text-xs" onchange="changeTriggerActionType(${idx}, this.value)">
                             <option value="WIN" ${act.action==='WIN'?'selected':''}>Win Level</option>
                             <option value="DIE" ${act.action==='DIE'?'selected':''}>Kill Player</option>
                             <option value="TELEPORT_PLAYER" ${act.action==='TELEPORT_PLAYER'?'selected':''}>Teleport Player</option>
+                            <option value="PLAYER_SPEED" ${act.action==='PLAYER_SPEED'?'selected':''}>Set Player Speed (x)</option>
                             <option value="CAMERA" ${act.action==='CAMERA'?'selected':''}>Move Camera</option>
                             <option value="MOVE_TAG" ${act.action==='MOVE_TAG'?'selected':''}>Move Tagged Block</option>
                             <option value="ROTATE_TAG" ${act.action==='ROTATE_TAG'?'selected':''}>Rotate Tagged Block</option>
@@ -827,16 +998,21 @@
                             <option value="STOP_LOOP" ${act.action==='STOP_LOOP'?'selected':''}>Stop Looping Trigger</option>
                         </select>
                     </label>
-                    <div id="prop-trig-params-${idx}" class="flex flex-col gap-2 mt-2"></div>
+                    <div id="prop-trig-params-${idx}" class="flex flex-col gap-2"></div>
+                    <div class="mt-2 pt-2 border-t border-slate-700">
+                        <label class="text-[10px] text-amber-400 flex items-center gap-2" title="If > 0, the action reverses/resets after this many seconds (Hold effect)">
+                            Revert Delay (s): <input type="number" step="0.1" id="tp-rev-${idx}" value="${revD}" class="bg-slate-900 p-1 w-16 border border-slate-600 rounded text-center">
+                        </label>
+                    </div>
                 </div>`;
                 container.insertAdjacentHTML('beforeend', html);
                 renderTriggerParams(act.action, act.tData, idx);
             });
         };
 
-        window.addTriggerAction = () => { window._tempActions.push({ action: 'WIN', tData: {} }); renderAllTriggerActions(); window.saveTriggerActions(); };
+        window.addTriggerAction = () => { window._tempActions.push({ action: 'WIN', tData: {revertDelay:0} }); renderAllTriggerActions(); window.saveTriggerActions(); };
         window.removeTriggerAction = (idx) => { window._tempActions.splice(idx, 1); renderAllTriggerActions(); window.saveTriggerActions(); };
-        window.changeTriggerActionType = (idx, newType) => { window._tempActions[idx].action = newType; window._tempActions[idx].tData = {}; renderAllTriggerActions(); window.saveTriggerActions(); };
+        window.changeTriggerActionType = (idx, newType) => { window._tempActions[idx].action = newType; window._tempActions[idx].tData = {revertDelay:0}; renderAllTriggerActions(); window.saveTriggerActions(); };
 
         function renderTriggerParams(action, data = {}, idx = 0) {
             const p = document.getElementById(`prop-trig-params-${idx}`); if(!p) return;
@@ -844,6 +1020,8 @@
             if(action === 'TELEPORT_PLAYER') {
                 h = `<div class="flex gap-2"><label class="w-full">Target X: <input type="number" id="tp-x-${idx}" value="${data.x||0}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
                      <label class="w-full">Target Y: <input type="number" id="tp-y-${idx}" value="${data.y||0}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label></div>`;
+            } else if(action === 'PLAYER_SPEED') {
+                h = `<label>Mult (e.g 1.5, 0.5): <input type="number" step="0.1" id="tp-val-${idx}" value="${data.val||1}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>`;
             } else if(action === 'CAMERA') {
                 h = `<div class="grid grid-cols-2 gap-1"><label>Target X: <input type="number" id="tp-x-${idx}" value="${data.x||0}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
                      <label>Target Y: <input type="number" id="tp-y-${idx}" value="${data.y||0}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
@@ -861,7 +1039,7 @@
                      <label>Dur (s): <input type="number" step="0.1" id="tp-dur-${idx}" value="${data.dur||1}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label></div>`;
             } else if(action === 'SET_PROPERTY') {
                 h = `<label>Target Tag: <input type="text" id="tp-tag-${idx}" value="${data.tag||''}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
-                     <div class="grid grid-cols-2 gap-1"><label>Property: <select id="tp-prop-${idx}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"><option value="color" ${data.prop==='color'?'selected':''}>Color</option><option value="solid" ${data.prop==='solid'?'selected':''}>Solid (t/f)</option><option value="pushblock" ${data.prop==='pushblock'?'selected':''}>Pushblock</option><option value="alpha" ${data.prop==='alpha'?'selected':''}>Alpha</option><option value="glow" ${data.prop==='glow'?'selected':''}>Glow</option><option value="rotation" ${data.prop==='rotation'?'selected':''}>Rotation</option><option value="size" ${data.prop==='size'?'selected':''}>Size Uniform</option><option value="tag" ${data.prop==='tag'?'selected':''}>Tag</option></select></label>
+                     <div class="grid grid-cols-2 gap-1"><label>Property: <select id="tp-prop-${idx}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"><option value="color" ${data.prop==='color'?'selected':''}>Color</option><option value="solid" ${data.prop==='solid'?'selected':''}>Solid (t/f)</option><option value="pushblock" ${data.prop==='pushblock'?'selected':''}>Pushblock</option><option value="alpha" ${data.prop==='alpha'?'selected':''}>Alpha</option><option value="glow" ${data.prop==='glow'?'selected':''}>Glow</option><option value="rotation" ${data.prop==='rotation'?'selected':''}>Rotation</option><option value="size" ${data.prop==='size'?'selected':''}>Size Uniform</option><option value="tag" ${data.prop==='tag'?'selected':''}>Tag</option><option value="invisible" ${data.prop==='invisible'?'selected':''}>Invisible (t/f)</option></select></label>
                      <label>Value: <input type="text" id="tp-val-${idx}" value="${data.val!==undefined?data.val:''}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label></div>`;
             } else if(action === 'STOP_LOOP') {
                 h = `<label>Target Tag: <input type="text" id="tp-tag-${idx}" value="${data.tag||''}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>`;
@@ -904,10 +1082,11 @@
             const b = {
                 id: generateId(), x: gridX, y: gridY, layer: e_layer, type: e_tool === 'text' || e_tool === 'image' ? 'wall' : e_tool,
                 color: document.getElementById('prop-color').value, color2: document.getElementById('prop-color2').value, gradient: document.getElementById('prop-gradient').value,
-                solid: document.getElementById('prop-solid').checked, pushblock: document.getElementById('prop-pushblock').checked,
+                solid: document.getElementById('prop-solid').checked, invisible: document.getElementById('prop-invisible').checked, pushblock: document.getElementById('prop-pushblock').checked,
                 rotation: parseFloat(document.getElementById('prop-rotation').value) || 0, alpha: parseFloat(document.getElementById('prop-alpha').value), 
                 glow: parseInt(document.getElementById('prop-glow').value) || 0, tag: document.getElementById('prop-tag').value, 
-                sizeX: parseFloat(document.getElementById('prop-sizex').value) || (e_meta.gridStep || 1), sizeY: parseFloat(document.getElementById('prop-sizey').value) || (e_meta.gridStep || 1)
+                sizeX: parseFloat(document.getElementById('prop-sizex').value) || (e_meta.gridStep || 1), sizeY: parseFloat(document.getElementById('prop-sizey').value) || (e_meta.gridStep || 1),
+                conveyorX: parseFloat(document.getElementById('prop-convx').value) || 0, conveyorY: parseFloat(document.getElementById('prop-convy').value) || 0
             };
             if(e_tool === 'trigger') {
                 b.listenTag = document.getElementById('prop-trig-listen').value; b.particleFace = parseFloat(document.getElementById('prop-particle-face').value) || 0;
@@ -915,12 +1094,15 @@
                 b.onEnter = document.getElementById('prop-trig-onenter').checked; b.isLoop = document.getElementById('prop-trig-loop').checked; b.loopInterval = parseFloat(document.getElementById('prop-trig-interval').value) || 1;
                 b.actions = Array.from(document.querySelectorAll('.trig-action-item')).map((div, i) => {
                     let action = document.getElementById(`prop-action-${i}`).value; let tData = {};
+                    let revInput = document.getElementById(`tp-rev-${i}`); let revDelay = revInput ? parseFloat(revInput.value) || 0 : 0;
                     if(action==='CAMERA') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value,z:+document.getElementById(`tp-z-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                     if(action==='MOVE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,mx:+document.getElementById(`tp-mx-${i}`).value,my:+document.getElementById(`tp-my-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                     if(action==='ROTATE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,centerTag:document.getElementById(`tp-center-tag-${i}`).value,ang:+document.getElementById(`tp-ang-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                     if(action==='SET_PROPERTY') tData = {tag:document.getElementById(`tp-tag-${i}`).value,prop:document.getElementById(`tp-prop-${i}`).value,val:document.getElementById(`tp-val-${i}`).value};
                     if(action==='TELEPORT_PLAYER') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value};
+                    if(action==='PLAYER_SPEED') tData = {val:+document.getElementById(`tp-val-${i}`).value};
                     if(action==='STOP_LOOP') tData = {tag:document.getElementById(`tp-tag-${i}`).value};
+                    tData.revertDelay = revDelay;
                     return { action, tData };
                 });
             }
@@ -932,6 +1114,8 @@
         }
 
         const handlePointerDown = e => {
+            if(e_tool !== 'select' || e.button === 2) window.saveState();
+
             if(e.button === 2) { isErasing = true; beginPaintStroke(); handleDraw(e); return; }
             const pos = getMousePos(e);
             
@@ -959,7 +1143,7 @@
             if(e_tool === 'select') {
                 let clickedSel = false;
                 for(let id of e_selectedIds) { let b = e_blocks.find(x=>x.id===id); if(b && pos.gx === b.x && pos.gy === b.y) clickedSel = true; }
-                if(clickedSel) { isDragging = true; dragOffsetX = pos.gx; dragOffsetY = pos.gy; } else { isSelecting = true; startSelectX = pos.wx; startSelectY = pos.wy; currentMouseX = pos.wx; currentMouseY = pos.wy; e_selectedIds.clear(); }
+                if(clickedSel) { window.saveState(); isDragging = true; dragOffsetX = pos.gx; dragOffsetY = pos.gy; } else { isSelecting = true; startSelectX = pos.wx; startSelectY = pos.wy; currentMouseX = pos.wx; currentMouseY = pos.wy; e_selectedIds.clear(); }
             } else { isDrawing = true; beginPaintStroke(); handleDraw(e); }
         };
 
@@ -998,9 +1182,12 @@
             setUI('prop-gradient', 'gradient', 'none');
             setUI('prop-solid', 'solid', true, false, true);
             setUI('prop-pushblock', 'pushblock', false, false, true);
+            setUI('prop-invisible', 'invisible', false, false, true);
             setUI('prop-rotation', 'rotation', 0);
             setUI('prop-sizex', 'sizeX', 1);
             setUI('prop-sizey', 'sizeY', 1);
+            setUI('prop-convx', 'conveyorX', 0);
+            setUI('prop-convy', 'conveyorY', 0);
             setUI('prop-tag', 'tag', '');
             
             let alphaMix = checkMix('alpha'), glowMix = checkMix('glow');
@@ -1017,7 +1204,7 @@
                 setUI('prop-trig-click', 'clickable', false, false, true); setUI('prop-trig-range', 'clickRange', 3);
                 setUI('prop-trig-onenter', 'onEnter', false, false, true); setUI('prop-trig-loop', 'isLoop', false, false, true);
                 setUI('prop-trig-interval', 'loopInterval', 1);
-                window._tempActions = first.actions ? [...first.actions] : [{ action: first.action||'WIN', tData: first.tData||{} }];
+                window._tempActions = first.actions ? [...first.actions] : [{ action: first.action||'WIN', tData: first.tData||{revertDelay:0} }];
                 renderAllTriggerActions();
             } else if (first.type === 'emitter') {
                 document.getElementById('prop-trigger-box').classList.add('hidden'); document.getElementById('prop-emitter-box').classList.remove('hidden');
@@ -1054,7 +1241,13 @@
             }
         }
 
-        window.addEventListener('keydown', e => { window.e_keys[e.key.toLowerCase()] = true; });
+        window.addEventListener('keydown', e => { 
+            window.e_keys[e.key.toLowerCase()] = true; 
+            if (isPlaying && g_isPractice) {
+                if (e.key.toLowerCase() === 'z') setCheckpoint();
+                if (e.key.toLowerCase() === 'x') removeCheckpoint();
+            }
+        });
         window.addEventListener('keyup', e => { window.e_keys[e.key.toLowerCase()] = false; });
         edCanvas.addEventListener('wheel', e => { e_cam.zoom -= e.deltaY * 0.001; e_cam.zoom = Math.max(0.1, Math.min(e_cam.zoom, 5)); drawEditor(); }, {passive: true});
 
@@ -1102,13 +1295,40 @@
             const sorted = [...e_blocks].sort((a,b) => a.layer - b.layer);
             sorted.forEach(b => {
                 const isCurrentLayer = (b.layer === e_layer);
-                edCtx.save(); edCtx.globalAlpha = isCurrentLayer ? (b.alpha !== undefined ? parseFloat(b.alpha) : 1) : (b.alpha !== undefined ? parseFloat(b.alpha) : 1) * 0.3; 
+                
+                if (b.invisible && e_previewMode === 0) {
+                    edCtx.save();
+                    const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                    edCtx.translate(b.x*TILE + bwX/2, b.y*TILE + bwY/2); edCtx.rotate((b.rotation||0) * Math.PI/180);
+                    edCtx.globalAlpha = 0.15;
+                    edCtx.strokeStyle = b.color || '#fff'; edCtx.lineWidth = 1; edCtx.setLineDash([4, 4]);
+                    edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY);
+                    edCtx.fillStyle = b.color || '#fff'; edCtx.globalAlpha = 0.05; edCtx.fillRect(-bwX/2, -bwY/2, bwX, bwY);
+                    if(e_selectedIds.has(b.id)) { edCtx.globalAlpha = 1; edCtx.strokeStyle = '#fff'; edCtx.lineWidth = 2; edCtx.setLineDash([]); edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY); }
+                    edCtx.restore();
+                    return;
+                }
+
+                edCtx.save(); 
+                
+                if (e_previewMode === 2) {
+                    edCtx.globalAlpha = isCurrentLayer ? 0.8 : 0.3;
+                    const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                    edCtx.translate(b.x*TILE + bwX/2, b.y*TILE + bwY/2); edCtx.rotate((b.rotation||0) * Math.PI/180);
+                    edCtx.strokeStyle = b.solid ? '#f43f5e' : (b.type === 'trigger' ? '#a855f7' : '#3b82f6');
+                    edCtx.lineWidth = 2; edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY);
+                    if (b.conveyorX || b.conveyorY) {
+                         edCtx.fillStyle = '#10b981'; edCtx.fillText(">>>", 0, 4);
+                    }
+                } else {
+                    edCtx.globalAlpha = isCurrentLayer ? (b.alpha !== undefined ? parseFloat(b.alpha) : 1) : (b.alpha !== undefined ? parseFloat(b.alpha) : 1) * 0.3; 
+                    const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                    edCtx.translate(b.x*TILE + bwX/2, b.y*TILE + bwY/2); edCtx.rotate((b.rotation||0) * Math.PI/180);
+                    drawBlockContent(edCtx, b, bwX, bwY, e_cam.zoom);
+                    if(b.invisible) { edCtx.strokeStyle = '#fff'; edCtx.setLineDash([2, 2]); edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY); edCtx.setLineDash([]); }
+                }
                 
                 const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
-                edCtx.translate(b.x*TILE + bwX/2, b.y*TILE + bwY/2); edCtx.rotate((b.rotation||0) * Math.PI/180);
-
-                drawBlockContent(edCtx, b, bwX, bwY, e_cam.zoom);
-                
                 edCtx.shadowBlur = 0; edCtx.fillStyle = '#fff'; edCtx.font = '12px Arial'; edCtx.textAlign = 'center';
                 edCtx.rotate(-(b.rotation||0) * Math.PI/180);
                 if(b.type === 'start') edCtx.fillText('S', 0, 4);
@@ -1163,8 +1383,8 @@
         window.editLevel = (id) => {
             const l = window.g_levels.find(x => x.id === id); if(!l) return;
             document.getElementById('editor-level-name').value = l.name;
-            e_meta = l.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3, gridStep: 1, brushSize: 1 };
-            window.e_verified = false;
+            e_meta = l.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3, layers: [{name:"L1"},{name:"L2"},{name:"L3"}], gridStep: 1, brushSize: 1 };
+            window.e_verified = false; e_history = []; e_redoStack = []; e_previewMode = 0; document.getElementById('btn-preview').innerText = '👁️ Normal';
             
             try { 
                 const p = JSON.parse(l.grid);
@@ -1172,7 +1392,7 @@
                 else e_blocks = p;
             } catch(e) { e_blocks = []; }
 
-            if(!e_meta.layerCount) { let maxL = 2; e_blocks.forEach(b => { if(b.layer > maxL) maxL = b.layer; }); e_meta.layerCount = maxL + 1; }
+            migrateLayers(); window.saveState();
             window.editId = id; showScreen('editor'); e_cam = { x:(e_meta.width*TILE)/2, y:(e_meta.height*TILE)/2, zoom:1 }; setLayer(0); 
         };
 
@@ -1204,6 +1424,30 @@
         window.testLevel = () => { startGame(e_blocks, { id: 'test', name: document.getElementById('editor-level-name').value||'Test', isTest: true, meta: e_meta }); };
         window.playLevel = (id) => { const l = window.g_levels.find(x=>x.id===id); if(l) startGame(JSON.parse(l.grid), l); };
 
+        window.togglePractice = () => {
+            g_isPractice = !g_isPractice;
+            const btn = document.getElementById('btn-practice');
+            btn.innerText = g_isPractice ? "🟢 Practice ON" : "⚪ Practice OFF";
+            btn.classList.toggle('text-emerald-400', g_isPractice);
+            document.getElementById('btn-checkpoint').classList.toggle('hidden', !g_isPractice);
+            document.getElementById('btn-del-checkpoint').classList.toggle('hidden', !g_isPractice);
+            if(!g_isPractice) g_checkpoints = [];
+        };
+
+        window.setCheckpoint = () => {
+            if(!g_isPractice || !g_players[0]) return;
+            g_checkpoints.push({ 
+                players: JSON.stringify(g_players), 
+                blocksStr: JSON.stringify(g_blocks),
+                x: g_players[0].x, y: g_players[0].y, w: g_players[0].w, h: g_players[0].h
+            });
+        };
+
+        window.removeCheckpoint = () => {
+            if(!g_isPractice || g_checkpoints.length === 0) return;
+            g_checkpoints.pop();
+        };
+
         function startGame(blocks, lvl) {
             showScreen('play'); document.getElementById('play-level-title').innerText = lvl.name;
             const status = document.getElementById('play-status'); status.innerText = ""; status.classList.remove('text-rose-500', 'text-emerald-500');
@@ -1212,15 +1456,14 @@
             g_blocks = JSON.parse(JSON.stringify(blocks)).map(b => { b.px = b.x * TILE; b.py = b.y * TILE; b.triggered = false; b.loopTimer = 0; return b; });
 
             g_players = [];
-            g_blocks.filter(b=>b.type==='start').forEach(b => { const bwX = TILE * getBlockSizeX(b); g_players.push({ id: 'p_'+Date.now(), x: b.px+bwX/4, y: b.py+bwX/4, w: bwX/2, h: bwX/2, health: g_meta.maxHealth, invuln: 0 }); });
-            if(g_players.length === 0) g_players.push({ id: 'p_'+Date.now(), x: 0, y: 0, w: TILE/2, h: TILE/2, health: g_meta.maxHealth, invuln: 0 });
+            g_blocks.filter(b=>b.type==='start').forEach(b => { const bwX = TILE * getBlockSizeX(b); g_players.push({ id: 'p_'+Date.now(), x: b.px+bwX/4, y: b.py+bwX/4, w: bwX/2, h: bwX/2, health: g_meta.maxHealth, invuln: 0, speedMult: 1 }); });
+            if(g_players.length === 0) g_players.push({ id: 'p_'+Date.now(), x: 0, y: 0, w: TILE/2, h: TILE/2, health: g_meta.maxHealth, invuln: 0, speedMult: 1 });
 
             g_cam = { x: g_players[0].x, y: g_players[0].y, zoom: g_meta.zoom || 1, targetX: null, targetY: null, active: false };
-            g_tweens = []; isPlaying = true; 
+            g_tweens = []; g_reverts = []; isPlaying = true; g_timer = 0;
             if(g_loop) cancelAnimationFrame(g_loop);
             g_particles = []; window.e_keys = {}; lastTime = performance.now(); 
 
-            // Trigger On Enter
             g_blocks.filter(b => b.type === 'trigger' && b.onEnter).forEach(b => {
                 b.triggered = true; let actions = b.actions || [{action: b.action, tData: b.tData}];
                 actions.forEach(act => triggerAction(b, act));
@@ -1229,7 +1472,24 @@
             g_loop = requestAnimationFrame(gameLoop);
         }
 
-        window.stopPlay = () => { isPlaying = false; cancelAnimationFrame(g_loop); if (g_meta && g_meta.isTest) showScreen('editor'); else showScreen('menu'); };
+        function restoreFromCheckpoint() {
+            if (g_checkpoints.length === 0) return;
+            const cp = g_checkpoints[g_checkpoints.length - 1];
+            g_blocks = JSON.parse(cp.blocksStr);
+            g_players = JSON.parse(cp.players);
+            g_players.forEach(p => { p.health = g_meta.maxHealth; p.invuln = 1.5; });
+            g_tweens = []; g_reverts = []; g_particles = [];
+            const status = document.getElementById('play-status'); status.innerText = ""; status.classList.remove('text-rose-500');
+            isPlaying = true;
+            lastTime = performance.now();
+            g_loop = requestAnimationFrame(gameLoop);
+        }
+
+        window.stopPlay = () => { 
+            isPlaying = false; cancelAnimationFrame(g_loop); 
+            if(g_isPractice) togglePractice(); 
+            if (g_meta && g_meta.isTest) showScreen('editor'); else showScreen('menu'); 
+        };
 
         function AABB(x1, y1, w1, h1, x2, y2, w2, h2) { return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2; }
 
@@ -1261,6 +1521,9 @@
             if(!isPlaying) return;
             const dt = (time - lastTime) / 1000; lastTime = time;
             
+            if(!g_isPractice && g_players.some(p => p.health > 0)) g_timer += dt;
+            document.getElementById('play-timer').innerText = formatTime(g_timer);
+
             for(let i=g_tweens.length-1; i>=0; i--) {
                 let tw = g_tweens[i]; tw.t += dt; let prog = Math.min(1, tw.t / tw.dur);
                 let ease = prog < 0.5 ? 2 * prog * prog : 1 - Math.pow(-2 * prog + 2, 2) / 2;
@@ -1270,14 +1533,30 @@
                 if(prog >= 1) { if(tw.type==='camera') g_cam.active = false; g_tweens.splice(i, 1); }
             }
 
-            const SPEED = 200 * dt; let dx = 0, dy = 0;
-            if(window.e_keys['w']||window.e_keys['arrowup']) dy -= SPEED; if(window.e_keys['s']||window.e_keys['arrowdown']) dy += SPEED;
-            if(window.e_keys['a']||window.e_keys['arrowleft']) dx -= SPEED; if(window.e_keys['d']||window.e_keys['arrowright']) dx += SPEED;
+            for(let i=g_reverts.length-1; i>=0; i--) {
+                let rev = g_reverts[i]; rev.t -= dt;
+                if(rev.t <= 0) {
+                    executeRevert(rev);
+                    g_reverts.splice(i, 1);
+                }
+            }
 
             let alive = 0; const solids = g_blocks.filter(b => b.solid);
 
             for(let p of g_players) {
                 if(p.health <= 0) continue; alive++; if(p.invuln > 0) p.invuln -= dt;
+
+                const baseSpd = 200 * dt * (p.speedMult || 1);
+                let dx = 0, dy = 0;
+                if(window.e_keys['w']||window.e_keys['arrowup']) dy -= baseSpd; if(window.e_keys['s']||window.e_keys['arrowdown']) dy += baseSpd;
+                if(window.e_keys['a']||window.e_keys['arrowleft']) dx -= baseSpd; if(window.e_keys['d']||window.e_keys['arrowright']) dx += baseSpd;
+
+                for(let b of g_blocks) {
+                    if(b.conveyorX || b.conveyorY) {
+                        const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                        if(AABB(p.x, p.y, p.w, p.h, b.px, b.py, bwX, bwY)) { dx += (b.conveyorX||0)*dt*100; dy += (b.conveyorY||0)*dt*100; }
+                    }
+                }
 
                 let nextX = p.x + dx; let hitX = false;
                 for(let b of solids) {
@@ -1416,29 +1695,48 @@
 
         function triggerAction(triggerBlock, actionObj) {
             let act = actionObj.action, td = actionObj.tData || {}, face = triggerBlock.particleFace || 0;
+            let revertDelay = td.revertDelay || 0;
+            let dur = td.dur || 1;
+            
+            let storedRevert = { t: dur + revertDelay, act: act, targets: [] };
+            let needsRevert = revertDelay > 0;
+
             if(act === 'DIE') { g_players.forEach(p => p.health = 0); loseGame(); } 
             else if (act === 'TELEPORT_PLAYER') { g_players.forEach(p => { p.x = (td.x||0)*TILE; p.y = (td.y||0)*TILE; }); }
+            else if (act === 'PLAYER_SPEED') { 
+                if(needsRevert) g_players.forEach(p => storedRevert.targets.push({p:p, old: p.speedMult}));
+                g_players.forEach(p => p.speedMult = (td.val !== undefined ? td.val : 1)); 
+            }
             else if (act === 'CAMERA') { g_cam.active = true; g_tweens.push({ type: 'camera', startX: g_cam.x, startY: g_cam.y, startZ: g_cam.zoom, endX: td.x*TILE, endY: td.y*TILE, endZ: td.z, dur: td.dur, t: 0 }); } 
             else if (act === 'MOVE_TAG' && td.tag) {
                 const targets = g_blocks.filter(b => b.tag === td.tag); spawnParticlesFromBlocks(targets, face);
-                targets.forEach(b => { g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: b.px + td.mx*TILE, endY: b.py + td.my*TILE, dur: td.dur, t: 0 }); });
+                targets.forEach(b => { 
+                    if(needsRevert) storedRevert.targets.push({b: b, oldX: b.px, oldY: b.py});
+                    g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: b.px + td.mx*TILE, endY: b.py + td.my*TILE, dur: td.dur, t: 0 }); 
+                });
             } else if (act === 'ROTATE_TAG' && td.tag) {
                 const targets = g_blocks.filter(b => b.tag === td.tag), centers = td.centerTag ? g_blocks.filter(b => b.tag === td.centerTag) : [];
                 spawnParticlesFromBlocks(targets, face); let pivot = null;
                 if (centers.length) { let sx = 0, sy = 0, n = 0; centers.forEach(c => { sx += c.px + (TILE * getBlockSizeX(c))/2; sy += c.py + (TILE * getBlockSizeY(c))/2; n++; }); pivot = { x: sx / n, y: sy / n }; }
                 targets.forEach(b => {
                     const startR = b.rotation || 0, endR = startR + td.ang;
+                    let targetMove = null;
                     if (pivot) {
                         const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b), center = { x: b.px + bwX / 2, y: b.py + bwY / 2 }, rotated = rotateAroundPoint(center.x, center.y, pivot.x, pivot.y, td.ang);
-                        g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: rotated.x - bwX/2, endY: rotated.y - bwY/2, dur: td.dur, t: 0 });
+                        targetMove = { endX: rotated.x - bwX/2, endY: rotated.y - bwY/2 };
+                        g_tweens.push({ type: 'move', obj: b, startX: b.px, startY: b.py, endX: targetMove.endX, endY: targetMove.endY, dur: td.dur, t: 0 });
                     }
+                    if(needsRevert) storedRevert.targets.push({b: b, oldR: startR, oldX: b.px, oldY: b.py});
                     g_tweens.push({ type: 'rotate', obj: b, startR, endR, dur: td.dur, t: 0 });
                 });
             } else if (act === 'SET_PROPERTY' && td.tag && td.prop) {
                 const targets = g_blocks.filter(b => b.tag === td.tag); spawnParticlesFromBlocks(targets, face);
                 targets.forEach(b => {
+                    if(needsRevert) storedRevert.targets.push({b: b, oldVal: b[td.prop], prop: td.prop});
+
                     if (td.prop === 'color') b.color = td.val; else if (td.prop === 'solid') b.solid = (td.val === 'true' || td.val === true || td.val === '1');
                     else if (td.prop === 'pushblock') b.pushblock = (td.val === 'true' || td.val === true || td.val === '1');
+                    else if (td.prop === 'invisible') b.invisible = (td.val === 'true' || td.val === true || td.val === '1');
                     else if (td.prop === 'alpha') b.alpha = parseFloat(td.val) !== undefined ? parseFloat(td.val) : 1;
                     else if (td.prop === 'glow') b.glow = parseInt(td.val) || 0;
                     else if (td.prop === 'rotation') b.rotation = parseFloat(td.val) || 0;
@@ -1448,14 +1746,51 @@
             } else if (act === 'STOP_LOOP' && td.tag) {
                 g_blocks.filter(b => b.tag === td.tag).forEach(b => { b.isLoop = false; b.triggered = false; });
             }
+
+            if(needsRevert && storedRevert.targets.length > 0) {
+                storedRevert.dur = dur;
+                g_reverts.push(storedRevert);
+            }
+        }
+
+        function executeRevert(rev) {
+            let dur = rev.dur || 1;
+            if(rev.act === 'MOVE_TAG' || rev.act === 'ROTATE_TAG') {
+                rev.targets.forEach(t => {
+                    if(rev.act === 'MOVE_TAG' || t.oldX !== undefined) {
+                        g_tweens.push({ type: 'move', obj: t.b, startX: t.b.px, startY: t.b.py, endX: t.oldX, endY: t.oldY, dur: dur, t: 0 });
+                    }
+                    if(rev.act === 'ROTATE_TAG') {
+                        g_tweens.push({ type: 'rotate', obj: t.b, startR: t.b.rotation, endR: t.oldR, dur: dur, t: 0 });
+                    }
+                });
+            } else if(rev.act === 'SET_PROPERTY') {
+                rev.targets.forEach(t => { t.b[t.prop] = t.oldVal; });
+            } else if(rev.act === 'PLAYER_SPEED') {
+                rev.targets.forEach(t => { t.p.speedMult = t.old; });
+            }
+        }
+
+        async function saveBestTime() {
+            if(!window.currentUser || g_meta.isTest || g_isPractice) return;
+            const existing = window.g_level_records.find(r => r.levelId === g_meta.levelId && r.userId === window.currentUser.id);
+            if(!existing || g_timer < existing.time) {
+                const recId = `${g_meta.levelId}_${window.currentUser.id}`;
+                await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'level_records', recId), {
+                    levelId: g_meta.levelId, userId: window.currentUser.id, username: window.currentUser.username, time: g_timer, timestamp: Date.now()
+                });
+            }
         }
 
         function winGame() {
             isPlaying = false; const status = document.getElementById('play-status'); status.innerText = "LEVEL CLEARED!"; status.classList.add('text-emerald-500');
+            saveBestTime();
             setTimeout(() => {
+                if(g_isPractice) togglePractice(); 
+                
                 if(g_meta.isTest) { window.e_verified = true; showMsg("Verified", "Level successfully verified! You can now publish it publicly."); showScreen('editor'); } 
                 else {
-                    if(!window.currentUser.beaten.includes(g_meta.levelId)) {
+                    if(!window.currentUser.beaten.includes(g_meta.levelId) && !g_isPractice) {
                         window.currentUser.beaten.push(g_meta.levelId);
                         window.currentUser.bricks = (window.currentUser.bricks || 0) + (DIFF_BRICKS[g_meta.levelObj.difficulty] || 0);
                     }
@@ -1469,7 +1804,17 @@
 
         function loseGame() {
             isPlaying = false; const status = document.getElementById('play-status'); status.innerText = "YOU DIED!"; status.classList.add('text-rose-500');
-            setTimeout(() => { if(g_meta.isTest) showScreen('editor'); else startGame(g_meta.originalBlocks, g_meta.levelObj); }, 2000);
+            setTimeout(() => { 
+                if(g_isPractice) { 
+                    if (g_checkpoints.length > 0) {
+                        restoreFromCheckpoint();
+                    } else {
+                        startGame(g_meta.originalBlocks, g_meta.levelObj);
+                    }
+                }
+                else if(g_meta.isTest) showScreen('editor'); 
+                else startGame(g_meta.originalBlocks, g_meta.levelObj); 
+            }, 2000);
         }
 
         function renderGame(time) {
@@ -1478,7 +1823,7 @@
 
             const sortedBlocks = [...g_blocks].sort((a,b) => a.layer - b.layer);
             sortedBlocks.forEach(b => {
-                if (b.type === 'emitter') return;
+                if (b.type === 'emitter' || b.invisible) return;
                 const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
                 plCtx.save(); plCtx.globalAlpha = b.alpha !== undefined ? parseFloat(b.alpha) : 1;
                 plCtx.translate(b.px + bwX/2, b.py + bwY/2); plCtx.rotate((b.rotation||0) * Math.PI / 180);
@@ -1491,11 +1836,27 @@
                 let prog = pt.t / pt.life;
                 plCtx.globalAlpha = Math.max(0, 1 - prog); 
                 plCtx.translate(pt.x, pt.y); plCtx.rotate(pt.rot); 
-                let curSize = pt.size * (1 - prog * 0.5); // Shrinking effect
+                let curSize = pt.size * (1 - prog * 0.5);
                 plCtx.fillStyle = pt.color; 
                 plCtx.fillRect(-curSize / 2, -curSize / 2, curSize, curSize); 
                 plCtx.restore();
             });
+
+            if (g_isPractice) {
+                g_checkpoints.forEach((cp, idx) => {
+                    plCtx.save();
+                    plCtx.fillStyle = 'rgba(34, 197, 94, 0.3)';
+                    plCtx.strokeStyle = 'rgba(34, 197, 94, 0.8)';
+                    plCtx.lineWidth = 2;
+                    plCtx.fillRect(cp.x, cp.y, cp.w, cp.h);
+                    plCtx.strokeRect(cp.x, cp.y, cp.w, cp.h);
+                    plCtx.fillStyle = '#fff';
+                    plCtx.font = '10px Arial';
+                    plCtx.textAlign = 'center';
+                    plCtx.fillText(idx + 1, cp.x + cp.w/2, cp.y - 4);
+                    plCtx.restore();
+                });
+            }
 
             g_players.forEach(p => {
                 if(p.health <= 0) return; if(p.invuln > 0 && Math.floor(time / 150) % 2 === 0) return; 
@@ -1506,7 +1867,6 @@
 
             plCtx.restore();
 
-            // Screen Overlay Health Display
             plCtx.save();
             plCtx.resetTransform();
             let hp = g_players[0] ? g_players[0].health : 0;
