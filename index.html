@@ -49,8 +49,8 @@
     <div id="screen-login" class="flex-1 flex items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black p-4">
         <div class="glass-panel p-8 rounded-2xl shadow-2xl w-full max-w-md text-center">
             <h1 class="text-4xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Ltp's Maze Game</h1>
-            <input type="text" id="auth-username" placeholder="Username" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none transition">
-            <input type="password" id="auth-password" placeholder="Password" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 mb-6 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            <input type="text" id="auth-username" placeholder="Username (Min 3)" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            <input type="password" id="auth-password" placeholder="Password (Min 5)" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 mb-6 focus:ring-2 focus:ring-indigo-500 outline-none transition">
             <div class="flex gap-3">
                 <button onclick="handleAuth('login')" class="flex-1 bg-indigo-600 hover:bg-indigo-500 p-3 rounded-lg font-bold transition shadow-lg shadow-indigo-900/50">Login</button>
                 <button onclick="handleAuth('register')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 p-3 rounded-lg font-bold transition shadow-lg shadow-emerald-900/50">Register</button>
@@ -73,6 +73,7 @@
                 <button onclick="showSubMenu('play')" class="glass-panel hover:bg-slate-700/50 p-3 md:p-4 rounded-xl font-bold text-left transition text-indigo-300 hover:text-indigo-200 whitespace-nowrap">🎮 Play Levels</button>
                 <button onclick="openEditor()" class="glass-panel hover:bg-slate-700/50 p-3 md:p-4 rounded-xl font-bold text-left transition text-fuchsia-300 hover:text-fuchsia-200 whitespace-nowrap">🛠️ Level Editor</button>
                 <button onclick="showSubMenu('leaderboard')" class="glass-panel hover:bg-slate-700/50 p-3 md:p-4 rounded-xl font-bold text-left transition text-amber-300 hover:text-amber-200 whitespace-nowrap">🏆 Leaderboard</button>
+                <button onclick="showSubMenu('audio')" class="glass-panel hover:bg-slate-700/50 p-3 md:p-4 rounded-xl font-bold text-left transition text-blue-300 hover:text-blue-200 whitespace-nowrap">🎵 Songs</button>
                 <button id="admin-btn" onclick="showSubMenu('admin')" class="hidden glass-panel hover:bg-rose-900/30 p-3 md:p-4 rounded-xl font-bold text-left transition text-rose-400 whitespace-nowrap">🛡️ Admin Panel</button>
             </div>
 
@@ -101,6 +102,27 @@
                     <div id="leaderboard-list" class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto pr-2"></div>
                 </div>
 
+                <div id="tab-audio" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4 text-blue-400">Global Audio Hub</h2>
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700 mb-4">
+                        <h3 class="text-sm font-bold mb-2 text-slate-300">Submit URL (MP3, WAV, OGG)</h3>
+                        <div class="flex flex-col md:flex-row gap-2">
+                            <input type="text" id="audio-name" placeholder="Name" class="flex-1 bg-slate-800 border border-slate-600 rounded p-2 text-sm outline-none">
+                            <input type="text" id="audio-url" placeholder="Direct URL Link..." class="flex-[2] bg-slate-800 border border-slate-600 rounded p-2 text-sm outline-none">
+                            <select id="audio-type" class="bg-slate-800 border border-slate-600 rounded p-2 text-sm outline-none">
+                                <option value="song">Song / Music</option>
+                                <option value="sfx">Sound Effect</option>
+                            </select>
+                            <button onclick="saveAudio()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded font-bold transition">Post</button>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 border-b border-slate-700 mb-4 pb-2 overflow-x-auto">
+                        <button onclick="loadAudioList('song')" id="btn-aud-song" class="tab-btn active font-bold uppercase text-xs md:text-sm tracking-wider whitespace-nowrap">Songs</button>
+                        <button onclick="loadAudioList('sfx')" id="btn-aud-sfx" class="tab-btn font-bold text-slate-500 uppercase text-xs md:text-sm tracking-wider whitespace-nowrap">Sound Effects</button>
+                    </div>
+                    <div id="audio-list" class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto pr-2"></div>
+                </div>
+
                 <div id="tab-admin" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden">
                     <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-rose-400">Admin Control Panel</h2>
                     <div class="flex gap-4 border-b border-slate-700 mb-4 md:mb-6 pb-2">
@@ -115,7 +137,7 @@
                         <h2 class="text-xl md:text-2xl font-bold mb-2 text-center">Player Profile</h2>
                         <div id="profile-user-id" class="text-xs text-slate-500 text-center mb-6 font-mono selection:bg-indigo-500/50 selection:text-white rounded p-1"></div>
                         
-                        <div class="flex flex-col gap-4 mb-6 text-sm md:text-base">
+                        <div class="flex flex-col gap-4 mb-4 text-sm md:text-base">
                             <div class="flex justify-between items-center bg-slate-900/50 p-3 rounded-lg border border-slate-700">
                                 <span class="text-slate-400">Player Color</span>
                                 <input type="color" id="prof-color" class="w-8 h-8 md:w-10 md:h-10 cursor-pointer" onchange="saveProfileSettings()">
@@ -126,11 +148,28 @@
                             </div>
                         </div>
 
+                        <div class="flex flex-col gap-3 mb-6 text-sm md:text-base">
+                            <h3 class="text-indigo-400 font-bold text-center mt-2 -mb-1">Local Audio Settings</h3>
+                            <div class="flex flex-col gap-2 bg-slate-900/50 p-3 rounded-lg border border-slate-700">
+                                <div class="flex justify-between items-center text-slate-400">
+                                    <span>Music Volume</span>
+                                    <span id="prof-vol-music-val" class="font-mono font-bold text-indigo-300">100%</span>
+                                </div>
+                                <input type="range" id="prof-vol-music" min="0" max="100" value="100" class="w-full accent-indigo-500" oninput="updateProfileVolUI()" onchange="saveProfileSettings()">
+                                
+                                <div class="flex justify-between items-center text-slate-400 mt-2">
+                                    <span>SFX Volume</span>
+                                    <span id="prof-vol-sfx-val" class="font-mono font-bold text-indigo-300">100%</span>
+                                </div>
+                                <input type="range" id="prof-vol-sfx" min="0" max="100" value="100" class="w-full accent-indigo-500" oninput="updateProfileVolUI()" onchange="saveProfileSettings()">
+                            </div>
+                        </div>
+
                         <div class="h-px w-full bg-slate-700 my-6"></div>
                         <button onclick="deleteAccount()" class="w-full border border-rose-600 text-rose-500 hover:bg-rose-600 hover:text-white p-3 rounded-lg font-bold transition mb-4">Delete Account</button>
                         
                         <div class="mt-2 pt-3 border-t border-slate-700 text-center">
-                            <span class="text-xs text-slate-500 font-bold">Game Version: 1.3.2</span>
+                            <span class="text-xs text-slate-500 font-bold">Game Version: 1.4</span>
                         </div>
                     </div>
                 </div>
@@ -139,7 +178,7 @@
     </div>
 
     <div id="modal-level-settings" class="fixed inset-0 z-50 modal hidden flex items-center justify-center p-4">
-        <div class="glass-panel p-6 rounded-xl shadow-2xl w-80 max-h-screen overflow-y-auto">
+        <div class="glass-panel p-6 rounded-xl shadow-2xl w-80 max-h-[90vh] overflow-y-auto">
             <h3 class="text-xl font-bold mb-4">Level Settings</h3>
             <div class="flex flex-col gap-3 text-sm">
                 <label>Grid Width <input type="number" id="cfg-width" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
@@ -148,6 +187,13 @@
                 <label>Grid Step (0.025 - 1) <input type="number" id="cfg-grid-step" step="0.025" min="0.025" max="1" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
                 <label>Brush Thickness (1-12) <input type="number" id="cfg-brush-size" min="1" max="12" step="1" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
                 <label>Player Max Hearts (1-10) <input type="number" min="1" max="10" id="cfg-health" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
+                
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                    <label>Music Vol (%) <input type="number" id="cfg-vol-music" min="0" max="200" value="100" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
+                    <label>SFX Vol (%) <input type="number" id="cfg-vol-sfx" min="0" max="200" value="100" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1"></label>
+                </div>
+                
+                <label class="text-blue-400 font-bold mt-1">Background Song <select id="cfg-song" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mt-1 text-white font-normal"></select></label>
             </div>
             <div class="flex gap-2 mt-6">
                 <button onclick="applyLevelSettings()" class="flex-1 bg-indigo-600 py-2 rounded font-bold">Apply</button>
@@ -166,6 +212,7 @@
                 <button onclick="undo()" class="bg-slate-700 hover:bg-indigo-600 px-2 py-1 rounded-lg text-xs md:text-sm font-semibold transition" title="Undo">↩</button>
                 <button onclick="redo()" class="bg-slate-700 hover:bg-indigo-600 px-2 py-1 rounded-lg text-xs md:text-sm font-semibold transition" title="Redo">↪</button>
                 <button onclick="togglePreview()" id="btn-preview" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-lg text-xs font-semibold transition ml-1 w-20">👁️ Normal</button>
+                <button id="btn-mobile-pan" onclick="toggleMobilePan()" class="md:hidden bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-lg text-xs font-semibold transition ml-1">🤚 Pan: OFF</button>
             </div>
             
             <div class="flex items-center gap-2 flex-1 overflow-x-auto min-w-[150px]">
@@ -264,6 +311,14 @@
                         
                         <div id="prop-emitter-box" class="hidden flex-col gap-1 mt-2 pt-2 border-t border-slate-700 text-[10px] md:text-xs">
                              <span class="font-bold text-orange-400">Particle Settings</span>
+                             <div class="flex gap-1">
+                                 <label class="w-full">Offset X: <input type="text" id="prop-emit-offx" value="0" class="w-full bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitOffsetX', this.value, 'number')"></label>
+                                 <label class="w-full">Offset Y: <input type="text" id="prop-emit-offy" value="0" class="w-full bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitOffsetY', this.value, 'number')"></label>
+                             </div>
+                             <div class="flex gap-1 mb-1">
+                                 <label class="w-full text-blue-300">Radius X: <input type="text" id="prop-emit-radx" value="0" class="w-full bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitRadiusX', this.value, 'number')"></label>
+                                 <label class="w-full text-blue-300">Radius Y: <input type="text" id="prop-emit-rady" value="0" class="w-full bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitRadiusY', this.value, 'number')"></label>
+                             </div>
                              <label class="flex justify-between items-center">Lifetime (s): <input type="text" id="prop-emit-life" value="1" class="w-14 bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitLife', this.value, 'number')"></label>
                              <label class="flex justify-between items-center">Spread (deg): <input type="text" id="prop-emit-spread" value="360" class="w-14 bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitSpread', this.value, 'number')"></label>
                              <label class="flex justify-between items-center">Speed: <input type="text" id="prop-emit-speed" value="100" class="w-14 bg-slate-800 rounded p-1 border border-slate-600" onchange="updatePropField('emitSpeed', this.value, 'number')"></label>
@@ -346,8 +401,8 @@
                 <div id="play-timer" class="text-xl md:text-3xl font-mono text-emerald-400 font-bold drop-shadow-lg">00:00.000</div>
                 <div class="flex gap-2 mt-2">
                     <button id="btn-practice" onclick="togglePractice()" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-xs font-bold text-slate-300 transition shadow">⚪ Practice OFF</button>
-                    <button id="btn-checkpoint" onclick="setCheckpoint()" class="hidden bg-emerald-600 hover:bg-emerald-500 px-2 py-1 rounded text-xs font-bold text-white transition shadow" title="Hotkey: Z">🚩 Set</button>
-                    <button id="btn-del-checkpoint" onclick="removeCheckpoint()" class="hidden bg-rose-600 hover:bg-rose-500 px-2 py-1 rounded text-xs font-bold text-white transition shadow" title="Hotkey: X">🗑️ Del</button>
+                    <button id="btn-checkpoint" onclick="setCheckpoint()" class="hidden bg-emerald-600 hover:bg-emerald-500 px-2 py-1 rounded text-xs font-bold text-white transition shadow" title="Hotkey: F">🚩 Set (F)</button>
+                    <button id="btn-del-checkpoint" onclick="removeCheckpoint()" class="hidden bg-rose-600 hover:bg-rose-500 px-2 py-1 rounded text-xs font-bold text-white transition shadow" title="Hotkey: R">🗑️ Del (R)</button>
                 </div>
             </div>
             <div class="w-12 md:w-16"></div>
@@ -357,7 +412,7 @@
         <canvas id="play-canvas" class="flex-1 w-full h-full object-cover block min-h-0"></canvas>
 
         <!-- Mobile Controls Overlay -->
-        <div id="mobile-controls" class="absolute bottom-8 left-8 z-40 md:hidden pointer-events-none">
+        <div id="mobile-controls" class="absolute bottom-8 left-8 z-40 md:hidden pointer-events-none opacity-60">
             <div class="relative w-36 h-36 bg-slate-800/40 rounded-full border border-slate-600/50 backdrop-blur-md pointer-events-auto">
                 <button class="absolute top-1 left-1/2 -translate-x-1/2 w-12 h-12 bg-indigo-500/80 rounded-full active:bg-indigo-400 touch-none shadow-lg text-white font-bold flex items-center justify-center text-lg" 
                     ontouchstart="window.e_keys['w']=true; event.preventDefault()" ontouchend="window.e_keys['w']=false; event.preventDefault()" ontouchcancel="window.e_keys['w']=false; event.preventDefault()">W</button>
@@ -383,13 +438,21 @@
 
         window.g_users = [];
         window.g_levels = [];
+        window.g_audio = [];
         window.currentUser = null;
         window._tempActions = [];
-        window.g_level_records = []; // Cached leaderboard records
+        window.g_level_records = []; 
+        let bgAudioObj = null;
         
         const TILE = 32; 
         const DIFF_BRICKS = { "Easy": 1, "Medium": 2, "Hard": 3, "Difficult": 4, "Insane": 5, "Really Hard": 6, "The Hardest": 7 };
         const RATING_CP = { "Rated": 1, "Good": 2, "Really Good": 3, "Insanely Good": 4 };
+        const BAD_WORDS = ['fuck', 'shit', 'bitch', 'asshole', 'dick', 'cunt', 'nigger', 'nigga', 'faggot', 'slut', 'whore', 'porn', 'cum'];
+
+        function isClean(str) {
+            const lower = str.toLowerCase();
+            return !BAD_WORDS.some(w => lower.includes(w));
+        }
 
         let localColors = ["#ffffff", "#00ffff", "#ff0044", "#ffaa00", "#00ffaa", "#aa00ff", "#38bdf8", "#ec4899", "#eab308"];
 
@@ -420,13 +483,15 @@
         // Editor state
         let e_blocks = [], e_layer = 0, e_tool = 'select', e_selectedIds = new Set();
         let e_cam = { x: 0, y: 0, zoom: 1 };
-        let e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layers: [{name:"L1"}, {name:"L2"}, {name:"L3"}], gridStep: 1, brushSize: 1 };
+        let e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layers: [{name:"L1"}, {name:"L2"}, {name:"L3"}], gridStep: 1, brushSize: 1, songId: "", volMusic: 100, volSfx: 100 };
         window.e_keys = {}; window.e_verified = false; 
         window.e_previewMode = 0; // 0=normal, 1=invisible, 2=hitboxes
+        let isMobilePanMode = false;
         
-        let isDrawing = false, isErasing = false, isSelecting = false, isDragging = false;
-        let startSelectX = 0, startSelectY = 0, currentMouseX = 0, currentMouseY = 0;
+        let isDrawing = false, isErasing = false, isSelecting = false, isDragging = false, isDraggingCam = false;
+        let startSelectX = 0, startSelectY = 0, currentMouseX = 0, currentMouseY = 0, lastPanX = 0, lastPanY = 0;
         let dragOffsetX = 0, dragOffsetY = 0; let currentPaintStroke = new Set();
+        let e_particles = [];
 
         // Undo Redo tracking
         let e_history = [];
@@ -434,14 +499,27 @@
 
         // Game state
         let g_blocks = [], g_players = [], g_tweens = [], g_particles = [], g_reverts = [];
-        let g_cam = { x: 0, y: 0, zoom: 1, targetX: null, targetY: null, active: false };
+        let g_cam = { x: 0, y: 0, zoom: 1, rot: 0, targetX: null, targetY: null, active: false };
         let g_keys = window.e_keys, g_loop = null, isPlaying = false, g_meta = null;
         let g_timer = 0;
         let g_isPractice = false;
-        let g_checkpoints = []; // Stores objects with player data, blocksStr, and coords for rendering box
+        let g_checkpoints = []; 
 
         const edCanvas = document.getElementById('editor-canvas'); const edCtx = edCanvas.getContext('2d');
         const plCanvas = document.getElementById('play-canvas'); const plCtx = plCanvas.getContext('2d');
+
+        // Volume Calculation Helpers
+        window.getMusicVolume = () => {
+            const globalVol = (window.currentUser && window.currentUser.volMusic !== undefined ? window.currentUser.volMusic : 100) / 100;
+            const levelVol = (g_meta && g_meta.volMusic !== undefined ? g_meta.volMusic : (e_meta && e_meta.volMusic !== undefined ? e_meta.volMusic : 100)) / 100;
+            return Math.max(0, Math.min(1, globalVol * levelVol));
+        };
+
+        window.getSfxVolume = () => {
+            const globalVol = (window.currentUser && window.currentUser.volSfx !== undefined ? window.currentUser.volSfx : 100) / 100;
+            const levelVol = (g_meta && g_meta.volSfx !== undefined ? g_meta.volSfx : (e_meta && e_meta.volSfx !== undefined ? e_meta.volSfx : 100)) / 100;
+            return Math.max(0, Math.min(1, globalVol * levelVol));
+        };
 
         function generateId() { return 'b_' + Date.now() + '_' + Math.floor(Math.random()*10000); }
         function rgbToHex(r, g, b) { return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1); }
@@ -449,7 +527,7 @@
         window.saveState = () => {
             if (!document.getElementById('screen-editor').classList.contains('hidden')) {
                 e_history.push(JSON.stringify(e_blocks));
-                if(e_history.length > 50) e_history.shift(); // Max 50 undos
+                if(e_history.length > 50) e_history.shift(); 
                 e_redoStack = [];
             }
         };
@@ -489,20 +567,39 @@
                 const dx = p.x - cx, dy = p.y - cy; return { x: cx + dx*c - dy*s, y: cy + dx*s + dy*c };
             });
         }
-        function satCollide(rectA, rectB) { 
-            const polyA = [{x: rectA.x, y: rectA.y}, {x: rectA.x+rectA.w, y: rectA.y}, {x: rectA.x+rectA.w, y: rectA.y+rectA.h}, {x: rectA.x, y: rectA.y+rectA.h}];
+        
+        function satCollideExt(rectA, rectB) {
+            const polyA = getRotatedCorners(rectA.x, rectA.y, rectA.w, rectA.h, rectA.rotation||0);
             const polyB = getRotatedCorners(rectB.x, rectB.y, rectB.w, rectB.h, rectB.rotation||0);
-            const axes = [{x: 1, y: 0}, {x: 0, y: 1}, {x: polyB[1].x - polyB[0].x, y: polyB[1].y - polyB[0].y}, {x: polyB[2].x - polyB[1].x, y: polyB[2].y - polyB[1].y}];
+            const axes = [];
+            [polyA, polyB].forEach(poly => {
+                for (let i = 0; i < poly.length; i++) {
+                    let p1 = poly[i], p2 = poly[(i + 1) % poly.length];
+                    let normal = { x: p2.y - p1.y, y: p1.x - p2.x };
+                    let len = Math.hypot(normal.x, normal.y);
+                    if (len !== 0) axes.push({ x: normal.x / len, y: normal.y / len });
+                }
+            });
+
+            let overlap = Infinity; let smallestAxis = null;
             for (let axis of axes) {
-                const len = Math.hypot(axis.x, axis.y); if (len === 0) continue;
-                axis.x /= len; axis.y /= len;
                 let minA = Infinity, maxA = -Infinity, minB = Infinity, maxB = -Infinity;
-                for (let p of polyA) { const proj = p.x*axis.x + p.y*axis.y; minA = Math.min(minA, proj); maxA = Math.max(maxA, proj); }
-                for (let p of polyB) { const proj = p.x*axis.x + p.y*axis.y; minB = Math.min(minB, proj); maxB = Math.max(maxB, proj); }
-                if (maxA <= minB || maxB <= minA) return false;
+                for (let p of polyA) { let proj = p.x * axis.x + p.y * axis.y; minA = Math.min(minA, proj); maxA = Math.max(maxA, proj); }
+                for (let p of polyB) { let proj = p.x * axis.x + p.y * axis.y; minB = Math.min(minB, proj); maxB = Math.max(maxB, proj); }
+                if (maxA <= minB || maxB <= minA) return false; 
+                let axisOverlap = Math.min(maxA - minB, maxB - minA);
+                if (axisOverlap < overlap) {
+                    overlap = axisOverlap; smallestAxis = axis;
+                    let cxA = rectA.x + rectA.w/2, cyA = rectA.y + rectA.h/2;
+                    let cxB = rectB.x + rectB.w/2, cyB = rectB.y + rectB.h/2;
+                    let dirX = cxA - cxB, dirY = cyA - cyB;
+                    if (dirX * axis.x + dirY * axis.y < 0) { smallestAxis = { x: -axis.x, y: -axis.y }; }
+                }
             }
-            return true;
+            return { overlap, axis: smallestAxis };
         }
+
+        function AABB(x1, y1, w1, h1, x2, y2, w2, h2) { return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2; }
 
         function getGridStep(meta) { const step = parseFloat(meta?.gridStep ?? 1); return (Number.isNaN(step) || step <= 0) ? 1 : Math.max(0.025, Math.min(step, 1)); }
         function floorToGridUnits(value, meta) { const step = getGridStep(meta); return Math.round(Math.floor(value / step) * step * 1000) / 1000; }
@@ -632,6 +729,10 @@
                 onSnapshot(collection(db, 'artifacts', appIdStr, 'public', 'data', 'level_records'), snap => {
                     window.g_level_records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 });
+                onSnapshot(collection(db, 'artifacts', appIdStr, 'public', 'data', 'audio'), snap => {
+                    window.g_audio = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    if(!document.getElementById('screen-menu').classList.contains('hidden')) updateAudioUI();
+                });
                 setInterval(() => { if(!document.getElementById('screen-editor').classList.contains('hidden')) updateEditorCam(); }, 16);
                 window.addEventListener('resize', resizeCanvases); resizeCanvases();
             } catch(e) { console.error(e); }
@@ -642,8 +743,18 @@
             if(saved && window.g_users) {
                 const u = window.g_users.find(x => x.id === saved);
                 if(u) {
-                    window.currentUser = u; if(!u.color) { u.color = '#00ffff'; u.glow = false; }
-                    document.getElementById('prof-color').value = u.color; document.getElementById('prof-glow').checked = u.glow;
+                    window.currentUser = u; 
+                    if(!u.color) { u.color = '#00ffff'; u.glow = false; }
+                    if(u.volMusic === undefined) u.volMusic = 100;
+                    if(u.volSfx === undefined) u.volSfx = 100;
+                    
+                    document.getElementById('prof-color').value = u.color; 
+                    document.getElementById('prof-glow').checked = u.glow;
+                    document.getElementById('prof-vol-music').value = u.volMusic;
+                    document.getElementById('prof-vol-sfx').value = u.volSfx;
+                    document.getElementById('prof-vol-music-val').innerText = u.volMusic + '%';
+                    document.getElementById('prof-vol-sfx-val').innerText = u.volSfx + '%';
+                    
                     if(document.getElementById('screen-login').classList.contains('hidden') === false){ showScreen('menu'); showSubMenu('play'); window.curFlt = 'all'; }
                     if(u.username === 'LtpMer') document.getElementById('admin-btn').classList.remove('hidden');
                 } else { localStorage.removeItem('ltp_maze_uid'); showScreen('login'); }
@@ -653,12 +764,19 @@
         window.handleAuth = async (type) => {
             const u = document.getElementById('auth-username').value.trim(), p = document.getElementById('auth-password').value.trim();
             if(!u || !p) return showMsg("Error", "Required fields empty.");
+            if(u.length < 3) return showMsg("Error", "Username must be at least 3 characters long.");
+            if(p.length < 5) return showMsg("Error", "Password must be at least 5 characters long.");
+            if(!isClean(u)) return showMsg("Error", "Please use an appropriate username.");
+            
             document.getElementById('login-loading').classList.remove('hidden');
             const ex = window.g_users.find(x => x.username.toLowerCase() === u.toLowerCase());
             if(type === 'register') {
                 if(ex) { document.getElementById('login-loading').classList.add('hidden'); return showMsg("Error", "Username taken."); }
                 const id = "u_" + Date.now();
-                await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', id), { username: u, password: btoa(p), bricks: 0, cp: 0, beaten: [], beatenVersions: {}, color: '#00ffff', glow: false });
+                await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', id), { 
+                    username: u, password: btoa(p), bricks: 0, cp: 0, beaten: [], beatenVersions: {}, 
+                    color: '#00ffff', glow: false, volMusic: 100, volSfx: 100 
+                });
                 localStorage.setItem('ltp_maze_uid', id);
             } else {
                 if(!ex || ex.password !== btoa(p)) { document.getElementById('login-loading').classList.add('hidden'); return showMsg("Error", "Invalid credentials."); }
@@ -669,11 +787,25 @@
 
         window.logout = () => { localStorage.removeItem('ltp_maze_uid'); window.currentUser = null; showScreen('login'); };
 
+        window.updateProfileVolUI = () => {
+            document.getElementById('prof-vol-music-val').innerText = document.getElementById('prof-vol-music').value + '%';
+            document.getElementById('prof-vol-sfx-val').innerText = document.getElementById('prof-vol-sfx').value + '%';
+            if (bgAudioObj) bgAudioObj.volume = getMusicVolume();
+        };
+
         window.saveProfileSettings = async () => {
             const c = document.getElementById('prof-color').value, g = document.getElementById('prof-glow').checked;
+            const vm = parseInt(document.getElementById('prof-vol-music').value) || 0;
+            const vs = parseInt(document.getElementById('prof-vol-sfx').value) || 0;
+            
             if(!window.currentUser) return;
-            await updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), { color: c, glow: g });
+            await updateDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id), { 
+                color: c, glow: g, volMusic: vm, volSfx: vs 
+            });
             window.currentUser.color = c; window.currentUser.glow = g;
+            window.currentUser.volMusic = vm; window.currentUser.volSfx = vs;
+            
+            if (bgAudioObj) bgAudioObj.volume = getMusicVolume();
         };
 
         window.deleteAccount = async () => { if(!confirm("Are you sure you want to permanently delete your account?")) return; await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'users', window.currentUser.id)); logout(); };
@@ -684,7 +816,7 @@
             if(id === 'editor' || id === 'play') resizeCanvases();
         };
         window.showSubMenu = (id) => {
-            ['play', 'leaderboard', 'admin', 'profile'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
+            ['play', 'leaderboard', 'admin', 'profile', 'audio'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
             document.getElementById('tab-' + id).classList.remove('hidden'); updateUI();
         };
         
@@ -697,6 +829,7 @@
 
             if(!document.getElementById('tab-play').classList.contains('hidden')) filterLevels(window.curFlt || 'all');
             if(!document.getElementById('tab-leaderboard').classList.contains('hidden')) loadLeaderboard(window.curLb || 'bricks');
+            if(!document.getElementById('tab-audio').classList.contains('hidden')) loadAudioList(window.curAudioType || 'song');
             if(!document.getElementById('tab-admin').classList.contains('hidden') && window.currentUser.username === 'LtpMer') loadAdminLevels();
         }
 
@@ -721,6 +854,12 @@
             renderLevelList(window.g_levels.filter(x => { if (x.private && x.authorId !== window.currentUser.id) return false; return (x.numericId === num) || (x.name.toLowerCase().includes(q)); }));
         };
 
+        window.deleteLevel = async (id) => {
+            if(confirm("Are you sure you want to delete this level forever?")) {
+                await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'levels', id));
+            }
+        };
+
         function renderLevelList(list) {
             const c = document.getElementById('level-list'); c.innerHTML = '';
             if(list.length === 0) { c.innerHTML = '<div class="text-center text-slate-500 mt-10">No levels found.</div>'; return; }
@@ -740,9 +879,10 @@
                 c.innerHTML += `
                     <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center hover:border-indigo-500 transition gap-3 md:gap-0">
                         <div><h4 class="font-bold text-base md:text-lg">${l.name} <span class="text-slate-500 text-xs md:text-sm">#${l.numericId}</span> ${priv} ${bHtml} ${sched}</h4><p class="text-xs md:text-sm text-slate-400">By ${l.authorName} | Diff: <span class="text-amber-400">${l.difficulty||'Unrated'}</span> | Qual: <span class="text-fuchsia-400">${(l.rating && l.rating !== 'Daily' && l.rating !== 'Weekly') ? l.rating : 'Unrated'}</span></p></div>
-                        <div class="flex gap-2 w-full md:w-auto">
+                        <div class="flex gap-2 w-full md:w-auto flex-wrap">
                             <button onclick="showLevelLeaderboard('${l.id}', '${l.name.replace(/'/g, "\\'")}')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded-lg text-sm font-semibold transition flex-1 md:flex-none">🏆 Times</button>
                             ${l.authorId === window.currentUser.id || window.currentUser.username === 'LtpMer' ? `<button onclick="editLevel('${l.id}')" class="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">Edit</button>` : ''}
+                            ${l.authorId === window.currentUser.id || window.currentUser.username === 'LtpMer' ? `<button onclick="deleteLevel('${l.id}')" class="flex-1 md:flex-none bg-rose-700 hover:bg-rose-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">Delete</button>` : ''}
                             <button onclick="playLevel('${l.id}')" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-lg font-bold shadow-lg transition">Play</button>
                         </div>
                     </div>`;
@@ -769,6 +909,77 @@
                 c.innerHTML += `<div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 flex justify-between items-center text-sm md:text-base"><div class="flex items-center gap-2 md:gap-4"><span class="text-lg md:text-xl font-bold text-slate-500 w-6 md:w-8">#${i+1}</span><span class="font-bold ${u.username==='LtpMer'?'text-rose-400':'text-slate-200'}">${u.username}</span></div><div class="font-bold ${t==='bricks'?'text-amber-400':'text-fuchsia-400'}">${u[t]||0} ${t.toUpperCase()}</div></div>`;
             });
         };
+
+        window.updateAudioUI = () => {
+            loadAudioList(window.curAudioType || 'song');
+            
+            const sel = document.getElementById('cfg-song');
+            if(sel) {
+                let currentVal = sel.value;
+                sel.innerHTML = '<option value="">None</option>' + window.g_audio.filter(a=>a.type==='song').map(a => `<option value="${a.id}">${a.name} by ${a.authorName}</option>`).join('');
+                if(currentVal) sel.value = currentVal;
+            }
+        };
+
+        window.loadAudioList = (type) => {
+            window.curAudioType = type;
+            ['song', 'sfx'].forEach(x => { let b = document.getElementById('btn-aud-' + x); if(b){ b.classList.remove('active', 'text-indigo-400'); b.classList.add('text-slate-500'); }});
+            let actBtn = document.getElementById('btn-aud-' + type); if(actBtn){ actBtn.classList.add('active', 'text-indigo-400'); actBtn.classList.remove('text-slate-500'); }
+            
+            const c = document.getElementById('audio-list'); c.innerHTML = '';
+            let list = window.g_audio.filter(a => a.type === type).sort((a,b) => b.timestamp - a.timestamp);
+            if(list.length === 0) { c.innerHTML = '<div class="text-center text-slate-500 mt-10">No audio found.</div>'; return; }
+            list.forEach(a => {
+                c.innerHTML += `
+                    <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0">
+                        <div class="flex-1 w-full mr-4">
+                            <h4 class="font-bold text-base md:text-lg text-blue-300">${a.name}</h4>
+                            <p class="text-xs md:text-sm text-slate-400 mb-2">By ${a.authorName}</p>
+                            <audio controls src="${a.url}" class="h-8 w-full max-w-sm"></audio>
+                        </div>
+                        <div class="flex gap-2">
+                            ${a.authorId === window.currentUser.id || window.currentUser.username === 'LtpMer' ? `<button onclick="deleteAudio('${a.id}')" class="bg-rose-700 hover:bg-rose-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition">Delete</button>` : ''}
+                        </div>
+                    </div>`;
+            });
+        };
+
+        window.saveAudio = async () => {
+            const name = document.getElementById('audio-name').value.trim();
+            const url = document.getElementById('audio-url').value.trim();
+            const type = document.getElementById('audio-type').value;
+            if(!name || !url) return showMsg("Error", "Name and URL are required.");
+            if(!isClean(name)) return showMsg("Error", "Please use an appropriate name for the audio track.");
+            
+            const d = { name, url, type, authorId: window.currentUser.id, authorName: window.currentUser.username, timestamp: Date.now() };
+            try {
+                const id = "aud_" + Date.now();
+                await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'audio', id), d);
+                document.getElementById('audio-name').value = ''; document.getElementById('audio-url').value = '';
+                showMsg("Success", "Audio posted successfully!");
+            } catch(e) { showMsg("Error", e.message); }
+        };
+
+        window.deleteAudio = async (id) => {
+            if(confirm("Are you sure you want to delete this audio track?")) {
+                await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'audio', id));
+            }
+        };
+
+        function playSong(audioId) {
+            if(bgAudioObj) { bgAudioObj.pause(); bgAudioObj = null; }
+            if(!audioId) return;
+            const a = window.g_audio.find(x => x.id === audioId);
+            if(a && a.url) {
+                bgAudioObj = new Audio(a.url);
+                bgAudioObj.loop = true;
+                bgAudioObj.volume = getMusicVolume();
+                bgAudioObj.play().catch(e=>console.log("Audio play blocked by browser.", e));
+            }
+        }
+        function stopSong() {
+            if(bgAudioObj) { bgAudioObj.pause(); bgAudioObj = null; }
+        }
 
         window.loadAdminLevels = () => {
             const c = document.getElementById('admin-list'); c.innerHTML = '';
@@ -856,20 +1067,36 @@
             drawEditor();
         };
 
+        window.toggleMobilePan = () => {
+            isMobilePanMode = !isMobilePanMode;
+            document.getElementById('btn-mobile-pan').innerText = isMobilePanMode ? '🤚 Pan: ON' : '🤚 Pan: OFF';
+            document.getElementById('btn-mobile-pan').classList.toggle('bg-indigo-600', isMobilePanMode);
+        };
+
         window.openEditor = () => { 
             showScreen('editor'); window.editId = null; window.e_verified = false; e_blocks = []; e_cam = {x:0, y:0, zoom:1}; 
-            e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layers: [{name:"L1"}, {name:"L2"}, {name:"L3"}], gridStep: 1, brushSize: 1 }; 
+            e_meta = { width: 40, height: 40, zoom: 1, maxHealth: 3, layers: [{name:"L1"}, {name:"L2"}, {name:"L3"}], gridStep: 1, brushSize: 1, songId: "", volMusic: 100, volSfx: 100 }; 
             e_history = []; e_redoStack = []; e_previewMode = 0; document.getElementById('btn-preview').innerText = '👁️ Normal';
+            isMobilePanMode = false; document.getElementById('btn-mobile-pan').innerText = '🤚 Pan: OFF'; document.getElementById('btn-mobile-pan').classList.remove('bg-indigo-600');
             setLayer(0); setTool('select'); renderSavedColorsUI(); drawEditor(); 
         };
         window.closeEditor = () => { if(confirm("Exit Editor? Unsaved changes will be lost.")) showScreen('menu'); };
         
         window.openLevelSettings = () => {
             document.getElementById('cfg-width').value = e_meta.width; document.getElementById('cfg-height').value = e_meta.height;
-            document.getElementById('cfg-zoom').value = e_meta.zoom; document.getElementById('cfg-grid-step').value = e_meta.gridStep || 1; document.getElementById('cfg-brush-size').value = e_meta.brushSize || 1; document.getElementById('cfg-health').value = e_meta.maxHealth;
+            document.getElementById('cfg-zoom').value = e_meta.zoom; document.getElementById('cfg-grid-step').value = e_meta.gridStep || 1; 
+            document.getElementById('cfg-brush-size').value = e_meta.brushSize || 1; document.getElementById('cfg-health').value = e_meta.maxHealth;
+            document.getElementById('cfg-vol-music').value = e_meta.volMusic !== undefined ? e_meta.volMusic : 100;
+            document.getElementById('cfg-vol-sfx').value = e_meta.volSfx !== undefined ? e_meta.volSfx : 100;
+            
+            const sel = document.getElementById('cfg-song');
+            sel.innerHTML = '<option value="">None</option>' + window.g_audio.filter(a=>a.type==='song').map(a => `<option value="${a.id}">${a.name} by ${a.authorName}</option>`).join('');
+            sel.value = e_meta.songId || "";
+
             document.getElementById('modal-level-settings').classList.remove('hidden');
         };
         window.closeLevelSettings = () => document.getElementById('modal-level-settings').classList.add('hidden');
+        
         window.applyLevelSettings = () => {
             const oldStep = e_meta.gridStep || 1;
             const newStep = getGridStep({ gridStep: parseFloat(document.getElementById('cfg-grid-step').value) || 1 });
@@ -881,14 +1108,20 @@
             e_meta.gridStep = newStep;
             e_meta.brushSize = Math.max(1, Math.min(12, parseInt(document.getElementById('cfg-brush-size').value, 10) || 1));
             e_meta.maxHealth = parseInt(document.getElementById('cfg-health').value) || 3;
+            e_meta.songId = document.getElementById('cfg-song').value;
+            
+            e_meta.volMusic = parseInt(document.getElementById('cfg-vol-music').value);
+            if(isNaN(e_meta.volMusic)) e_meta.volMusic = 100;
+            e_meta.volSfx = parseInt(document.getElementById('cfg-vol-sfx').value);
+            if(isNaN(e_meta.volSfx)) e_meta.volSfx = 100;
             
             if (oldStep !== newStep) {
-                if (confirm(`Grid step changed from ${oldStep} to ${newStep}. Snap all existing blocks to perfectly align with the new grid?`)) {
+                if (confirm(`Grid step changed from ${oldStep} to ${newStep}. Scale and snap all existing blocks to correctly fit the new grid dimensions?`)) {
                     e_blocks.forEach(b => {
-                        b.x = Math.round(Math.round(b.x / newStep) * newStep * 1000) / 1000;
-                        b.y = Math.round(Math.round(b.y / newStep) * newStep * 1000) / 1000;
-                        if (b.sizeX !== undefined) b.sizeX = Math.max(newStep, Math.round(Math.round(b.sizeX / newStep) * newStep * 1000) / 1000);
-                        if (b.sizeY !== undefined) b.sizeY = Math.max(newStep, Math.round(Math.round(b.sizeY / newStep) * newStep * 1000) / 1000);
+                        b.x = Math.round(b.x / newStep) * newStep;
+                        b.y = Math.round(b.y / newStep) * newStep;
+                        if (b.sizeX !== undefined) b.sizeX = Math.max(newStep, Math.round(b.sizeX / newStep) * newStep);
+                        if (b.sizeY !== undefined) b.sizeY = Math.max(newStep, Math.round(b.sizeY / newStep) * newStep);
                         b.px = b.x * TILE; 
                         b.py = b.y * TILE;
                     });
@@ -965,13 +1198,14 @@
                 let action = document.getElementById(`prop-action-${i}`).value; let tData = {};
                 let revInput = document.getElementById(`tp-rev-${i}`); let revDelay = revInput ? parseFloat(revInput.value) || 0 : 0;
                 
-                if(action==='CAMERA') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value,z:+document.getElementById(`tp-z-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
+                if(action==='CAMERA') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value,z:+document.getElementById(`tp-z-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value,rot:+document.getElementById(`tp-r-${i}`).value};
                 if(action==='MOVE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,mx:+document.getElementById(`tp-mx-${i}`).value,my:+document.getElementById(`tp-my-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                 if(action==='ROTATE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,centerTag:document.getElementById(`tp-center-tag-${i}`).value,ang:+document.getElementById(`tp-ang-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                 if(action==='SET_PROPERTY') tData = {tag:document.getElementById(`tp-tag-${i}`).value,prop:document.getElementById(`tp-prop-${i}`).value,val:document.getElementById(`tp-val-${i}`).value};
                 if(action==='TELEPORT_PLAYER') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value};
                 if(action==='PLAYER_SPEED') tData = {val:+document.getElementById(`tp-val-${i}`).value};
                 if(action==='STOP_LOOP') tData = {tag:document.getElementById(`tp-tag-${i}`).value};
+                if(action==='PLAY_SOUND') tData = {audioId:document.getElementById(`tp-snd-${i}`).value};
                 tData.revertDelay = revDelay;
                 return { action, tData };
             });
@@ -996,6 +1230,7 @@
                             <option value="ROTATE_TAG" ${act.action==='ROTATE_TAG'?'selected':''}>Rotate Tagged Block</option>
                             <option value="SET_PROPERTY" ${act.action==='SET_PROPERTY'?'selected':''}>Change Tagged Property</option>
                             <option value="STOP_LOOP" ${act.action==='STOP_LOOP'?'selected':''}>Stop Looping Trigger</option>
+                            <option value="PLAY_SOUND" ${act.action==='PLAY_SOUND'?'selected':''}>Play Sound Effect</option>
                         </select>
                     </label>
                     <div id="prop-trig-params-${idx}" class="flex flex-col gap-2"></div>
@@ -1026,7 +1261,8 @@
                 h = `<div class="grid grid-cols-2 gap-1"><label>Target X: <input type="number" id="tp-x-${idx}" value="${data.x||0}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
                      <label>Target Y: <input type="number" id="tp-y-${idx}" value="${data.y||0}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
                      <label>Zoom: <input type="number" step="0.1" id="tp-z-${idx}" value="${data.z||1}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
-                     <label>Dur (s): <input type="number" step="0.1" id="tp-dur-${idx}" value="${data.dur||1}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label></div>`;
+                     <label>Rotation(°): <input type="number" id="tp-r-${idx}" value="${data.rot||0}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
+                     <label class="col-span-2">Dur (s): <input type="number" step="0.1" id="tp-dur-${idx}" value="${data.dur||1}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label></div>`;
             } else if(action === 'MOVE_TAG') {
                 h = `<label>Target Tag: <input type="text" id="tp-tag-${idx}" value="${data.tag||''}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
                      <div class="grid grid-cols-3 gap-1"><label>Mov X: <input type="number" id="tp-mx-${idx}" value="${data.mx||0}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>
@@ -1043,6 +1279,9 @@
                      <label>Value: <input type="text" id="tp-val-${idx}" value="${data.val!==undefined?data.val:''}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label></div>`;
             } else if(action === 'STOP_LOOP') {
                 h = `<label>Target Tag: <input type="text" id="tp-tag-${idx}" value="${data.tag||''}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"></label>`;
+            } else if(action === 'PLAY_SOUND') {
+                let options = window.g_audio.filter(a=>a.type==='sfx').map(a => `<option value="${a.id}" ${data.audioId===a.id?'selected':''}>${a.name}</option>`).join('');
+                h = `<label>Sound Effect: <select id="tp-snd-${idx}" class="bg-slate-900 p-1 w-full border border-slate-700 rounded"><option value="">Select a sound...</option>${options}</select></label>`;
             }
             p.innerHTML = h; Array.from(p.querySelectorAll('input, select')).forEach(i => i.addEventListener('change', window.saveTriggerActions));
         }
@@ -1095,18 +1334,21 @@
                 b.actions = Array.from(document.querySelectorAll('.trig-action-item')).map((div, i) => {
                     let action = document.getElementById(`prop-action-${i}`).value; let tData = {};
                     let revInput = document.getElementById(`tp-rev-${i}`); let revDelay = revInput ? parseFloat(revInput.value) || 0 : 0;
-                    if(action==='CAMERA') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value,z:+document.getElementById(`tp-z-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
+                    if(action==='CAMERA') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value,z:+document.getElementById(`tp-z-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value,rot:+document.getElementById(`tp-r-${i}`).value};
                     if(action==='MOVE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,mx:+document.getElementById(`tp-mx-${i}`).value,my:+document.getElementById(`tp-my-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                     if(action==='ROTATE_TAG') tData = {tag:document.getElementById(`tp-tag-${i}`).value,centerTag:document.getElementById(`tp-center-tag-${i}`).value,ang:+document.getElementById(`tp-ang-${i}`).value,dur:+document.getElementById(`tp-dur-${i}`).value};
                     if(action==='SET_PROPERTY') tData = {tag:document.getElementById(`tp-tag-${i}`).value,prop:document.getElementById(`tp-prop-${i}`).value,val:document.getElementById(`tp-val-${i}`).value};
                     if(action==='TELEPORT_PLAYER') tData = {x:+document.getElementById(`tp-x-${i}`).value,y:+document.getElementById(`tp-y-${i}`).value};
                     if(action==='PLAYER_SPEED') tData = {val:+document.getElementById(`tp-val-${i}`).value};
                     if(action==='STOP_LOOP') tData = {tag:document.getElementById(`tp-tag-${i}`).value};
+                    if(action==='PLAY_SOUND') tData = {audioId:document.getElementById(`tp-snd-${i}`).value};
                     tData.revertDelay = revDelay;
                     return { action, tData };
                 });
             }
             if(e_tool === 'emitter') {
+                b.emitOffsetX = parseFloat(document.getElementById('prop-emit-offx').value)||0; b.emitOffsetY = parseFloat(document.getElementById('prop-emit-offy').value)||0;
+                b.emitRadiusX = parseFloat(document.getElementById('prop-emit-radx').value)||0; b.emitRadiusY = parseFloat(document.getElementById('prop-emit-rady').value)||0;
                 b.emitLife = parseFloat(document.getElementById('prop-emit-life').value); b.emitSpread = parseFloat(document.getElementById('prop-emit-spread').value); b.emitSpeed = parseFloat(document.getElementById('prop-emit-speed').value);
                 b.emitGravity = parseFloat(document.getElementById('prop-emit-gravity').value); b.emitOrient = parseFloat(document.getElementById('prop-emit-orient').value); b.emitRot = parseFloat(document.getElementById('prop-emit-rot').value); b.emitRate = parseFloat(document.getElementById('prop-emit-rate').value);
             }
@@ -1114,6 +1356,9 @@
         }
 
         const handlePointerDown = e => {
+            if (e.touches && e.touches.length > 0 && isMobilePanMode) {
+                isDraggingCam = true; lastPanX = e.touches[0].clientX; lastPanY = e.touches[0].clientY; return;
+            }
             if(e_tool !== 'select' || e.button === 2) window.saveState();
 
             if(e.button === 2) { isErasing = true; beginPaintStroke(); handleDraw(e); return; }
@@ -1148,6 +1393,11 @@
         };
 
         const handlePointerMove = e => {
+            if (isDraggingCam && e.touches) {
+                let dx = e.touches[0].clientX - lastPanX; let dy = e.touches[0].clientY - lastPanY;
+                e_cam.x -= dx / e_cam.zoom; e_cam.y -= dy / e_cam.zoom;
+                lastPanX = e.touches[0].clientX; lastPanY = e.touches[0].clientY; drawEditor(); return;
+            }
             if(!isDragging && !isSelecting && !isDrawing && !isErasing) return;
             const pos = getMousePos(e); currentMouseX = pos.wx; currentMouseY = pos.wy;
             
@@ -1208,6 +1458,8 @@
                 renderAllTriggerActions();
             } else if (first.type === 'emitter') {
                 document.getElementById('prop-trigger-box').classList.add('hidden'); document.getElementById('prop-emitter-box').classList.remove('hidden');
+                setUI('prop-emit-offx', 'emitOffsetX', 0); setUI('prop-emit-offy', 'emitOffsetY', 0);
+                setUI('prop-emit-radx', 'emitRadiusX', 0); setUI('prop-emit-rady', 'emitRadiusY', 0);
                 setUI('prop-emit-life', 'emitLife', 1); setUI('prop-emit-spread', 'emitSpread', 360);
                 setUI('prop-emit-speed', 'emitSpeed', 100); setUI('prop-emit-gravity', 'emitGravity', 0);
                 setUI('prop-emit-orient', 'emitOrient', 0); setUI('prop-emit-rot', 'emitRot', 5); setUI('prop-emit-rate', 'emitRate', 10);
@@ -1222,7 +1474,7 @@
                 });
                 if(e_selectedIds.size > 0) syncUIForFirstProps();
             }
-            isDrawing = false; isErasing = false; isSelecting = false; isDragging = false; currentPaintStroke.clear(); drawEditor();
+            isDrawing = false; isErasing = false; isSelecting = false; isDragging = false; isDraggingCam = false; currentPaintStroke.clear(); drawEditor();
         };
 
         edCanvas.addEventListener('mousedown', handlePointerDown); edCanvas.addEventListener('mousemove', handlePointerMove); window.addEventListener('mouseup', handlePointerUp);
@@ -1244,14 +1496,47 @@
         window.addEventListener('keydown', e => { 
             window.e_keys[e.key.toLowerCase()] = true; 
             if (isPlaying && g_isPractice) {
-                if (e.key.toLowerCase() === 'z') setCheckpoint();
-                if (e.key.toLowerCase() === 'x') removeCheckpoint();
+                if (e.key.toLowerCase() === 'f' || e.key.toLowerCase() === 'z') setCheckpoint();
+                if (e.key.toLowerCase() === 'r' || e.key.toLowerCase() === 'x') removeCheckpoint();
             }
         });
         window.addEventListener('keyup', e => { window.e_keys[e.key.toLowerCase()] = false; });
         edCanvas.addEventListener('wheel', e => { e_cam.zoom -= e.deltaY * 0.001; e_cam.zoom = Math.max(0.1, Math.min(e_cam.zoom, 5)); drawEditor(); }, {passive: true});
 
-        function updateEditorCam() { let spd = 10 / e_cam.zoom; if(window.e_keys['w']) e_cam.y -= spd; if(window.e_keys['s']) e_cam.y += spd; if(window.e_keys['a']) e_cam.x -= spd; if(window.e_keys['d']) e_cam.x += spd; drawEditor(); }
+        let e_lastTime = performance.now();
+        function updateEditorCam() { 
+            let now = performance.now(); let dt = (now - e_lastTime) / 1000; e_lastTime = now;
+            let spd = 10 / e_cam.zoom; 
+            if(window.e_keys['w']) e_cam.y -= spd; if(window.e_keys['s']) e_cam.y += spd; if(window.e_keys['a']) e_cam.x -= spd; if(window.e_keys['d']) e_cam.x += spd; 
+
+            if(e_previewMode !== 2) {
+                for(let b of e_blocks) {
+                    if(b.type === 'emitter') {
+                        b.emitTimer = (b.emitTimer || 0) + dt;
+                        let rate = b.emitRate || 10; let interval = 1 / rate;
+                        let bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                        while(b.emitTimer > interval) {
+                            b.emitTimer -= interval;
+                            let sx = b.x*TILE + bwX/2 + (b.emitOffsetX||0), sy = b.y*TILE + bwY/2 + (b.emitOffsetY||0);
+                            sx += (Math.random()*2-1)*(b.emitRadiusX||0); sy += (Math.random()*2-1)*(b.emitRadiusY||0);
+                            let baseAng = (b.emitOrient || 0) * Math.PI / 180, spreadAng = ((Math.random()-0.5) * (b.emitSpread !== undefined ? b.emitSpread : 360)) * Math.PI / 180;
+                            let pSpd = (b.emitSpeed !== undefined ? b.emitSpeed : 100), rotSpd = (b.emitRot || 5), life = (b.emitLife || 1), grav = (b.emitGravity || 0);
+                            e_particles.push({
+                                x: sx, y: sy, vx: Math.cos(baseAng + spreadAng) * pSpd, vy: Math.sin(baseAng + spreadAng) * pSpd,
+                                life: life, t: 0, size: 2 + Math.random()*4, color: b.color || '#ffffff', rot: Math.random()*Math.PI*2, rotSpeed: rotSpd, gravity: grav
+                            });
+                        }
+                    }
+                }
+                for (let i = e_particles.length - 1; i >= 0; i--) {
+                    let p = e_particles[i]; p.t += dt; p.vy += p.gravity * dt;
+                    p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.98; p.vy *= 0.98; if(p.rotSpeed) p.rot += p.rotSpeed * dt;
+                    if (p.t >= p.life) e_particles.splice(i, 1);
+                }
+            }
+
+            drawEditor(); 
+        }
 
         function drawVisualArrow(ctx, fromX, fromY, toX, toY, color = '#f472b6', width = 2) {
             ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width; ctx.setLineDash([6, 4]);
@@ -1296,17 +1581,22 @@
             sorted.forEach(b => {
                 const isCurrentLayer = (b.layer === e_layer);
                 
-                if (b.invisible && e_previewMode === 0) {
-                    edCtx.save();
-                    const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
-                    edCtx.translate(b.x*TILE + bwX/2, b.y*TILE + bwY/2); edCtx.rotate((b.rotation||0) * Math.PI/180);
-                    edCtx.globalAlpha = 0.15;
-                    edCtx.strokeStyle = b.color || '#fff'; edCtx.lineWidth = 1; edCtx.setLineDash([4, 4]);
-                    edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY);
-                    edCtx.fillStyle = b.color || '#fff'; edCtx.globalAlpha = 0.05; edCtx.fillRect(-bwX/2, -bwY/2, bwX, bwY);
-                    if(e_selectedIds.has(b.id)) { edCtx.globalAlpha = 1; edCtx.strokeStyle = '#fff'; edCtx.lineWidth = 2; edCtx.setLineDash([]); edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY); }
-                    edCtx.restore();
-                    return;
+                if (b.invisible) {
+                    if (e_previewMode === 0) {
+                        edCtx.save();
+                        const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                        edCtx.translate(b.x*TILE + bwX/2, b.y*TILE + bwY/2); edCtx.rotate((b.rotation||0) * Math.PI/180);
+                        edCtx.globalAlpha = 0.15;
+                        edCtx.strokeStyle = b.color || '#fff'; edCtx.lineWidth = 1; edCtx.setLineDash([4, 4]);
+                        edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY);
+                        edCtx.fillStyle = b.color || '#fff'; edCtx.globalAlpha = 0.05; edCtx.fillRect(-bwX/2, -bwY/2, bwX, bwY);
+                        if(e_selectedIds.has(b.id)) { edCtx.globalAlpha = 1; edCtx.strokeStyle = '#fff'; edCtx.lineWidth = 2; edCtx.setLineDash([]); edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY); }
+                        edCtx.restore();
+                        return;
+                    } else if (e_previewMode === 1) {
+                        // In Invisible mode, show it completely normally but with alpha = 1 override!
+                        b.tempAlphaOverride = 1;
+                    }
                 }
 
                 edCtx.save(); 
@@ -1321,11 +1611,13 @@
                          edCtx.fillStyle = '#10b981'; edCtx.fillText(">>>", 0, 4);
                     }
                 } else {
-                    edCtx.globalAlpha = isCurrentLayer ? (b.alpha !== undefined ? parseFloat(b.alpha) : 1) : (b.alpha !== undefined ? parseFloat(b.alpha) : 1) * 0.3; 
+                    let calcAlpha = (b.tempAlphaOverride !== undefined) ? b.tempAlphaOverride : (b.alpha !== undefined ? parseFloat(b.alpha) : 1);
+                    edCtx.globalAlpha = isCurrentLayer ? calcAlpha : calcAlpha * 0.3; 
                     const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
                     edCtx.translate(b.x*TILE + bwX/2, b.y*TILE + bwY/2); edCtx.rotate((b.rotation||0) * Math.PI/180);
                     drawBlockContent(edCtx, b, bwX, bwY, e_cam.zoom);
-                    if(b.invisible) { edCtx.strokeStyle = '#fff'; edCtx.setLineDash([2, 2]); edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY); edCtx.setLineDash([]); }
+                    if(b.invisible && e_previewMode === 1) { edCtx.strokeStyle = '#fff'; edCtx.setLineDash([2, 2]); edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY); edCtx.setLineDash([]); }
+                    b.tempAlphaOverride = undefined;
                 }
                 
                 const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
@@ -1341,6 +1633,17 @@
                 if(e_selectedIds.has(b.id)) { edCtx.strokeStyle = '#fff'; edCtx.lineWidth = 2; edCtx.strokeRect(-bwX/2, -bwY/2, bwX, bwY); }
                 edCtx.restore();
             });
+
+            if(e_previewMode !== 2) {
+                e_particles.forEach(pt => {
+                    edCtx.save(); 
+                    let prog = pt.t / pt.life; edCtx.globalAlpha = Math.max(0, 1 - prog); 
+                    edCtx.translate(pt.x, pt.y); edCtx.rotate(pt.rot); 
+                    let curSize = pt.size * (1 - prog * 0.5); edCtx.fillStyle = pt.color; 
+                    edCtx.fillRect(-curSize / 2, -curSize / 2, curSize, curSize); 
+                    edCtx.restore();
+                });
+            }
 
             sorted.forEach(b => {
                 if (b.type === 'trigger' && b.layer === e_layer) {
@@ -1383,8 +1686,9 @@
         window.editLevel = (id) => {
             const l = window.g_levels.find(x => x.id === id); if(!l) return;
             document.getElementById('editor-level-name').value = l.name;
-            e_meta = l.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3, layers: [{name:"L1"},{name:"L2"},{name:"L3"}], gridStep: 1, brushSize: 1 };
+            e_meta = l.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3, layers: [{name:"L1"},{name:"L2"},{name:"L3"}], gridStep: 1, brushSize: 1, songId: "", volMusic: 100, volSfx: 100 };
             window.e_verified = false; e_history = []; e_redoStack = []; e_previewMode = 0; document.getElementById('btn-preview').innerText = '👁️ Normal';
+            isMobilePanMode = false; document.getElementById('btn-mobile-pan').innerText = '🤚 Pan: OFF'; document.getElementById('btn-mobile-pan').classList.remove('bg-indigo-600');
             
             try { 
                 const p = JSON.parse(l.grid);
@@ -1399,6 +1703,7 @@
         window.saveLevel = async (isPriv) => {
             const n = document.getElementById('editor-level-name').value.trim();
             if(!n) return showMsg("Error", "Name required.");
+            if(!isClean(n)) return showMsg("Error", "Please use an appropriate level name.");
             if(!e_blocks.some(x=>x.type==='start')) return showMsg("Error", "Need a Start block.");
             let canWin = e_blocks.some(x=>x.type==='end' || (x.type==='trigger' && (x.actions||[{action:x.action}]).some(a=>a.action==='WIN')));
             if(!canWin) return showMsg("Warning", "No End or WIN trigger. Level impossible?");
@@ -1455,17 +1760,19 @@
             showScreen('play'); document.getElementById('play-level-title').innerText = lvl.name;
             const status = document.getElementById('play-status'); status.innerText = ""; status.classList.remove('text-rose-500', 'text-emerald-500');
             
-            g_meta = { ...(lvl.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3 }), isTest: lvl.isTest, levelId: lvl.id, originalBlocks: blocks, levelObj: lvl };
+            g_meta = { ...(lvl.meta || { width: 40, height: 40, zoom: 1, maxHealth: 3, volMusic: 100, volSfx: 100 }), isTest: lvl.isTest, levelId: lvl.id, originalBlocks: blocks, levelObj: lvl };
             g_blocks = JSON.parse(JSON.stringify(blocks)).map(b => { b.px = b.x * TILE; b.py = b.y * TILE; b.triggered = false; b.loopTimer = 0; return b; });
 
             g_players = [];
             g_blocks.filter(b=>b.type==='start').forEach(b => { const bwX = TILE * getBlockSizeX(b); g_players.push({ id: 'p_'+Date.now(), x: b.px+bwX/4, y: b.py+bwX/4, w: bwX/2, h: bwX/2, health: g_meta.maxHealth, invuln: 0, speedMult: 1 }); });
             if(g_players.length === 0) g_players.push({ id: 'p_'+Date.now(), x: 0, y: 0, w: TILE/2, h: TILE/2, health: g_meta.maxHealth, invuln: 0, speedMult: 1 });
 
-            g_cam = { x: g_players[0].x, y: g_players[0].y, zoom: g_meta.zoom || 1, targetX: null, targetY: null, active: false };
+            g_cam = { x: g_players[0].x, y: g_players[0].y, zoom: g_meta.zoom || 1, rot: 0, targetX: null, targetY: null, active: false };
             g_tweens = []; g_reverts = []; isPlaying = true; g_timer = 0;
             if(g_loop) cancelAnimationFrame(g_loop);
             g_particles = []; window.e_keys = {}; lastTime = performance.now(); 
+
+            if(g_meta.songId) playSong(g_meta.songId);
 
             g_blocks.filter(b => b.type === 'trigger' && b.onEnter).forEach(b => {
                 b.triggered = true; let actions = b.actions || [{action: b.action, tData: b.tData}];
@@ -1489,12 +1796,10 @@
         }
 
         window.stopPlay = () => { 
-            isPlaying = false; cancelAnimationFrame(g_loop); 
+            isPlaying = false; cancelAnimationFrame(g_loop); stopSong();
             if(g_isPractice) togglePractice(true); 
             if (g_meta && g_meta.isTest) showScreen('editor'); else showScreen('menu'); 
         };
-
-        function AABB(x1, y1, w1, h1, x2, y2, w2, h2) { return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2; }
 
         function pushBlock(block, mx, my) {
             let bwX = TILE * getBlockSizeX(block), bwY = TILE * getBlockSizeY(block), nx = block.px + mx, ny = block.py + my; const solids = g_blocks.filter(b => b.solid);
@@ -1532,16 +1837,13 @@
                 let ease = prog < 0.5 ? 2 * prog * prog : 1 - Math.pow(-2 * prog + 2, 2) / 2;
                 if(tw.type === 'move') { tw.obj.px = tw.startX + (tw.endX - tw.startX)*ease; tw.obj.py = tw.startY + (tw.endY - tw.startY)*ease; tw.obj.x = tw.obj.px / TILE; tw.obj.y = tw.obj.py / TILE; }
                 if(tw.type === 'rotate') { tw.obj.rotation = tw.startR + (tw.endR - tw.startR)*ease; }
-                if(tw.type === 'camera') { g_cam.x = tw.startX + (tw.endX - tw.startX)*ease; g_cam.y = tw.startY + (tw.endY - tw.startY)*ease; g_cam.zoom = tw.startZ + (tw.endZ - tw.startZ)*ease; }
+                if(tw.type === 'camera') { g_cam.x = tw.startX + (tw.endX - tw.startX)*ease; g_cam.y = tw.startY + (tw.endY - tw.startY)*ease; g_cam.zoom = tw.startZ + (tw.endZ - tw.startZ)*ease; g_cam.rot = tw.startRot + (tw.endRot - tw.startRot)*ease; }
                 if(prog >= 1) { if(tw.type==='camera') g_cam.active = false; g_tweens.splice(i, 1); }
             }
 
             for(let i=g_reverts.length-1; i>=0; i--) {
                 let rev = g_reverts[i]; rev.t -= dt;
-                if(rev.t <= 0) {
-                    executeRevert(rev);
-                    g_reverts.splice(i, 1);
-                }
+                if(rev.t <= 0) { executeRevert(rev); g_reverts.splice(i, 1); }
             }
 
             let alive = 0; const solids = g_blocks.filter(b => b.solid);
@@ -1551,8 +1853,14 @@
 
                 const baseSpd = 200 * dt * (p.speedMult || 1);
                 let dx = 0, dy = 0;
-                if(window.e_keys['w']||window.e_keys['arrowup']) dy -= baseSpd; if(window.e_keys['s']||window.e_keys['arrowdown']) dy += baseSpd;
-                if(window.e_keys['a']||window.e_keys['arrowleft']) dx -= baseSpd; if(window.e_keys['d']||window.e_keys['arrowright']) dx += baseSpd;
+                
+                // Camera relative movement
+                let r = g_cam.rot * Math.PI / 180;
+                let inX = 0, inY = 0;
+                if(window.e_keys['w']||window.e_keys['arrowup']) inY -= baseSpd; if(window.e_keys['s']||window.e_keys['arrowdown']) inY += baseSpd;
+                if(window.e_keys['a']||window.e_keys['arrowleft']) inX -= baseSpd; if(window.e_keys['d']||window.e_keys['arrowright']) inX += baseSpd;
+                dx = inX * Math.cos(-r) - inY * Math.sin(-r);
+                dy = inX * Math.sin(-r) + inY * Math.cos(-r);
 
                 for(let b of g_blocks) {
                     if(b.conveyorX || b.conveyorY) {
@@ -1561,33 +1869,33 @@
                     }
                 }
 
-                let nextX = p.x + dx; let hitX = false;
+                p.x += dx;
                 for(let b of solids) {
-                    const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                    let bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
                     if (b.rotation) {
-                        if (satCollide({x: nextX, y: p.y, w: p.w, h: p.h}, {x: b.px, y: b.py, w: bwX, h: bwY, rotation: b.rotation})) { hitX = true; break; }
+                        let res = satCollideExt({x: p.x, y: p.y, w: p.w, h: p.h}, {x: b.px, y: b.py, w: bwX, h: bwY, rotation: b.rotation});
+                        if (res) { p.x += res.axis.x * res.overlap; p.y += res.axis.y * res.overlap; }
                     } else {
-                        if (AABB(nextX, p.y, p.w, p.h, b.px, b.py, bwX, bwY)) {
+                        if (AABB(p.x, p.y, p.w, p.h, b.px, b.py, bwX, bwY)) {
                             if(b.pushblock && dx !== 0 && pushBlock(b, dx, 0)) continue;
-                            hitX = true; if (dx > 0) p.x = b.px - p.w; else if (dx < 0) p.x = b.px + bwX; break;
+                            if (dx > 0) p.x = b.px - p.w; else if (dx < 0) p.x = b.px + bwX;
                         }
                     }
                 }
-                if(!hitX) p.x = nextX;
                 
-                let nextY = p.y + dy; let hitY = false;
+                p.y += dy;
                 for(let b of solids) {
-                    const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
+                    let bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
                     if (b.rotation) {
-                        if (satCollide({x: p.x, y: nextY, w: p.w, h: p.h}, {x: b.px, y: b.py, w: bwX, h: bwY, rotation: b.rotation})) { hitY = true; break; }
+                        let res = satCollideExt({x: p.x, y: p.y, w: p.w, h: p.h}, {x: b.px, y: b.py, w: bwX, h: bwY, rotation: b.rotation});
+                        if (res) { p.x += res.axis.x * res.overlap; p.y += res.axis.y * res.overlap; }
                     } else {
-                        if (AABB(p.x, nextY, p.w, p.h, b.px, b.py, bwX, bwY)) {
+                        if (AABB(p.x, p.y, p.w, p.h, b.px, b.py, bwX, bwY)) {
                             if(b.pushblock && dy !== 0 && pushBlock(b, 0, dy)) continue;
-                            hitY = true; if (dy > 0) p.y = b.py - p.h; else if (dy < 0) p.y = b.py + bwY; break;
+                            if (dy > 0) p.y = b.py - p.h; else if (dy < 0) p.y = b.py + bwY;
                         }
                     }
                 }
-                if(!hitY) p.y = nextY;
 
                 if(p.x < 0) p.x = 0; if(p.y < 0) p.y = 0;
                 if(p.x > g_meta.width*TILE - p.w) p.x = g_meta.width*TILE - p.w;
@@ -1638,10 +1946,12 @@
                     b.emitTimer = (b.emitTimer || 0) + dt; const rate = b.emitRate || 10; const interval = 1 / rate;
                     while(b.emitTimer > interval) {
                         b.emitTimer -= interval;
+                        let sx = b.px + bwX/2 + (b.emitOffsetX || 0), sy = b.py + bwY/2 + (b.emitOffsetY || 0);
+                        sx += (Math.random() * 2 - 1) * (b.emitRadiusX || 0); sy += (Math.random() * 2 - 1) * (b.emitRadiusY || 0);
                         const baseAng = (b.emitOrient || 0) * Math.PI / 180, spreadAng = ((Math.random()-0.5) * (b.emitSpread !== undefined ? b.emitSpread : 360)) * Math.PI / 180;
                         const spd = (b.emitSpeed !== undefined ? b.emitSpeed : 100), rotSpd = (b.emitRot || 5), life = (b.emitLife || 1), grav = (b.emitGravity || 0);
                         g_particles.push({
-                            x: b.px + bwX/2, y: b.py + bwY/2, vx: Math.cos(baseAng + spreadAng) * spd, vy: Math.sin(baseAng + spreadAng) * spd,
+                            x: sx, y: sy, vx: Math.cos(baseAng + spreadAng) * spd, vy: Math.sin(baseAng + spreadAng) * spd,
                             life: life, t: 0, size: 2 + Math.random()*4, color: b.color || '#ffffff', rot: Math.random()*Math.PI*2, rotSpeed: rotSpd, gravity: grav
                         });
                     }
@@ -1663,7 +1973,13 @@
         function handlePlayClick(e) {
             if(!isPlaying) return;
             const r = plCanvas.getBoundingClientRect(), rawX = e.clientX - r.left, rawY = e.clientY - r.top;
-            const worldX = (rawX - plCanvas.width/2) / g_cam.zoom + g_cam.x, worldY = (rawY - plCanvas.height/2) / g_cam.zoom + g_cam.y;
+            
+            let cx = rawX - plCanvas.width/2, cy = rawY - plCanvas.height/2;
+            let ang = - (g_cam.rot || 0) * Math.PI / 180;
+            let rx = cx * Math.cos(ang) - cy * Math.sin(ang);
+            let ry = cx * Math.sin(ang) + cy * Math.cos(ang);
+            
+            const worldX = rx / g_cam.zoom + g_cam.x, worldY = ry / g_cam.zoom + g_cam.y;
             
             g_blocks.filter(b => b.type === 'trigger' && b.clickable && !b.triggered).forEach(b => {
                 const bwX = TILE * getBlockSizeX(b), bwY = TILE * getBlockSizeY(b);
@@ -1698,11 +2014,8 @@
 
         function triggerAction(triggerBlock, actionObj) {
             let act = actionObj.action, td = actionObj.tData || {}, face = triggerBlock.particleFace || 0;
-            let revertDelay = td.revertDelay || 0;
-            let dur = td.dur || 1;
-            
-            let storedRevert = { t: dur + revertDelay, act: act, targets: [] };
-            let needsRevert = revertDelay > 0;
+            let revertDelay = td.revertDelay || 0; let dur = td.dur || 1;
+            let storedRevert = { t: dur + revertDelay, act: act, targets: [] }; let needsRevert = revertDelay > 0;
 
             if(act === 'DIE') { g_players.forEach(p => p.health = 0); loseGame(); } 
             else if (act === 'TELEPORT_PLAYER') { g_players.forEach(p => { p.x = (td.x||0)*TILE; p.y = (td.y||0)*TILE; }); }
@@ -1710,7 +2023,7 @@
                 if(needsRevert) g_players.forEach(p => storedRevert.targets.push({p:p, old: p.speedMult}));
                 g_players.forEach(p => p.speedMult = (td.val !== undefined ? td.val : 1)); 
             }
-            else if (act === 'CAMERA') { g_cam.active = true; g_tweens.push({ type: 'camera', startX: g_cam.x, startY: g_cam.y, startZ: g_cam.zoom, endX: td.x*TILE, endY: td.y*TILE, endZ: td.z, dur: td.dur, t: 0 }); } 
+            else if (act === 'CAMERA') { g_cam.active = true; g_tweens.push({ type: 'camera', startX: g_cam.x, startY: g_cam.y, startZ: g_cam.zoom, startRot: g_cam.rot||0, endX: td.x*TILE, endY: td.y*TILE, endZ: td.z, endRot: td.rot||0, dur: td.dur, t: 0 }); } 
             else if (act === 'MOVE_TAG' && td.tag) {
                 const targets = g_blocks.filter(b => b.tag === td.tag); spawnParticlesFromBlocks(targets, face);
                 targets.forEach(b => { 
@@ -1748,30 +2061,26 @@
                 });
             } else if (act === 'STOP_LOOP' && td.tag) {
                 g_blocks.filter(b => b.tag === td.tag).forEach(b => { b.isLoop = false; b.triggered = false; });
+            } else if (act === 'PLAY_SOUND' && td.audioId) {
+                let a = window.g_audio.find(x => x.id === td.audioId);
+                if(a && a.url) { 
+                    let sfx = new Audio(a.url); 
+                    sfx.volume = getSfxVolume();
+                    sfx.play().catch(e=>console.log(e)); 
+                }
             }
 
-            if(needsRevert && storedRevert.targets.length > 0) {
-                storedRevert.dur = dur;
-                g_reverts.push(storedRevert);
-            }
+            if(needsRevert && storedRevert.targets.length > 0) { storedRevert.dur = dur; g_reverts.push(storedRevert); }
         }
 
         function executeRevert(rev) {
             let dur = rev.dur || 1;
             if(rev.act === 'MOVE_TAG' || rev.act === 'ROTATE_TAG') {
                 rev.targets.forEach(t => {
-                    if(rev.act === 'MOVE_TAG' || t.oldX !== undefined) {
-                        g_tweens.push({ type: 'move', obj: t.b, startX: t.b.px, startY: t.b.py, endX: t.oldX, endY: t.oldY, dur: dur, t: 0 });
-                    }
-                    if(rev.act === 'ROTATE_TAG') {
-                        g_tweens.push({ type: 'rotate', obj: t.b, startR: t.b.rotation, endR: t.oldR, dur: dur, t: 0 });
-                    }
+                    if(rev.act === 'MOVE_TAG' || t.oldX !== undefined) { g_tweens.push({ type: 'move', obj: t.b, startX: t.b.px, startY: t.b.py, endX: t.oldX, endY: t.oldY, dur: dur, t: 0 }); }
+                    if(rev.act === 'ROTATE_TAG') { g_tweens.push({ type: 'rotate', obj: t.b, startR: t.b.rotation, endR: t.oldR, dur: dur, t: 0 }); }
                 });
-            } else if(rev.act === 'SET_PROPERTY') {
-                rev.targets.forEach(t => { t.b[t.prop] = t.oldVal; });
-            } else if(rev.act === 'PLAYER_SPEED') {
-                rev.targets.forEach(t => { t.p.speedMult = t.old; });
-            }
+            } else if(rev.act === 'SET_PROPERTY') { rev.targets.forEach(t => { t.b[t.prop] = t.oldVal; }); } else if(rev.act === 'PLAYER_SPEED') { rev.targets.forEach(t => { t.p.speedMult = t.old; }); }
         }
 
         async function saveBestTime() {
@@ -1787,7 +2096,7 @@
 
         function winGame() {
             isPlaying = false; const status = document.getElementById('play-status'); status.innerText = "LEVEL CLEARED!"; status.classList.add('text-emerald-500');
-            saveBestTime();
+            saveBestTime(); stopSong();
             setTimeout(() => {
                 const wasPractice = g_isPractice;
                 if(g_isPractice) togglePractice(true); 
@@ -1797,9 +2106,7 @@
                     if(!wasPractice) {
                         if(!window.currentUser.beaten.includes(g_meta.levelId)) {
                             window.currentUser.beaten.push(g_meta.levelId);
-                            if (g_meta.levelObj.rating) {
-                                window.currentUser.bricks = (window.currentUser.bricks || 0) + (DIFF_BRICKS[g_meta.levelObj.difficulty] || 0);
-                            }
+                            if (g_meta.levelObj.rating) { window.currentUser.bricks = (window.currentUser.bricks || 0) + (DIFF_BRICKS[g_meta.levelObj.difficulty] || 0); }
                         }
                         window.currentUser.beatenVersions = window.currentUser.beatenVersions || {};
                         window.currentUser.beatenVersions[g_meta.levelId] = g_meta.levelObj.version || 1;
@@ -1812,13 +2119,10 @@
 
         function loseGame() {
             isPlaying = false; const status = document.getElementById('play-status'); status.innerText = "YOU DIED!"; status.classList.add('text-rose-500');
+            stopSong();
             setTimeout(() => { 
                 if(g_isPractice) { 
-                    if (g_checkpoints.length > 0) {
-                        restoreFromCheckpoint();
-                    } else {
-                        startGame(g_meta.originalBlocks, g_meta.levelObj);
-                    }
+                    if (g_checkpoints.length > 0) { restoreFromCheckpoint(); } else { startGame(g_meta.originalBlocks, g_meta.levelObj); }
                 }
                 else if(g_meta.isTest) showScreen('editor'); 
                 else startGame(g_meta.originalBlocks, g_meta.levelObj); 
@@ -1827,7 +2131,8 @@
 
         function renderGame(time) {
             plCtx.fillStyle = '#0f172a'; plCtx.fillRect(0, 0, plCanvas.width, plCanvas.height);
-            plCtx.save(); plCtx.translate(plCanvas.width/2, plCanvas.height/2); plCtx.scale(g_cam.zoom, g_cam.zoom); plCtx.translate(-g_cam.x, -g_cam.y);
+            plCtx.save(); plCtx.translate(plCanvas.width/2, plCanvas.height/2); 
+            plCtx.rotate((g_cam.rot || 0) * Math.PI / 180); plCtx.scale(g_cam.zoom, g_cam.zoom); plCtx.translate(-g_cam.x, -g_cam.y);
 
             const sortedBlocks = [...g_blocks].sort((a,b) => a.layer - b.layer);
             sortedBlocks.forEach(b => {
@@ -1841,11 +2146,9 @@
 
             g_particles.forEach(pt => {
                 plCtx.save(); 
-                let prog = pt.t / pt.life;
-                plCtx.globalAlpha = Math.max(0, 1 - prog); 
+                let prog = pt.t / pt.life; plCtx.globalAlpha = Math.max(0, 1 - prog); 
                 plCtx.translate(pt.x, pt.y); plCtx.rotate(pt.rot); 
-                let curSize = pt.size * (1 - prog * 0.5);
-                plCtx.fillStyle = pt.color; 
+                let curSize = pt.size * (1 - prog * 0.5); plCtx.fillStyle = pt.color; 
                 plCtx.fillRect(-curSize / 2, -curSize / 2, curSize, curSize); 
                 plCtx.restore();
             });
@@ -1853,15 +2156,9 @@
             if (g_isPractice) {
                 g_checkpoints.forEach((cp, idx) => {
                     plCtx.save();
-                    plCtx.fillStyle = 'rgba(34, 197, 94, 0.3)';
-                    plCtx.strokeStyle = 'rgba(34, 197, 94, 0.8)';
-                    plCtx.lineWidth = 2;
-                    plCtx.fillRect(cp.x, cp.y, cp.w, cp.h);
-                    plCtx.strokeRect(cp.x, cp.y, cp.w, cp.h);
-                    plCtx.fillStyle = '#fff';
-                    plCtx.font = '10px Arial';
-                    plCtx.textAlign = 'center';
-                    plCtx.fillText(idx + 1, cp.x + cp.w/2, cp.y - 4);
+                    plCtx.fillStyle = 'rgba(34, 197, 94, 0.3)'; plCtx.strokeStyle = 'rgba(34, 197, 94, 0.8)'; plCtx.lineWidth = 2;
+                    plCtx.fillRect(cp.x, cp.y, cp.w, cp.h); plCtx.strokeRect(cp.x, cp.y, cp.w, cp.h);
+                    plCtx.fillStyle = '#fff'; plCtx.font = '10px Arial'; plCtx.textAlign = 'center'; plCtx.fillText(idx + 1, cp.x + cp.w/2, cp.y - 4);
                     plCtx.restore();
                 });
             }
